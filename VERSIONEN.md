@@ -6,12 +6,20 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v7 | 13.10.2026 | 2a6f648 | Leiste nur Patienten und Schnell Doku, Behandlung nur noch im Verlauf |
 | v6 | 13.10.2026 | 813202c | Übungen bei Gesamter Körper mit KGG, KGG-Bereiche und Dosierung als Kacheln |
 | v5 | 13.10.2026 | 1331216 | Reiter Behandlung und Schnell Doku, Gesamter Körper, Befinden-Regler, Namensvorschläge |
 | v4 | 13.10.2026 | 7a90664 | Orthopädische Tests als Kacheln, Jahresrad, farbige Schmerzregler, Therapieziele vorgezogen, Behandlung als Kacheln |
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v7, 13.10.2026
+
+- Leiste unten nur noch mit „Patienten“ und „Schnell Doku“. Ein Tipp auf einen Patienten zeigt die Auswahl Erstbefund oder Verlauf. Oben auf der Seite schaltet ein Umschalter zwischen beiden.
+- Den Bereich „Behandlung“ gibt es nicht mehr. Der Erstbefund endet mit der Kurzzusammenfassung. „Weiter zur Behandlung“ legt im Verlauf die erste Einheit mit dem Datum des Erstbefunds an. Sie beginnt direkt mit Detonisierung, Mobilisation und Übungen und heißt „Tag des Erstbefunds“.
+- Schon im Erstbefund eingetragene Behandlungen übernimmt die App in diese erste Einheit.
+- Offline-Speicher auf `doku-fix-v6`.
 
 ## v6, 13.10.2026
 
