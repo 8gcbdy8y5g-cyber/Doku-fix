@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v10 | 13.10.2026 | ae909b7 | Dienstplan, neue Reiter-Reihenfolge, Diagnose-Vorschläge, Mobilisation bei Gesamter Körper, Eigenmobilisation |
 | v9 | 13.10.2026 | 9ac8010 | Fehlerbehebung: Wischen bei „Bisherige Dokumentation“ |
 | v8 | 13.10.2026 | 0997cf9 | Übungssuche und Hausbesuche, Kurztext bei Einheiten, Wischen zwischen Seiten, Bisherige Dokumentation |
 | v7 | 13.10.2026 | 2a6f648 | Leiste nur Patienten und Schnell Doku, Behandlung nur noch im Verlauf |
@@ -15,6 +16,17 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v10, 13.10.2026
+
+- Neuer Reiter „Dienstplan“. Reihenfolge unten: Dienstplan, Patienten Dokumentation, Schnell Dokumentation.
+- Dienstplan: Tagesansicht mit Arbeitszeit, Pause, Terminen, Hausbesuchen und „Rezept offen“. Eine rote Linie zeigt die aktuelle Uhrzeit, Vergangenes ist ausgegraut, der laufende Termin hat einen Fortschrittsbalken. Doppeltermine sind mit einer Klammer verbunden.
+- Plan hinzufügen per Foto oder Screenshot mit automatischer Texterkennung (lädt beim ersten Mal aus dem Internet) oder per eingefügtem Text. Namen werden als Vorname und Anfangsbuchstabe gespeichert. Für einen Tag mit vorhandenem Plan ersetzt die App nur geänderte Termine und markiert sie mit „neu“ oder „geändert“.
+- Termine mit passender Dokumentation (Vorname N.) öffnen den Patienten. Ohne Dokumentation: „Erstbefund anlegen“ oder „Schnell Dokumentation“.
+- Diagnose: Vorschläge beim Tippen aus häufigen Diagnosen, ICD-10-Katalog und eigenen Diagnosen. Unbekannte Diagnosen merkt sich die App beim Tippen auf „Weiter“ (auch in der Sicherung).
+- Mobilisation bei „Gesamter Körper“ nach Bereich, Region und Gelenk.
+- Eigenmobilisation für HWS, BWS und LWS.
+- Offline-Speicher auf `doku-fix-v9`.
 
 ## v9, 13.10.2026
 
