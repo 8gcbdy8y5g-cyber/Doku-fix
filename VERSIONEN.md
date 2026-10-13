@@ -6,9 +6,23 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v4 | 13.10.2026 | 7a90664 | Orthopädische Tests als Kacheln, Jahresrad, farbige Schmerzregler, Therapieziele vorgezogen, Behandlung als Kacheln |
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v4, 13.10.2026
+
+- Orthopädische Tests als aufklappbare Kacheln, nach Körperregion in Clustern und in sinnvoller Reihenfolge. Grundlage ist eine Recherche zu 103 Tests mit Quellen; zu einigen Tests fehlen belastbare Genauigkeitswerte.
+- Nebendiagnosen: Beim Antippen erscheint ein Rad zur Jahresauswahl, das Jahr steht direkt hinter der Diagnose.
+- Schmerzregler laufen farblich von grün (0) über gelb nach rot (10), die Farbe ändert sich beim Ziehen.
+- Schwellung mit stufenlosem Schieberegler.
+- „Wobei tritt der Schmerz auf?“ und die Region der Schwellung: Vorschläge sichtbar, alle weiteren Kacheln erst nach Antippen.
+- Beweglichkeit: Die Bewegungsrichtungen (Flexion, Extension usw.) sind je Paar als Kachel zusammengefasst.
+- Neue Reihenfolge: Therapieziele (Schritt 10), dann Funktionstests, dann Befund. Die Ziele erscheinen in der Kurzzusammenfassung, der Knopf „Weiter zum Ziel“ ist weg.
+- Therapieziele als Kacheln mit Vorschlägen aus den vorherigen Schritten, grüner Haken bei Auswahl, Kachel schließt sich danach und die nächste öffnet sich.
+- Behandlung (Detonisierung, Mobilisation, Übungen) im selben Kachelmuster.
+- Offline-Speicher auf `doku-fix-v3`.
 
 ## v3, 13.10.2026
 
