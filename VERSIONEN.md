@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v8 | 13.10.2026 | 0997cf9 | Übungssuche und Hausbesuche, Kurztext bei Einheiten, Wischen zwischen Seiten, Bisherige Dokumentation |
 | v7 | 13.10.2026 | 2a6f648 | Leiste nur Patienten und Schnell Doku, Behandlung nur noch im Verlauf |
 | v6 | 13.10.2026 | 813202c | Übungen bei Gesamter Körper mit KGG, KGG-Bereiche und Dosierung als Kacheln |
 | v5 | 13.10.2026 | 1331216 | Reiter Behandlung und Schnell Doku, Gesamter Körper, Befinden-Regler, Namensvorschläge |
@@ -13,6 +14,15 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v8, 13.10.2026
+
+- Übungen bei „Gesamter Körper“: blaues Feld „Übungen suchen oder hinzufügen“ durchsucht alle Übungen. Gibt es eine Übung noch nicht, fragt die App vor dem Speichern nach dem Bereich. Darunter „Oder nach Bereich suchen“ mit den Bereichen als Kacheln.
+- Neuer Bereich „Hausbesuche“ (ganz unten) für eigene Übungen, mit der Auswahl Ball, Loop, Theraband, am Stuhl, am Bett, an der Wand, mit Wasserflaschen, an der Treppe. Eigene Übungen werden samt Bereich gespeichert und sind in der Sicherung enthalten.
+- Bisherige Einheiten zeigen unter dem Datum eine Kurzzeile mit Befinden, Angaben, NAS und Behandlung.
+- Wischen nach links oder rechts blättert eine Seite vor oder zurück. Die Seite folgt dem Finger. In der Patientenliste, der Schnell-Doku-Liste und der Verlauf-Übersicht wechselt das Wischen zwischen diesen Bereichen.
+- Das Feld unten heißt „Bisherige Dokumentation“ und öffnet und schließt mit einem Wisch nach oben oder unten.
+- Offline-Speicher auf `doku-fix-v7`.
 
 ## v7, 13.10.2026
 
