@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v16 | 13.10.2026 | 8a7d893 | Dienstplan-Kopf größer und mittig, Hinweiszeile entfernt |
 | v15 | 13.10.2026 | b89ee14 | Dienstplan-Termine farbig nach Therapieart, mit Legende |
 | v14 | 13.10.2026 | 90707d8 | Neuro-Tests als Kacheln (mit MS), Körperfigur bei Neuro, KGG eigener Punkt, Übungssuche überall, Dienstplan in Sicherung |
 | v13 | 13.10.2026 | a2b5002 | Fahrzeit und Pause im Dienstplan, bessere Fotoerkennung |
@@ -21,6 +22,15 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v16, 13.10.2026
+
+Commit `8a7d893`
+
+- Wochentag und Datum im Dienstplan sind größer und stehen in der Mitte, die Pfeile sind größer.
+- Arbeitszeit, Pause, Termine, Fahrzeit und die Farblegende stehen mittig und etwas größer.
+- Die blaue Hinweiszeile zum Beispielplan ist entfernt.
+- Cache: `doku-fix-v15`
 
 ## v15, 13.10.2026
 
