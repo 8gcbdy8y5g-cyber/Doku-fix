@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v15 | 13.10.2026 | b89ee14 | Dienstplan-Termine farbig nach Therapieart, mit Legende |
 | v14 | 13.10.2026 | 90707d8 | Neuro-Tests als Kacheln (mit MS), Körperfigur bei Neuro, KGG eigener Punkt, Übungssuche überall, Dienstplan in Sicherung |
 | v13 | 13.10.2026 | a2b5002 | Fahrzeit und Pause im Dienstplan, bessere Fotoerkennung |
 | v12 | 13.10.2026 | 3cb2405 | Dienstplan landet am richtigen Tag, Aufräumen, Tag leeren, Import zurücknehmen |
@@ -20,6 +21,16 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v15, 13.10.2026
+
+Commit `b89ee14`
+
+- Termine im Dienstplan sind nach Therapieart eingefärbt: KG blau, KG ZNS violett, MT türkis, KGG rosa. KGP (PNF) zählt als KG ZNS.
+- Über der Liste steht eine Legende mit der Anzahl je Therapieart.
+- Mit einer Doku verknüpfte Termine haben jetzt eine dünne Kontur statt des blauen Rands.
+- Der Foto-Import erkennt auch das Kürzel MT.
+- Cache: `doku-fix-v14`
 
 ## v14, 13.10.2026
 
