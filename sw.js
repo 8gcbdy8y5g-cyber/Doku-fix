@@ -1,6 +1,6 @@
 // Doku-Fix Service Worker: App-Dateien zwischenspeichern, damit sie ohne Netz starten.
 // Strategie: erst Netz (neue Version kommt an), bei fehlendem Netz die gespeicherte Datei.
-const CACHE = 'doku-fix-v9';
+const CACHE = 'doku-fix-v10';
 const DATEIEN = ['./', './index.html', './manifest.webmanifest', './icon-180.png', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
