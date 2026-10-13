@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v9 | 13.10.2026 | 9ac8010 | Fehlerbehebung: Wischen bei „Bisherige Dokumentation“ |
 | v8 | 13.10.2026 | 0997cf9 | Übungssuche und Hausbesuche, Kurztext bei Einheiten, Wischen zwischen Seiten, Bisherige Dokumentation |
 | v7 | 13.10.2026 | 2a6f648 | Leiste nur Patienten und Schnell Doku, Behandlung nur noch im Verlauf |
 | v6 | 13.10.2026 | 813202c | Übungen bei Gesamter Körper mit KGG, KGG-Bereiche und Dosierung als Kacheln |
@@ -14,6 +15,11 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v9, 13.10.2026
+
+- Fehlerbehebung: Das Feld „Bisherige Dokumentation“ öffnet und schließt wieder per Wisch. In v8 fehlte eine Zeile, die das Wischen dort braucht. Die Wischerkennung reagiert jetzt schon während der Bewegung und verhindert dabei, dass die Seite mitscrollt.
+- Offline-Speicher auf `doku-fix-v8`.
 
 ## v8, 13.10.2026
 
