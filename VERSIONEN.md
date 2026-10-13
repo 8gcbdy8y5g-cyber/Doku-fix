@@ -6,10 +6,21 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v5 | 13.10.2026 | 1331216 | Reiter Behandlung und Schnell Doku, Gesamter Körper, Befinden-Regler, Namensvorschläge |
 | v4 | 13.10.2026 | 7a90664 | Orthopädische Tests als Kacheln, Jahresrad, farbige Schmerzregler, Therapieziele vorgezogen, Behandlung als Kacheln |
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v5, 13.10.2026
+
+- Neuer Reiter „Behandlung“ in der Leiste unten: Detonisierung, Mobilisation, Übungen (bei neurologischen Diagnosen auch Behandlung neurologisch) und die Ausgabe. Der Erstbefund endet mit der Kurzzusammenfassung, dort steht jetzt auch „Erstbefund neu beginnen“.
+- Reiter „Nur Verlauf“ heißt jetzt „Schnell Doku“. Er startet immer mit der Patientenliste. Die Übersicht beginnt mit „Neue Einheit“, „Therapiebericht“ und „Frühere Einheiten einfügen“, Diagnose oder Region ändern und Neuer Patient stehen klein darunter. „Behandlung abgeschlossen“ steht am Ende des Therapieberichts.
+- Bereich „Gesamter Körper“ auf der Seite „Welcher Bereich ist betroffen?“. Bei der Detonisierung gibt es dafür ein Menü nach Körperregion, Gelenk und umgebender Muskulatur.
+- Befinden seit der letzten Behandlung als Regler von „deutlich schlechter“ über „unverändert“ bis „deutlich besser“, mit Satz im Verlaufstext und im Therapiebericht. Das Freitextfeld bleibt darunter.
+- Schritt-Menü oben rechts auch in den Einheiten von Verlauf und Schnell Doku.
+- Beim Eintippen eines Namens zeigen Patienten und Schnell Doku passende Patienten zum Öffnen an.
+- Offline-Speicher auf `doku-fix-v4`.
 
 ## v4, 13.10.2026
 
