@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v14 | 13.10.2026 | 90707d8 | Neuro-Tests als Kacheln (mit MS), Körperfigur bei Neuro, KGG eigener Punkt, Übungssuche überall, Dienstplan in Sicherung |
 | v13 | 13.10.2026 | a2b5002 | Fahrzeit und Pause im Dienstplan, bessere Fotoerkennung |
 | v12 | 13.10.2026 | 3cb2405 | Dienstplan landet am richtigen Tag, Aufräumen, Tag leeren, Import zurücknehmen |
 | v11 | 13.10.2026 | e9e34b2 | Dienstplan-Import per Foto überarbeitet, Prüfliste vor dem Übernehmen |
@@ -19,6 +20,16 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v14, 13.10.2026
+
+- Neurologische Tests als Kacheln mit nummerierten Testclustern, sortiert nach Beleglage: Kernset Neurologie, Schlaganfall, Parkinson und neu Multiple Sklerose. Quellen in jeder Kachel.
+- Neue Tests für MS: Timed 25-Foot Walk, MSWS-12, MFIS, MSIS-29.
+- Körperfigur auch bei neurologischen Patienten, mit Schnellwahl (Körperhälfte, beide Arme, beide Beine, Rumpf, ganzer Körper) und lila Markierung; Vorauswahl aus der Diagnose in der Figur.
+- Behandlung neurologisch: KGG als eigener Punkt, nicht mehr unter Krafttraining.
+- Übungen: Suchfeld „Übungen suchen oder hinzufügen“ in allen Regionen; Hilfsmittel („Womit?“) für eigene Übungen in allen Regionen, auch im Text.
+- Sicherung enthält jetzt den Dienstplan; beim Einlesen kommen nur fehlende Tage dazu.
+- Offline-Speicher auf `doku-fix-v13`.
 
 ## v13, 13.10.2026
 
