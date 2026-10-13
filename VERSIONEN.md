@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v12 | 13.10.2026 | 3cb2405 | Dienstplan landet am richtigen Tag, Aufräumen, Tag leeren, Import zurücknehmen |
 | v11 | 13.10.2026 | e9e34b2 | Dienstplan-Import per Foto überarbeitet, Prüfliste vor dem Übernehmen |
 | v10 | 13.10.2026 | ae909b7 | Dienstplan, neue Reiter-Reihenfolge, Diagnose-Vorschläge, Mobilisation bei Gesamter Körper, Eigenmobilisation |
 | v9 | 13.10.2026 | 9ac8010 | Fehlerbehebung: Wischen bei „Bisherige Dokumentation“ |
@@ -17,6 +18,16 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v12, 13.10.2026
+
+- Das Datum wird jetzt aus dem Kopf des Plans gelesen. Die Druckzeit oben rechts wird nicht mehr mit dem Plandatum verwechselt.
+- Ist kein Datum lesbar, legt die App den Plan nach Feierabend automatisch auf den nächsten Arbeitstag (sonntags übersprungen) und zeigt einen Hinweis.
+- Die Prüfliste zeigt oben „Plan für Mittwoch (morgen)“. Das Datum lässt sich dort ändern.
+- Wurde ein Plan vorher am falschen Tag eingemischt, räumt die App das beim richtigen Import auf und nimmt diese Termine aus dem falschen Tag heraus.
+- Ein neuer Plan ersetzt den Tag im abgedeckten Zeitraum. Abgesagte Termine fallen dabei weg.
+- Unter „Plan aktualisieren“: „Letzten Import zurücknehmen“ und „Tag leeren“ (mit Rückfrage).
+- Offline-Speicher auf .
 
 ## v11, 13.10.2026
 
