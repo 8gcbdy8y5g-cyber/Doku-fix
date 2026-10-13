@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v13 | 13.10.2026 | a2b5002 | Fahrzeit und Pause im Dienstplan, bessere Fotoerkennung |
 | v12 | 13.10.2026 | 3cb2405 | Dienstplan landet am richtigen Tag, Aufräumen, Tag leeren, Import zurücknehmen |
 | v11 | 13.10.2026 | e9e34b2 | Dienstplan-Import per Foto überarbeitet, Prüfliste vor dem Übernehmen |
 | v10 | 13.10.2026 | ae909b7 | Dienstplan, neue Reiter-Reihenfolge, Diagnose-Vorschläge, Mobilisation bei Gesamter Körper, Eigenmobilisation |
@@ -18,6 +19,15 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v13, 13.10.2026
+
+- Freie Zeit im Dienstplan wird benannt: neben einem Hausbesuch als Fahrzeit (grau, Länge aus „R: 10min“ im Plan, sonst 10 Minuten), zwischen Praxisterminen als Pause (grün).
+- Die längste Pause steht oben in der Kopfzeile. Weicht sie von der gedruckten Pause ab, steht „laut Plan …“ daneben. Dazu ein Chip mit der Fahrzeit des Tages.
+- Die Pause aus dem Kopf des Plans wird auch bei schrägem Foto oder verlesenem Wort erkannt.
+- Fotoaufbereitung vor der Texterkennung: Schatten und Knicke werden ausgeglichen. Störzeichen an Uhrzeiten werden entfernt, ein als Strich gelesenes „!“ zählt als offenes Rezept.
+- Hängt die Texterkennung 40 Sekunden, kommt eine Meldung.
+- Offline-Speicher auf `doku-fix-v12`.
 
 ## v12, 13.10.2026
 
