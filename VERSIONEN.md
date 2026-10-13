@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v11 | 13.10.2026 | e9e34b2 | Dienstplan-Import per Foto überarbeitet, Prüfliste vor dem Übernehmen |
 | v10 | 13.10.2026 | ae909b7 | Dienstplan, neue Reiter-Reihenfolge, Diagnose-Vorschläge, Mobilisation bei Gesamter Körper, Eigenmobilisation |
 | v9 | 13.10.2026 | 9ac8010 | Fehlerbehebung: Wischen bei „Bisherige Dokumentation“ |
 | v8 | 13.10.2026 | 0997cf9 | Übungssuche und Hausbesuche, Kurztext bei Einheiten, Wischen zwischen Seiten, Bisherige Dokumentation |
@@ -16,6 +17,15 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v11, 13.10.2026
+
+- Dienstplan-Import neu gebaut. Die Texterkennung liest jetzt Zeile für Zeile über die Position der Wörter auf dem Foto. Ein leicht schräges Foto bringt die Zeilen nicht mehr durcheinander.
+- Uhrzeit, Dauer, Name, Geburtsjahr, KG/KGP/KGG, Hausbesuch und „!“ (Rezept offen) werden pro Termin getrennt erkannt. Falsch gelesene Uhrzeiten korrigiert die App über den vorherigen Termin plus Dauer.
+- Datum wird aus dem Kopf des Plans gelesen.
+- Ähnlich geschriebene Vornamen werden vorhandenen Patienten zugeordnet.
+- Neu: Liste „Erkannte Termine“ vor dem Übernehmen. Uhrzeit, Dauer, Name, Hausbesuch und „!“ lassen sich dort korrigieren oder Termine löschen. Der Rohtext ist zuschaltbar.
+- Offline-Speicher auf `doku-fix-v10`.
 
 ## v10, 13.10.2026
 
