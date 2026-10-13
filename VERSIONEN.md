@@ -27,7 +27,7 @@ Neue Versionen kommen oben dazu.
 - Wurde ein Plan vorher am falschen Tag eingemischt, räumt die App das beim richtigen Import auf und nimmt diese Termine aus dem falschen Tag heraus.
 - Ein neuer Plan ersetzt den Tag im abgedeckten Zeitraum. Abgesagte Termine fallen dabei weg.
 - Unter „Plan aktualisieren“: „Letzten Import zurücknehmen“ und „Tag leeren“ (mit Rückfrage).
-- Offline-Speicher auf .
+- Offline-Speicher auf `doku-fix-v11`.
 
 ## v11, 13.10.2026
 
