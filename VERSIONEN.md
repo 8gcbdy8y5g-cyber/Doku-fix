@@ -1,6 +1,6 @@
 # Versionen von Doku-Fix
 
-Hier steht jede Version der App mit Datum und Änderungen. Jede Version hat eine Markierung (Tag) im Repository. Damit lässt sich die App jederzeit auf genau diesen Stand zurücksetzen.
+Hier steht jede Version der App mit Datum und Änderungen. Zu jeder Version gehört eine Commit-Nummer im Repository. Mit ihr lässt sich die App jederzeit auf genau diesen Stand zurücksetzen.
 
 Neue Versionen kommen oben dazu.
 
@@ -33,12 +33,12 @@ Neue Versionen kommen oben dazu.
 
 ## Eine alte Version wiederherstellen
 
-Am einfachsten sagst du Claude zum Beispiel: „Stelle Doku-Fix auf Version v2 zurück.“ Claude holt dann die Dateien aus diesem Stand, erhöht die Nummer des Offline-Speichers in `sw.js` und lädt das Ganze als neue Version hoch. Die späteren Versionen gehen dabei nicht verloren und lassen sich genauso zurückholen.
+Am einfachsten sagst du Claude zum Beispiel: „Stelle Doku-Fix auf Version v2 zurück.“ Claude holt dann über die Commit-Nummer die Dateien aus diesem Stand, erhöht die Nummer des Offline-Speichers in `sw.js` und lädt das Ganze als neue Version hoch. Die späteren Versionen gehen dabei nicht verloren und lassen sich genauso zurückholen.
 
-Wer es selbst machen will, nimmt diese Befehle im Repository:
+Wer es selbst machen will, nimmt diese Befehle im Repository (Beispiel v2, die Nummer steht in der Tabelle):
 
 ```
-git checkout v2 -- index.html
+git checkout f6f5fb3 -- index.html
 git commit -m "Zurück auf Version v2"
 git push
 ```
