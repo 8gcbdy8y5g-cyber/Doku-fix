@@ -6,11 +6,20 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v6 | 13.10.2026 | 813202c | Übungen bei Gesamter Körper mit KGG, KGG-Bereiche und Dosierung als Kacheln |
 | v5 | 13.10.2026 | 1331216 | Reiter Behandlung und Schnell Doku, Gesamter Körper, Befinden-Regler, Namensvorschläge |
 | v4 | 13.10.2026 | 7a90664 | Orthopädische Tests als Kacheln, Jahresrad, farbige Schmerzregler, Therapieziele vorgezogen, Behandlung als Kacheln |
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v6, 13.10.2026
+
+- Übungen bei „Gesamter Körper“: Die KGG-Bereiche (Untere Extremität, Obere Extremität, Rumpf, Gleichgewicht, Mobilisation allgemein) stehen direkt auf der Seite, darunter „Eigene Übung“ als Eingabefeld. Filterleiste und Kachel „Dosierung“ fallen dort weg.
+- KGG-Bereiche überall als Kacheln, von denen immer nur eine offen ist.
+- Abfrage zu jeder KGG-Übung (Griff bzw. Ausführung, Gewicht, Sätze, Wiederholungen) als kleine Kacheln, die sich nach der Auswahl schließen und die nächste öffnen. Anmerkung als freies Textfeld.
+- Ein zweiter Tipp auf eine eingetragene Übung klappt die Abfrage zu, die Werte bleiben. Neu sind die Knöpfe „Fertig“ und „Übung entfernen“.
+- Offline-Speicher auf `doku-fix-v5`.
 
 ## v5, 13.10.2026
 
