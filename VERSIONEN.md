@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v17 | 14.10.2026 | 9fd42c1 | Prüfbericht umgesetzt: Reizbarkeit, Kraft, PSFS, Reaktion und Heimübungen, Bericht als PDF |
 | v16 | 13.10.2026 | 8a7d893 | Dienstplan-Kopf größer und mittig, Hinweiszeile entfernt |
 | v15 | 13.10.2026 | b89ee14 | Dienstplan-Termine farbig nach Therapieart, mit Legende |
 | v14 | 13.10.2026 | 90707d8 | Neuro-Tests als Kacheln (mit MS), Körperfigur bei Neuro, KGG eigener Punkt, Übungssuche überall, Dienstplan in Sicherung |
@@ -22,6 +23,23 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v17, 14.10.2026
+
+Commit `9fd42c1`
+
+- Erstbefund: Funktionstests stehen vor den Therapiezielen.
+- Schmerz-Schritt: Reizbarkeit (niedrig, mittel, hoch). Die Mobilisation zeigt dazu die passenden Grade.
+- Schritt „Schwellung und Kraft“: Kraftgrade 0 bis 5 je Bewegung und Region, im Text und als Vorschlag bei den Funktionszielen.
+- Therapieziele: Patientenspezifische Funktionsskala (PSFS) mit bis zu drei Tätigkeiten, 0 bis 10, mit Mittelwert im Befund.
+- Kurzzusammenfassung: Hinweis, wenn Nachtschmerz erfasst, die Red Flag aber verneint ist, und wenn die Reizbarkeit fehlt.
+- Verlauf und Schnell Dokumentation: neuer Schritt „Reaktion und Heimübungen“ mit Reaktion, Heimübungen, Beratung und Besonderheiten.
+- Heimübungen: Suchfeld mit Vorschlägen ab den ersten Buchstaben aus allen Übungen. Neue Übungen merkt sich die App.
+- Verlauf-Start: PSFS des Tages, Knopf „Maßnahmen wie am …“ übernimmt die letzte Behandlung.
+- Warnung, wenn im Verlaufstext nur das Datum steht. Übungsvorschläge im Verlauf nutzen den Erstbefund.
+- Therapiebericht: „Formular als PDF“ und „Nur Text als PDF“ (A4) statt JPEG. PSFS und Kraft im Vergleich zum Erstbefund.
+- Red und Yellow Flags „abgefragt“ als Haken mit Erklärung. Baustellen-Hinweise aus dem Arbeitsablauf entfernt. Schritt-Menü und Umschalter größer.
+- Cache: `doku-fix-v16`
 
 ## v16, 13.10.2026
 
