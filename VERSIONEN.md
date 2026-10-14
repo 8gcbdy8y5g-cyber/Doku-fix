@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v22 | 14.10.2026 | 43e0f6e | Querformat auf dem iPad: Liste scrollt wieder bis ganz unten |
 | v21 | 14.10.2026 | 1d22970 | praxxo-Screenshots und Papierfotos besser lesen, Notizen aus dem Plan, Hausbesuch-Abgleich mit der Fahrtkostenabrechnung |
 | v20 | 14.10.2026 | 85fe641 | Behandlung beenden mit Doku-Status im Dienstplan, Hausbesuche aus Fahrzeit-Lücken erkennen, Termine verschieben |
 | v19 | 14.10.2026 | 7556fc7 | Verlaufstext beginnt nur mit dem Datum |
@@ -27,6 +28,13 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v22, 14.10.2026
+
+Commit `43e0f6e`
+
+- Im Querformat (zweispaltige Ansicht ab 900 px Breite) war die Zeile des Rasters so hoch wie der Inhalt. Safari auf dem iPad hat dadurch das Ende der Liste abgeschnitten. Die Zeile ist jetzt auf die Bildschirmhöhe begrenzt, die Liste scrollt in sich bis ganz unten.
+- Cache: `doku-fix-v21`
 
 ## v21, 14.10.2026
 
