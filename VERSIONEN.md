@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v27 | 15.10.2026 | 6b70402 | VKB-Pfad anlegen: Eingaben bleiben gespeichert, Knopf nie mehr ausgegraut, Plastik und mitverletzte oder mitoperierte Strukturen einmal abfragen |
 | v26 | 15.10.2026 | f37376a | VKB-Reha-Pfad auch im Erstbefund, direkt nach der Region |
 | v25 | 15.10.2026 | 62090d4 | Testdatenbank zum Durchblättern und Suchen |
 | v24 | 15.10.2026 | 0cf7590 | VKB-Reha-Pfad im Verlauf (operiert und konservativ) mit Kriterien, Aufrücken und Text, neue Tests in der Testdatenbank |
@@ -32,6 +33,16 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v27, 15.10.2026
+
+Commit `6b70402`
+
+- Beim Anlegen des VKB-Pfads wird jede Eingabe sofort am Patienten gespeichert. Nichts geht verloren, wenn man den Schritt verlässt.
+- Der Knopf heißt „Speichern und weiter“ und ist nie ausgegraut. Fehlt das OP- oder Verletzungsdatum, erscheint ein roter Hinweis und das Feld wird markiert.
+- Abgefragt wird einmal: Art der Plastik (Transplantat), mitoperierte Strukturen (Meniskusnaht, Meniskusteilresektion, Knorpeleingriff, Innenband, laterale Tenodese / ALL) und mitverletzte Strukturen (Innen- und Außenmeniskus, Innen- und Außenband, Knorpel, Knochenmarködem, hinteres Kreuzband). Danach geht es direkt im Ablauf weiter, der Pfad fragt das nicht noch einmal.
+- Mitverletzt und mitoperiert stehen im Kopf des Pfads und im Verlaufstext. Bei Knochenmarködem erscheint der Hinweis, Stoßbelastungen mindestens 4 Wochen zu meiden (AWMF S1).
+- Cache: `doku-fix-v26`
 
 ## v26, 15.10.2026
 
