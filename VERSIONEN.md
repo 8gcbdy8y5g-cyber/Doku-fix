@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v21 | 14.10.2026 | 1d22970 | praxxo-Screenshots und Papierfotos besser lesen, Notizen aus dem Plan, Hausbesuch-Abgleich mit der Fahrtkostenabrechnung |
 | v20 | 14.10.2026 | 85fe641 | Behandlung beenden mit Doku-Status im Dienstplan, Hausbesuche aus Fahrzeit-Lücken erkennen, Termine verschieben |
 | v19 | 14.10.2026 | 7556fc7 | Verlaufstext beginnt nur mit dem Datum |
 | v18 | 14.10.2026 | 13202e2 | Dienstplan: Screenshot aus praxxo einlesen, verschobene Zeiten werden übernommen |
@@ -26,6 +27,17 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v21, 14.10.2026
+
+Commit `1d22970`
+
+- Texterkennung: Tabellenlinien und große schwarze Flächen werden vor dem Lesen entfernt, kleine Screenshots vergrößert. Schatten auf Papierfotos bleiben erhalten.
+- praxxo-Liste: Datum aus der linken Spalte, Spalten nach linker Kante, verlesene Uhrzeiten (3/8, 1/7) und Behandlungsnummern werden korrigiert, Behandlung mit festem Wortlaut zur Nummer. Neue Nummern 20537 (KGG) und 20205 (MLD).
+- Zeilen ohne Patient: „p“ wird Pause, Notizen in Lücken stehen im Pausen- oder Fahrzeit-Block, Notizen über einem Termin stehen als Notiz auf der Karte (bearbeitbar). Nachnamen in Notizen werden gekürzt.
+- Gedruckter Plan: Uhrzeiten werden in Reihenfolge geprüft und auf 5-Minuten-Schritte gesetzt, Zeilen mit HB und Adresse ohne lesbaren Namen bleiben Termine.
+- Hausbesuch-Abgleich mit der Fahrtkostenabrechnung: Die App kennt die Nachnamen der bisherigen Hausbesuchspatienten nur als kurze Prüfsumme (keine Namen im Code) und markiert passende Termine als „HB?“. Mehrere Termine desselben Patienten zählen als ein Besuch, die Zeile „Fahrzeit“ überbrückt längere Lücken.
+- Cache: `doku-fix-v20`
 
 ## v20, 14.10.2026
 
