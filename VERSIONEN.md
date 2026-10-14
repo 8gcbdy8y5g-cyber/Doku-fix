@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v23 | 14.10.2026 | 5ef44d5 | Weiter mit nächstem Patient, Alles wie letztes Mal, Übungsfundus mit Kategorien, Dosierung je Übung |
 | v22 | 14.10.2026 | 43e0f6e | Querformat auf dem iPad: Liste scrollt wieder bis ganz unten |
 | v21 | 14.10.2026 | 1d22970 | praxxo-Screenshots und Papierfotos besser lesen, Notizen aus dem Plan, Hausbesuch-Abgleich mit der Fahrtkostenabrechnung |
 | v20 | 14.10.2026 | 85fe641 | Behandlung beenden mit Doku-Status im Dienstplan, Hausbesuche aus Fahrzeit-Lücken erkennen, Termine verschieben |
@@ -28,6 +29,18 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v23, 14.10.2026
+
+Commit `5ef44d5`
+
+- Dienstplan: Oben steht „Weiter mit“ bzw. „Als Nächstes“ mit dem nächsten Patienten, der noch keine fertige Doku hat, und ein Knopf, der direkt die Einheit von heute öffnet. Offene Dokus von vorhin werden gezählt. Die Knöpfe auf den Karten öffnen heute ebenfalls gleich die heutige Einheit.
+- „Alles wie am …“: übernimmt Maßnahmen, Übungen und Heimprogramm der letzten Einheit und springt direkt zu „Fertig zum Kopieren“. „Nur Maßnahmen wie am …“ gibt es weiterhin.
+- Reizbarkeit: Die Erklärung steht jetzt unter jeder der drei Kacheln.
+- Übungsfundus: Beim Suchen erscheinen auch Übungen aus anderen Regionen und Bereichen, Treffer blau markiert. Neue Übungen fragen nach der Kategorie, eigene Übungen stehen nach Kategorie gruppiert. Bei Gesamter Körper hat jede Kategorie ein eigenes Suchfeld.
+- Suchfeld steht unter den Ziel-Chips. Die Kacheln „Übungen aus der Liste“, „Eigene Übung“ und „Dosierung“ sind weg.
+- Dosierung je Übung mit Vorschlägen (3 × 8, 3 × 10, 3 × 15 Wiederholungen). Die App merkt sich häufig genutzte Angaben auf dem Gerät. Die Dosierung steht im Text hinter der Übung.
+- Cache: `doku-fix-v22`
 
 ## v22, 14.10.2026
 
