@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v24 | 15.10.2026 | 0cf7590 | VKB-Reha-Pfad im Verlauf (operiert und konservativ) mit Kriterien, Aufrücken und Text, neue Tests in der Testdatenbank |
 | v23 | 14.10.2026 | 5ef44d5 | Weiter mit nächstem Patient, Alles wie letztes Mal, Übungsfundus mit Kategorien, Dosierung je Übung |
 | v22 | 14.10.2026 | 43e0f6e | Querformat auf dem iPad: Liste scrollt wieder bis ganz unten |
 | v21 | 14.10.2026 | 1d22970 | praxxo-Screenshots und Papierfotos besser lesen, Notizen aus dem Plan, Hausbesuch-Abgleich mit der Fahrtkostenabrechnung |
@@ -29,6 +30,22 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v24, 15.10.2026
+
+Commit `0cf7590`
+
+- VKB-Reha-Pfad: Steht in der Diagnose Kreuzband, VKB oder ACL, kommt im Verlauf nach „Datum und Befinden“ der Schritt „VKB-Reha-Pfad“. Bei anderen Kniepatienten gibt es dort den Knopf „VKB-Reha-Pfad anlegen“.
+- Anlegen: operiert oder konservativ, OP- oder Verletzungsdatum, Seite, Transplantat, Begleiteingriffe, Vorgaben vom Arzt. Die App schlägt eine Phase nach Zeit vor, die Phase wird von Hand bestätigt.
+- Phasen operiert: 0 Vor der OP, 1 Früh nach der OP, 2 Kraft und Kontrolle, 3 Laufen, Sprünge, Agilität, 4 Rückkehr zum Sport, 5 Prävention. Konservativ: 0 Akutphase, 1 Screening Stabilität (Delaware), dann wie operiert.
+- Kriterien für die nächste Phase nach Kategorien (Gelenk und Erguss, Schmerz, Ansteuerung und Gang, Kraft im Seitenvergleich, Kontrolle und Gleichgewicht, Sprünge, Kopf und Fragebögen) mit Ampel. Seitenvergleich überall ab 90 % LSI, die App rechnet den LSI aus betroffen und gesund (bei Zeiten gesund durch betroffen). Kraft ohne Messgerät über Wiederholungstests und Sprünge, Beinpresse optional.
+- Mindestzeiten: Laufen ab Woche 12, sportartspezifisch ab 6 Monaten, Wettkampf nach VKB-Plastik ab 9 Monaten. Sind alle Kriterien erfüllt, fragt die App „In Phase X aufrücken?“. Fehlt nur die Zeit, steht dort das Datum.
+- Werte aus früheren Einheiten gelten weiter und stehen mit „zuletzt“ und Datum da. Beweglichkeit (Pro-Modus), Schmerz und „keine Schwellung“ aus der Einheit werden übernommen.
+- ACL-RSI (12 Fragen oder Gesamtwert, über 56 Punkte) und IKDC (Gesamtwert) in der App.
+- Verlaufstext: Phase, Woche nach OP, heute gemessene Werte, Stand der Kriterien oder Aufstieg.
+- Testdatenbank: Stroke-Test, Beinheben, einbeinige Kniebeuge, Brücke, Wadenheben, Stuhl, Seitstütz, Beinpresse, Einbeinstand, Y-Balance, Single, Triple, Crossover und 6-m-Hop, Side Hop, ACL-RSI, IKDC, Giving-way, Selbsteinschätzung, jeweils mit Durchführung, Richtwerten und Quellen.
+- Quelle Q19 (AWMF S1 Vordere Kreuzbandruptur) als abgelaufen markiert, Wissenseintrag KN04 an den Pfad angepasst.
+- Cache: `doku-fix-v23`
 
 ## v23, 14.10.2026
 
