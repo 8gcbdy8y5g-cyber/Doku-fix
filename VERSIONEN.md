@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v25 | 15.10.2026 | 62090d4 | Testdatenbank zum Durchblättern und Suchen |
 | v24 | 15.10.2026 | 0cf7590 | VKB-Reha-Pfad im Verlauf (operiert und konservativ) mit Kriterien, Aufrücken und Text, neue Tests in der Testdatenbank |
 | v23 | 14.10.2026 | 5ef44d5 | Weiter mit nächstem Patient, Alles wie letztes Mal, Übungsfundus mit Kategorien, Dosierung je Übung |
 | v22 | 14.10.2026 | 43e0f6e | Querformat auf dem iPad: Liste scrollt wieder bis ganz unten |
@@ -30,6 +31,14 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v25, 15.10.2026
+
+Commit `62090d4`
+
+- Neuer Knopf „Testdatenbank“ unten in der Patientenliste. Dort stehen alle 169 Tests, nach Orthopädie (je Region), VKB-Reha und Neurologie sortiert.
+- Suchfeld (Name und was der Test prüft) und Filter nach Bereich. Jeder Test klappt auf mit Kurzbeschreibung, Ziel, Position, Richtwerten, Durchführung und Quellen.
+- Cache: `doku-fix-v24`
 
 ## v24, 15.10.2026
 
