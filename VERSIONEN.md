@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v26 | 15.10.2026 | f37376a | VKB-Reha-Pfad auch im Erstbefund, direkt nach der Region |
 | v25 | 15.10.2026 | 62090d4 | Testdatenbank zum Durchblättern und Suchen |
 | v24 | 15.10.2026 | 0cf7590 | VKB-Reha-Pfad im Verlauf (operiert und konservativ) mit Kriterien, Aufrücken und Text, neue Tests in der Testdatenbank |
 | v23 | 14.10.2026 | 5ef44d5 | Weiter mit nächstem Patient, Alles wie letztes Mal, Übungsfundus mit Kategorien, Dosierung je Übung |
@@ -31,6 +32,13 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v26, 15.10.2026
+
+Commit `f37376a`
+
+- Steht in der Diagnose Kreuzband, VKB oder ACL, kommt im Erstbefund nach „Betroffener Bereich“ der Schritt „VKB-Reha-Pfad“. Dort wird der Pfad angelegt und die Phase eingeordnet. Danach zeigt der Schritt die Kriterien für die nächste Phase als Vorschau. Gemessen und geprüft wird ab der ersten Verlaufseinheit.
+- Cache: `doku-fix-v25`
 
 ## v25, 15.10.2026
 
