@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v19 | 14.10.2026 | 7556fc7 | Verlaufstext beginnt nur mit dem Datum |
 | v18 | 14.10.2026 | 13202e2 | Dienstplan: Screenshot aus praxxo einlesen, verschobene Zeiten werden übernommen |
 | v17 | 14.10.2026 | 9fd42c1 | Prüfbericht umgesetzt: Reizbarkeit, Kraft, PSFS, Reaktion und Heimübungen, Bericht als PDF |
 | v16 | 13.10.2026 | 8a7d893 | Dienstplan-Kopf größer und mittig, Hinweiszeile entfernt |
@@ -24,6 +25,13 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v19, 14.10.2026
+
+Commit `7556fc7`
+
+- Der Text jeder Einheit beginnt nur mit dem Datum, z. B. „14.10.2026:“. Vorher stand dort „Verlauf vom …“ bzw. „Behandlung am Tag des Erstbefunds (…)“.
+- Cache: `doku-fix-v18`
 
 ## v18, 14.10.2026
 
