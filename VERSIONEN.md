@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v20 | 14.10.2026 | 85fe641 | Behandlung beenden mit Doku-Status im Dienstplan, Hausbesuche aus Fahrzeit-Lücken erkennen, Termine verschieben |
 | v19 | 14.10.2026 | 7556fc7 | Verlaufstext beginnt nur mit dem Datum |
 | v18 | 14.10.2026 | 13202e2 | Dienstplan: Screenshot aus praxxo einlesen, verschobene Zeiten werden übernommen |
 | v17 | 14.10.2026 | 9fd42c1 | Prüfbericht umgesetzt: Reizbarkeit, Kraft, PSFS, Reaktion und Heimübungen, Bericht als PDF |
@@ -25,6 +26,17 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v20, 14.10.2026
+
+Commit `85fe641`
+
+- „Behandlung beenden“ am Ende jeder Einheit (Befund, Verlauf, Schnell Doku). Erst danach steht im Dienstplan beim Patienten „✓ Doku fertig“, vorher „Doku offen“.
+- Hausbesuche ohne gedruckten Plan: Mehrere 10-Minuten-Lücken hintereinander im Hausbesuchs-Zeitraum (Mo/Di 7:00–13:30, Do/Fr 11:00–17:30) gelten als Fahrzeit. In der Prüfliste steht dann „HB?“. Einzelne Lücken zählen nicht.
+- Bekannte Hausbesuchs-Patienten merkt sich die App nur auf dem Gerät, ohne Namen im Klartext (nur ein Kurzcode), mit Adresse und Telefon. Nach 180 Tagen ohne Termin wird der Eintrag gelöscht. Nicht in der Sicherung enthalten.
+- praxxo: Zeile „Fahrzeit“ wird nicht mehr als Patient gelesen. Behandlungsnummern 20106 (KMT) und 20535 (KG) ergänzt.
+- Bearbeiten: Termin um −10, −5, +5 oder +10 Minuten verschieben. Beim Verschieben nach hinten rücken die folgenden Termine mit, bis eine Lücke den Versatz aufnimmt. Gibt es bis Tagesende keine Lücke, rückt niemand nach, und die Termine werden überlappend angezeigt (mit „x min Überschneidung“).
+- Cache: `doku-fix-v19`
 
 ## v19, 14.10.2026
 
