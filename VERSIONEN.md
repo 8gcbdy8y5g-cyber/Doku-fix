@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v29 | 15.10.2026 | db4907a | Dienstplan: Lücken ohne Patient orange markiert, getrennt von der Pause |
 | v28 | 15.10.2026 | af84008 | Kopierter Verlaufstext ohne Datum |
 | v27 | 15.10.2026 | 6b70402 | VKB-Pfad anlegen: Eingaben bleiben gespeichert, Knopf nie mehr ausgegraut, Plastik und mitverletzte oder mitoperierte Strukturen einmal abfragen |
 | v26 | 15.10.2026 | f37376a | VKB-Reha-Pfad auch im Erstbefund, direkt nach der Region |
@@ -34,6 +35,15 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v29, 15.10.2026
+
+Commit `db4907a`
+
+- Zeiten ohne geplanten Patienten stehen im Dienstplan jetzt als „Lücke bis … · kein Patient geplant“ (orange), an der richtigen Stelle nach Uhrzeit.
+- „Pause“ (grün) heißt nur noch, was wirklich Pause ist: die Pause laut Plan, eine Zeile „p“ oder „Pause“ im Plan. Gibt es dazu keine Angabe, gilt die längste freie Zeit ab 45 Minuten als Pause.
+- Fahrzeit vor und nach Hausbesuchen bleibt wie bisher.
+- Cache: `doku-fix-v28`
 
 ## v28, 15.10.2026
 
