@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v46 | 15.10.2026 | 7e06b45 | Kurz-Doku auf einer Seite, kurzer Textstil |
 | v45 | 15.10.2026 | 6a83322 | iPad-Liste korrigiert, „Bisherige Dokumentation“ nur bei geöffnetem Patienten, zuverlässigere Updates mit Versionsanzeige, Namen im Dienstplan-Archiv öffnen die Doku |
 | v44 | 15.10.2026 | cbc7287 | Vierter Reiter „Mehr“ mit Sicherung, Testdatenbank und Dienstplan-Archiv |
 | v43 | 15.10.2026 | 1c7d4d0 | Verlaufskurve, Fortschritt im Verlaufstext, mehrere Diagnosen pro Patient, Auslöser in der Schnell Doku, BG-Haken beim Rezept-Foto |
@@ -51,6 +52,14 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v46, 15.10.2026
+
+Commit `7e06b45`
+
+- Kurz-Doku: Neue Einheiten mit einer früheren Einheit öffnen auf einer einzigen Seite. Maßnahmen und Heimübungen vom letzten Mal sind übernommen, Befinden per Regler, Schmerz in Bewegung per 0–10-Tasten (mit „zuletzt“), Maßnahmen als Karten zum Ab- und Wiederanwählen, Reaktion, Text mit Kopieren und „Behandlung beenden“. „Ausführlich“ führt in die normale Schrittfolge, „Zur Kurz-Doku“ zurück.
+- Kurzer Textstil: Umschalter Kurz/Ausführlich, gilt für alle Verlaufstexte. Kurz im Format S / O / Th / R mit Tendenz aus dem Vergleich.
+- Unter „Mehr“: Bereich „Verlaufsdoku“ mit Kurz-Doku als Standard (an/aus) und Textstil.
 
 ## v45, 15.10.2026
 
