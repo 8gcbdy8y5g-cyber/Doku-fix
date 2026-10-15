@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v43 | 15.10.2026 | 1c7d4d0 | Verlaufskurve, Fortschritt im Verlaufstext, mehrere Diagnosen pro Patient, Auslöser in der Schnell Doku, BG-Haken beim Rezept-Foto |
 | v42 | 15.10.2026 | a1a5139 | Patientenliste mit Suche in der Patienten Dokumentation, Rezept-Leser verbessert, neue Kachel „Wie ist es dazu gekommen?“ |
 | v41 | 15.10.2026 | b9ba360 | Einfarbige Symbole bei „Foto machen“ und „Bild wählen“ |
 | v40 | 15.10.2026 | 31439a1 | Rezept per Foto oder Bild einlesen (Diagnose, Behandlungseinheiten), Patientenfenster mit Suche in der Schnell Doku |
@@ -48,6 +49,16 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v43, 15.10.2026
+
+Commit `1c7d4d0`
+
+- Verlaufskurve: Im Verlauf steht über den Einheiten ein aufklappbares Feld mit Schmerz (Bewegung und Ruhe) und jeder gemessenen Bewegung über alle Einheiten, Normbereich hinterlegt, Werte per Antippen und als Tabelle.
+- Fortschritt im Text: Jeder Verlaufstext bekommt pro Region „Verlauf seit Erstbefund: …“ mit Bewertung. Schmerz deutlich ab 2 Punkten und 30 %, Beweglichkeit leicht ab 5°, deutlich ab 10° (gemessen am Abstand zum Normbereich). Ohne Erstbefund wird mit der ersten Einheit mit Werten verglichen.
+- Mehrere Diagnosen pro Patient: „+ Weitere Diagnose“ in Patienten Dokumentation und Schnell Doku, entweder gleichzeitig oder als neue Episode (die bisherige wird abgeschlossen, „Wieder aufnehmen“ möglich). Jede Diagnose hat eigenen Befund und Verlauf, Vorgeschichte und Sozialanamnese werden übernommen. Im Dienstplan gibt es je Diagnose eigene Knöpfe, eine fertige Doku pro Tag reicht, die dokumentierte trägt einen Haken.
+- Schnell Doku: Der Auslöser steht einmal im ersten Verlaufstext.
+- Rezept-Foto: Bei BG-Verordnungen kann „Arbeitsunfall (BG)“ per Haken als Auslöser übernommen werden.
 
 ## v42, 15.10.2026
 
