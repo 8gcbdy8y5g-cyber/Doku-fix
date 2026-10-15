@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v41 | 15.10.2026 | b9ba360 | Einfarbige Symbole bei „Foto machen“ und „Bild wählen“ |
 | v40 | 15.10.2026 | 31439a1 | Rezept per Foto oder Bild einlesen (Diagnose, Behandlungseinheiten), Patientenfenster mit Suche in der Schnell Doku |
 | v39 | 15.10.2026 | a99bae3 | Absturz in der Schnell Doku behoben (Fehler „n.name“) |
 | v38 | 15.10.2026 | c77016f | Hängender leerer Bildschirm nach Wischen behoben, Fehlerhinweis mit „Neu laden“ |
@@ -46,6 +47,12 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v41, 15.10.2026
+
+Commit `b9ba360`
+
+- Die Knöpfe „Foto machen“ und „Bild wählen“ im Diagnoseschritt haben jetzt einfarbige Symbole statt bunter Emojis. Sie nehmen die Schriftfarbe an, auch im dunklen Modus.
 
 ## v40, 15.10.2026
 
