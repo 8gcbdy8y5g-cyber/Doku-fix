@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v40 | 15.10.2026 | 31439a1 | Rezept per Foto oder Bild einlesen (Diagnose, Behandlungseinheiten), Patientenfenster mit Suche in der Schnell Doku |
 | v39 | 15.10.2026 | a99bae3 | Absturz in der Schnell Doku behoben (Fehler „n.name“) |
 | v38 | 15.10.2026 | c77016f | Hängender leerer Bildschirm nach Wischen behoben, Fehlerhinweis mit „Neu laden“ |
 | v37 | 15.10.2026 | 0a42acd | Leerer Bildschirm nach Wechsel aus dem Dienstplan behoben, Kasten „Weiter mit“ entfernt |
@@ -45,6 +46,15 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v40, 15.10.2026
+
+Commit `31439a1`
+
+- Schritt „Wie lautet die Diagnose?“ (Erstbefund und Schnell Doku): „Rezept einlesen“ mit „Foto machen“ oder „Bild wählen“. Die App liest den Text auf dem Gerät und zeigt ICD-Code mit Zusatz (G, R, L), Diagnosetext und Behandlungseinheiten zum Prüfen und Ändern. „In Diagnose übernehmen“ schreibt die Diagnose ins Feld und merkt sich nur die Zahl der Einheiten.
+- Der Name auf dem Rezept wird nur mit dem Patienten abgeglichen (passt / unsicher / nicht gefunden). Foto, Name, Kasse, Adresse und der übrige Text werden nicht gespeichert.
+- Schnell Doku: Patienten stehen im aufklappbaren Fenster „Alle Patienten“ (alphabetisch). Beim Tippen im Namensfeld erscheinen direkt darunter die passenden Patienten zum Antippen.
+- Cache: `doku-fix-v39`
 
 ## v39, 15.10.2026
 
