@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v42 | 15.10.2026 | a1a5139 | Patientenliste mit Suche in der Patienten Dokumentation, Rezept-Leser verbessert, neue Kachel „Wie ist es dazu gekommen?“ |
 | v41 | 15.10.2026 | b9ba360 | Einfarbige Symbole bei „Foto machen“ und „Bild wählen“ |
 | v40 | 15.10.2026 | 31439a1 | Rezept per Foto oder Bild einlesen (Diagnose, Behandlungseinheiten), Patientenfenster mit Suche in der Schnell Doku |
 | v39 | 15.10.2026 | a99bae3 | Absturz in der Schnell Doku behoben (Fehler „n.name“) |
@@ -47,6 +48,14 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v42, 15.10.2026
+
+Commit `a1a5139`
+
+- Patienten Dokumentation: Die Patienten stehen eingeklappt unter „Alle Patienten“. Beim Tippen ins Namensfeld erscheinen die passenden Namen, wie in der Schnell Doku.
+- Rezept-Leser: „Gesichert“ wird als G hinter den Code gesetzt, Diagnosetexte über zwei Zeilen werden zusammengesetzt, Text neben „ICD-10-Code“ wird gefunden. BG-Verordnungen (F 2400) werden ohne ICD-Code gelesen, die Behandlungen kommen aus der ersten Leistungsziffer. Bei Blankoverordnungen bleiben die Behandlungseinheiten frei.
+- Neue Kachel „Wie ist es dazu gekommen?“ im Erstbefund (nach dem Beginn) und in der Schnell Doku (nach der Diagnose): typische Auslöser je Krankheitsbild für alle 121 Krankheitsbilder, weitere allgemeine Auslöser, Suche beim Tippen, eigener Text, Mehrfachauswahl. Das Feld „Wobei genau?“ ist aus dem Beginn-Schritt hierher gewandert. Im Erstbefundtext steht „Auslöser: …“, im Therapiebericht beim Symptombeginn.
 
 ## v41, 15.10.2026
 
