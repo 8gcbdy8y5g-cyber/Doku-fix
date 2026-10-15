@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v49 | 16.10.2026 | 239fb0f | Absturz „e.unter.length“ bei unvollständig gespeicherten Regionen behoben |
 | v48 | 15.10.2026 | b3d06a8 | Vorschläge lernen eigene Formulierungen, Eingabefelder bläulich abgesetzt |
 | v47 | 15.10.2026 | ff0c7c7 | Kurzbefund, Vorschläge beim Tippen, Messhinweis vor Rezeptende, „Verlauf zusammengefasst“ und Lückenprüfung im Therapiebericht, Kurz-Doku ab der ersten Einheit |
 | v46 | 15.10.2026 | 7e06b45 | Kurz-Doku auf einer Seite, kurzer Textstil |
@@ -54,6 +55,14 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v49, 16.10.2026
+
+Commit `239fb0f`
+
+- Absturz mit leerem Bildschirm („undefined is not an object (evaluating 'e.unter.length')“) behoben. Ursache waren gespeicherte Regionen ohne vollständige Angaben (ältere Daten).
+- Beim Start und beim Einlesen einer Sicherung ergänzt die App jetzt fehlende Angaben in allen Regionen von Erstbefund und Verlaufseinheiten.
+- Die betroffenen Stellen (Regionsname, Bewegungsliste, Unterregionen) sind zusätzlich abgesichert.
 
 ## v48, 15.10.2026
 
