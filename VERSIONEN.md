@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v39 | 15.10.2026 | a99bae3 | Absturz in der Schnell Doku behoben (Fehler „n.name“) |
 | v38 | 15.10.2026 | c77016f | Hängender leerer Bildschirm nach Wischen behoben, Fehlerhinweis mit „Neu laden“ |
 | v37 | 15.10.2026 | 0a42acd | Leerer Bildschirm nach Wechsel aus dem Dienstplan behoben, Kasten „Weiter mit“ entfernt |
 | v36 | 15.10.2026 | 9f02bdb | Eine Sicherung für alle Daten, unten im Dienstplan |
@@ -44,6 +45,13 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v39, 15.10.2026
+
+Commit `a99bae3`
+
+- Ursache des leeren Bildschirms in der Schnell Doku: Hatte eine Einheit eine Körperstelle, deren Region die App nicht in ihrer Liste fand, stürzte die Anzeige ab, sobald der Name der Stelle gebraucht wurde (ab Schritt 2). Die App nimmt jetzt in dem Fall einen Ersatznamen (zum Beispiel „Wirbelsäule“) und läuft weiter. Gefunden über den neuen Fehlerhinweis aus v38.
+- Cache: `doku-fix-v38`
 
 ## v38, 15.10.2026
 
