@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v44 | 15.10.2026 | cbc7287 | Vierter Reiter „Mehr“ mit Sicherung, Testdatenbank und Dienstplan-Archiv |
 | v43 | 15.10.2026 | 1c7d4d0 | Verlaufskurve, Fortschritt im Verlaufstext, mehrere Diagnosen pro Patient, Auslöser in der Schnell Doku, BG-Haken beim Rezept-Foto |
 | v42 | 15.10.2026 | a1a5139 | Patientenliste mit Suche in der Patienten Dokumentation, Rezept-Leser verbessert, neue Kachel „Wie ist es dazu gekommen?“ |
 | v41 | 15.10.2026 | b9ba360 | Einfarbige Symbole bei „Foto machen“ und „Bild wählen“ |
@@ -49,6 +50,16 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v44, 15.10.2026
+
+Commit `cbc7287`
+
+- Neuer vierter Reiter „Mehr“ unten rechts.
+- Die Sicherung steht nur noch dort (vorher im Dienstplan). Der Hinweis in der Patienten Dokumentation verweist auf „Mehr“ › „Sicherung“.
+- Der Knopf zur Testdatenbank ist aus der Patienten Dokumentation nach „Mehr“ gewandert. Zurück geht es mit „Zurück zu Mehr“.
+- Dienstpläne: Alle gespeicherten Tagespläne als Liste, neuester oben, Tag aufklappbar mit Uhrzeit, Name, Kürzel, Hausbesuch und „✓ Doku“. Suche nach Patient zeigt alle Tage mit Uhrzeit.
+- Auf dem iPad blendet „Mehr“ die rechte Spalte „Bisherige Dokumentation“ aus.
 
 ## v43, 15.10.2026
 
