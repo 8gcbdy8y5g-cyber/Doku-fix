@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v48 | 15.10.2026 | b3d06a8 | Vorschläge lernen eigene Formulierungen, Eingabefelder bläulich abgesetzt |
 | v47 | 15.10.2026 | ff0c7c7 | Kurzbefund, Vorschläge beim Tippen, Messhinweis vor Rezeptende, „Verlauf zusammengefasst“ und Lückenprüfung im Therapiebericht, Kurz-Doku ab der ersten Einheit |
 | v46 | 15.10.2026 | 7e06b45 | Kurz-Doku auf einer Seite, kurzer Textstil |
 | v45 | 15.10.2026 | 6a83322 | iPad-Liste korrigiert, „Bisherige Dokumentation“ nur bei geöffnetem Patienten, zuverlässigere Updates mit Versionsanzeige, Namen im Dienstplan-Archiv öffnen die Doku |
@@ -53,6 +54,14 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v48, 15.10.2026
+
+Commit `b3d06a8`
+
+- Lernende Vorschläge: Eigene Formulierungen aus Eigene Angaben, Patientenziel, PSFS-Tätigkeit und „Wobei genau?“ werden gemerkt und beim nächsten Mal zuerst vorgeschlagen (fett, durchgezogener Rahmen). Unter „Mehr“ › „Gelernte Vorschläge“ einzeln oder alle löschbar. Nur auf dem Gerät, noch nicht in der Sicherung.
+- Eingabefelder zum Selbsteintippen sind überall leicht bläulich unterlegt, mit blauem Rand und Streifen links, damit sie sich von den Antipp-Knöpfen abheben. Dunkler Modus passt sich an.
+- Seit wann: Der schon ausgeschriebene Zeitraum wird nicht mehr doppelt vorgeschlagen.
 
 ## v47, 15.10.2026
 
