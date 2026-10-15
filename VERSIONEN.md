@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v34 | 15.10.2026 | e28da86 | Pause im Dienstplan groß hervorgehoben, mit Countdown |
 | v33 | 15.10.2026 | d20fb60 | Offene Dokus im Dienstplan: Grau zwischen v31 und v32 |
 | v32 | 15.10.2026 | be8207e | Offene Dokus im Dienstplan etwas ausgegraut, damit sie sich von noch kommenden Patienten abheben |
 | v31 | 15.10.2026 | c28125f | Offene Dokus im Dienstplan direkt an den Terminen hervorgehoben, Zeile oben entfernt |
@@ -39,6 +40,15 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v34, 15.10.2026
+
+Commit `e28da86`
+
+- Die Pause (Zeile „p“ im Plan) steht als große grüne Karte mit Kaffeetasse im Dienstplan. Heute steht darunter „in 1 h 07 min“, während der Pause „Genieß sie · noch 12 min“, mit leichtem Leuchten.
+- Die Pause dauert genau so lange wie die p-Zeile (meist 30 min). Freie Zeit davor oder danach wird als Lücke ohne Patient gezeigt.
+- Ohne p-Zeile gilt weiter: Pause laut Plan, sonst die längste freie Zeit ab 45 min.
+- Cache: `doku-fix-v33`
 
 ## v33, 15.10.2026
 
