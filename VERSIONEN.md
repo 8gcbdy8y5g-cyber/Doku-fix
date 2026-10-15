@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v31 | 15.10.2026 | c28125f | Offene Dokus im Dienstplan direkt an den Terminen hervorgehoben, Zeile oben entfernt |
 | v30 | 15.10.2026 | d77f454 | Fehler behoben: kopierter Text kam in praxxo als Link mit %20 an |
 | v29 | 15.10.2026 | db4907a | Dienstplan: Lücken ohne Patient orange markiert, getrennt von der Pause |
 | v28 | 15.10.2026 | af84008 | Kopierter Verlaufstext ohne Datum |
@@ -36,6 +37,14 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v31, 15.10.2026
+
+Commit `c28125f`
+
+- Die Zeile „x Dokus von vorhin noch offen“ oben im Kasten „Weiter mit“ ist weg.
+- Stattdessen stehen vergangene Termine, deren Doku noch nicht beendet ist, im Plan hervorgehoben: kaum ausgegraut, leicht nach rechts versetzt, orange Kante, Uhrzeit orange, Name etwas größer und „Doku offen“ als Marke. Termine mit fertiger Doku bleiben grau.
+- Cache: `doku-fix-v30`
 
 ## v30, 15.10.2026
 
