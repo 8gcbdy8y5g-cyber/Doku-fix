@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v38 | 15.10.2026 | c77016f | Hängender leerer Bildschirm nach Wischen behoben, Fehlerhinweis mit „Neu laden“ |
 | v37 | 15.10.2026 | 0a42acd | Leerer Bildschirm nach Wechsel aus dem Dienstplan behoben, Kasten „Weiter mit“ entfernt |
 | v36 | 15.10.2026 | 9f02bdb | Eine Sicherung für alle Daten, unten im Dienstplan |
 | v35 | 15.10.2026 | c8285ba | Plan-Update per Foto übernimmt verschobene Uhrzeiten; Pause auch ohne erkannte p-Zeile |
@@ -43,6 +44,14 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v38, 15.10.2026
+
+Commit `c77016f`
+
+- Beim Wischen zwischen Seiten legt die App kurz eine Kopie der alten Seite über den Bildschirm und schiebt sie weg. Spielte Safari diese Animation nicht ab, blieb die Kopie liegen und verdeckte den Bereich links dauerhaft (leer, nichts antippbar, nur Neustart half). Die Kopie wird jetzt spätestens nach 0,7 s entfernt, bei jeder neuen Berührung aufgeräumt und beim Zurückkehren in die App ebenfalls.
+- Tritt ein Programmfehler auf, erscheint unten ein Hinweis „Da ist etwas schiefgelaufen“ mit der Meldung und dem Knopf „Neu laden“ statt einer leeren Seite.
+- Cache: `doku-fix-v37`
 
 ## v37, 15.10.2026
 
