@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v37 | 15.10.2026 | 0a42acd | Leerer Bildschirm nach Wechsel aus dem Dienstplan behoben, Kasten „Weiter mit“ entfernt |
 | v36 | 15.10.2026 | 9f02bdb | Eine Sicherung für alle Daten, unten im Dienstplan |
 | v35 | 15.10.2026 | c8285ba | Plan-Update per Foto übernimmt verschobene Uhrzeiten; Pause auch ohne erkannte p-Zeile |
 | v34 | 15.10.2026 | e28da86 | Pause im Dienstplan groß hervorgehoben, mit Countdown |
@@ -42,6 +43,15 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v37, 15.10.2026
+
+Commit `0a42acd`
+
+- Beim Wechsel zwischen Dienstplan, Patienten Dokumentation und Schnell Doku wird der Bereich links neu aufgebaut und startet oben. Vorher konnte er auf dem iPad weit unten hängen bleiben (leerer Bildschirm, nichts antippbar), wenn der Dienstplan gerade zur Jetzt-Linie scrollte.
+- Das automatische Scrollen zur Jetzt-Linie wird abgebrochen, sobald man den Dienstplan verlässt.
+- Der Kasten „Weiter mit / Als Nächstes“ oben im Dienstplan ist weg. Der Plan steht wie er ist; Termine öffnet man durch Antippen.
+- Cache: `doku-fix-v36`
 
 ## v36, 15.10.2026
 
