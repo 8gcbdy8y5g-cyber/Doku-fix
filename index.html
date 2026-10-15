@@ -113,7 +113,7 @@ body{background:var(--grund);color:var(--schrift);
   font-size:1.0625rem;line-height:1.35;-webkit-text-size-adjust:100%}
 #root{height:100%}
 .app{height:100dvh;display:flex;flex-direction:column;max-width:1200px;margin:0 auto;position:relative}
-.inhalt{flex:1;min-height:0;display:flex;flex-direction:column;position:relative}
+.app>.inhalt{flex:1;min-height:0;display:flex;flex-direction:column;position:relative}
 .links{flex:1;min-height:0;display:flex;flex-direction:column}
 header{padding:calc(env(safe-area-inset-top) + 14px) 16px 4px}
 .chips{min-height:44px;align-items:center}
@@ -128,9 +128,9 @@ main.oben>.schritt{margin-top:0}
 .blatt-kopf{min-height:40px}
 nav{display:flex;justify-content:space-around;padding:8px 0 calc(env(safe-area-inset-bottom) + 6px);background:var(--flaeche);border-top:1px solid var(--linie);flex:none}
 @media (min-width:900px){
-  .inhalt{display:grid;grid-template-columns:minmax(0,1fr) 400px;grid-template-rows:minmax(0,1fr);overflow:hidden}
-  .inhalt>.links,.inhalt>.rechts{min-height:0;max-height:100%}
-  .inhalt>.links>main{min-height:0}
+  .app>.inhalt{display:grid;grid-template-columns:minmax(0,1fr) 400px;grid-template-rows:minmax(0,1fr);overflow:hidden}
+  .app>.inhalt>.links,.app>.inhalt>.rechts{min-height:0;max-height:100%}
+  .app>.inhalt>.links>main{min-height:0}
   .blatt{display:none}
   .rechts{display:block;border-left:1px solid var(--linie);background:var(--flaeche);overflow-y:auto}
   .rechts h2{font-size:1.375rem;margin:0 0 8px}
