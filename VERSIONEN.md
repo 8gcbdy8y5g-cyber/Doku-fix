@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v50 | 16.10.2026 | 60f2d57 | Arbeitszeit im Dienstplan immer sichtbar, mit Dauer |
 | v49 | 16.10.2026 | 239fb0f | Absturz „e.unter.length“ bei unvollständig gespeicherten Regionen behoben |
 | v48 | 15.10.2026 | b3d06a8 | Vorschläge lernen eigene Formulierungen, Eingabefelder bläulich abgesetzt |
 | v47 | 15.10.2026 | ff0c7c7 | Kurzbefund, Vorschläge beim Tippen, Messhinweis vor Rezeptende, „Verlauf zusammengefasst“ und Lückenprüfung im Therapiebericht, Kurz-Doku ab der ersten Einheit |
@@ -55,6 +56,12 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v50, 16.10.2026
+
+Commit `60f2d57`
+
+- Dienstplan: Die Arbeitszeit steht oben bei jedem Tag. Mit Zeitangabe im Plan wird diese genommen, sonst vom ersten Termin bis zum Ende des letzten. Dazu die Dauer, bei Pause abzüglich Pause mit dem Zusatz „netto“.
 
 ## v49, 16.10.2026
 
