@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v28 | 15.10.2026 | af84008 | Kopierter Verlaufstext ohne Datum |
 | v27 | 15.10.2026 | 6b70402 | VKB-Pfad anlegen: Eingaben bleiben gespeichert, Knopf nie mehr ausgegraut, Plastik und mitverletzte oder mitoperierte Strukturen einmal abfragen |
 | v26 | 15.10.2026 | f37376a | VKB-Reha-Pfad auch im Erstbefund, direkt nach der Region |
 | v25 | 15.10.2026 | 62090d4 | Testdatenbank zum Durchblättern und Suchen |
@@ -33,6 +34,14 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v28, 15.10.2026
+
+Commit `af84008`
+
+- Beim Kopieren einer einzelnen Einheit (Fertig zum Kopieren, Knopf in der Liste der Einheiten, Textleiste unten bei offener Einheit) fällt die Datumszeile weg. Gilt für Verlauf und Schnell Doku.
+- In der Anzeige und in der Übersicht aller Einheiten bleibt das Datum stehen, dort wird auch mit Datum kopiert.
+- Cache: `doku-fix-v27`
 
 ## v27, 15.10.2026
 
