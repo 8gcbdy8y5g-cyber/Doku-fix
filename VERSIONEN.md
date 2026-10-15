@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v35 | 15.10.2026 | c8285ba | Plan-Update per Foto übernimmt verschobene Uhrzeiten; Pause auch ohne erkannte p-Zeile |
 | v34 | 15.10.2026 | e28da86 | Pause im Dienstplan groß hervorgehoben, mit Countdown |
 | v33 | 15.10.2026 | d20fb60 | Offene Dokus im Dienstplan: Grau zwischen v31 und v32 |
 | v32 | 15.10.2026 | be8207e | Offene Dokus im Dienstplan etwas ausgegraut, damit sie sich von noch kommenden Patienten abheben |
@@ -40,6 +41,15 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v35, 15.10.2026
+
+Commit `c8285ba`
+
+- Neues Foto eines geänderten Plans: Die App ordnet Termine jetzt zuerst über den Patienten zu (Vorname und Anfangsbuchstabe, nächstliegende Uhrzeit bis 2 Stunden Abstand), erst dann über die Uhrzeit. Verschiebt sich ein Patient von 10:00 auf 10:10, wird sein Termin auf die neue Zeit gesetzt und als „geändert“ markiert. Bisher blieb der alte Termin teils stehen und der neue kam doppelt dazu.
+- Termine aus dem alten Plan, die im neuen Foto im gleichen Zeitraum nicht mehr vorkommen, fallen weg. Auch die p-Zeile wandert mit.
+- Pause ohne erkannte p-Zeile: längste freie Zeit über Mittag (11:30 bis 14:30) ab 30 min, davon 30 min Pause, der Rest Lücke.
+- Cache: `doku-fix-v34`
 
 ## v34, 15.10.2026
 
