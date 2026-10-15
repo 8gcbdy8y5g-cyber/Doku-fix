@@ -13,7 +13,7 @@ self.addEventListener('fetch', e => {
   const r = e.request;
   if (r.method !== 'GET' || new URL(r.url).origin !== location.origin) return;
   e.respondWith(
-    fetch(r).then(antwort => {
+    fetch(r.mode === 'navigate' ? r.url : r, { cache: 'no-cache' }).then(antwort => {
       if (antwort.ok) { const kopie = antwort.clone(); caches.open(CACHE).then(c => c.put(r, kopie)); }
       return antwort;
     }).catch(() => caches.match(r, { ignoreSearch: true }).then(g => g || (r.mode === 'navigate' ? caches.match('./index.html') : undefined)))
