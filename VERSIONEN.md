@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v30 | 15.10.2026 | d77f454 | Fehler behoben: kopierter Text kam in praxxo als Link mit %20 an |
 | v29 | 15.10.2026 | db4907a | Dienstplan: Lücken ohne Patient orange markiert, getrennt von der Pause |
 | v28 | 15.10.2026 | af84008 | Kopierter Verlaufstext ohne Datum |
 | v27 | 15.10.2026 | 6b70402 | VKB-Pfad anlegen: Eingaben bleiben gespeichert, Knopf nie mehr ausgegraut, Plastik und mitverletzte oder mitoperierte Strukturen einmal abfragen |
@@ -35,6 +36,13 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v30, 15.10.2026
+
+Commit `d77f454`
+
+- Seit v28 beginnt der kopierte Text ohne Datum, also mit „Subjektiv: …“. iOS hält so einen Anfang („Wort:“) für eine Internetadresse und gibt ihn beim Einfügen verschlüsselt weiter (subjektiv:%20Pat.%20…). Beim Kopieren wird der Doppelpunkt am Textanfang deshalb durch einen Gedankenstrich ersetzt: „Subjektiv – Pat. berichtet …“. Gilt für alle Kopieren-Knöpfe.
+- Cache: `doku-fix-v29`
 
 ## v29, 15.10.2026
 
