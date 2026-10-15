@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v45 | 15.10.2026 | 6a83322 | iPad-Liste korrigiert, „Bisherige Dokumentation“ nur bei geöffnetem Patienten, zuverlässigere Updates mit Versionsanzeige, Namen im Dienstplan-Archiv öffnen die Doku |
 | v44 | 15.10.2026 | cbc7287 | Vierter Reiter „Mehr“ mit Sicherung, Testdatenbank und Dienstplan-Archiv |
 | v43 | 15.10.2026 | 1c7d4d0 | Verlaufskurve, Fortschritt im Verlaufstext, mehrere Diagnosen pro Patient, Auslöser in der Schnell Doku, BG-Haken beim Rezept-Foto |
 | v42 | 15.10.2026 | a1a5139 | Patientenliste mit Suche in der Patienten Dokumentation, Rezept-Leser verbessert, neue Kachel „Wie ist es dazu gekommen?“ |
@@ -50,6 +51,15 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v45, 15.10.2026
+
+Commit `6a83322`
+
+- iPad: Aufklappbereiche (Patientenliste, Verlaufskurve, Sicherung, Dienstpläne) waren zweispaltig, weil die Layout-Regel für die iPad-Aufteilung auch sie erfasst hat. Die Regel gilt jetzt nur noch für das Hauptlayout. Eine geöffnete Patientenkarte zieht die anderen nicht mehr mit.
+- „Bisherige Dokumentation“ (rechte Spalte am iPad, Wischfeld am iPhone) erscheint nur noch bei geöffnetem Patienten in Erstbefund, Verlauf oder Schnell Doku. Sonst nutzt der Inhalt die volle Breite.
+- Updates: Die App prüft beim Öffnen und alle 30 Minuten auf eine neue Version, ohne Browser-Zwischenspeicher. Ist eine da, erscheint „Neue Version da. Tippen zum Aktualisieren“. Unter „Mehr“ steht die Versionsnummer.
+- Dienstplan-Archiv: Namen mit vorhandener Doku sind antippbar und öffnen Schnell Doku oder Verlauf, bei mehreren Diagnosen mit Auswahl.
 
 ## v44, 15.10.2026
 
