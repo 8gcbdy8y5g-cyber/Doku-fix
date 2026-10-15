@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v47 | 15.10.2026 | ff0c7c7 | Kurzbefund, Vorschläge beim Tippen, Messhinweis vor Rezeptende, „Verlauf zusammengefasst“ und Lückenprüfung im Therapiebericht, Kurz-Doku ab der ersten Einheit |
 | v46 | 15.10.2026 | 7e06b45 | Kurz-Doku auf einer Seite, kurzer Textstil |
 | v45 | 15.10.2026 | 6a83322 | iPad-Liste korrigiert, „Bisherige Dokumentation“ nur bei geöffnetem Patienten, zuverlässigere Updates mit Versionsanzeige, Namen im Dienstplan-Archiv öffnen die Doku |
 | v44 | 15.10.2026 | cbc7287 | Vierter Reiter „Mehr“ mit Sicherung, Testdatenbank und Dienstplan-Archiv |
@@ -52,6 +53,16 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v47, 15.10.2026
+
+Commit `ff0c7c7`
+
+- Kurzbefund: Neue Erstbefunde öffnen als eine Seite mit Diagnose (Rezept-Foto), Region aus der Diagnose, Beginn und Auslöser, Red Flags zum Antippen mit Bestätigung, Schmerz (Regler), Leitbewegungen je Region (frei/leicht/mäßig/stark, Schmerz), Schwellung, Kraft, Ziel mit PSFS-Tätigkeit und Behandlung aus dem Katalog. Prüf-Ampel zeigt, was fehlt. „Ausführlich“ und „Zum Kurzbefund“ wechseln. Einstellung unter „Mehr“.
+- Vorschläge beim Tippen: Seit wann, Eigene Angaben, Patientenziel, PSFS-Tätigkeit und „Wobei genau?“ bieten passende Ergänzungen als Chips an.
+- Kurz-Doku: öffnet jetzt auch für die erste Einheit (Maßnahmen aus dem Erstbefund oder Katalog zum Antippen). Ab der vorletzten Einheit laut Rezept erscheint ein Messhinweis mit „Befund messen“ (Ruheschmerz, Leitbewegungen, Erstbefund-Wert daneben). Schmerz in Bewegung als Regler mit „zuletzt“.
+- Therapiebericht: Neuer Abschnitt „Verlauf zusammengefasst“ in ganzen Sätzen (Gesamttendenz, Schmerz, Beweglichkeit, Schwellung, Behandlungsschwerpunkt, subjektiver Verlauf). Oben „Vor dem Kopieren prüfen“ mit fehlenden Angaben.
+- Rezept-Foto merkt sich das Datum, ab dem die Einheiten gezählt werden.
 
 ## v46, 15.10.2026
 
