@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v36 | 15.10.2026 | 9f02bdb | Eine Sicherung für alle Daten, unten im Dienstplan |
 | v35 | 15.10.2026 | c8285ba | Plan-Update per Foto übernimmt verschobene Uhrzeiten; Pause auch ohne erkannte p-Zeile |
 | v34 | 15.10.2026 | e28da86 | Pause im Dienstplan groß hervorgehoben, mit Countdown |
 | v33 | 15.10.2026 | d20fb60 | Offene Dokus im Dienstplan: Grau zwischen v31 und v32 |
@@ -41,6 +42,14 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v36, 15.10.2026
+
+Commit `9f02bdb`
+
+- Die Sicherung steht nur noch unten im Dienstplan („Sicherung aller Daten“). Die Knöpfe unter Patienten Dokumentation und Schnell Doku sind weg.
+- Eine Datei enthält alle Patienten (Patienten Dokumentation und Schnell Doku), Dienstpläne, eigene Übungen und Diagnosen. Einlesen auf einem neuen Gerät an derselben Stelle.
+- Cache: `doku-fix-v35`
 
 ## v35, 15.10.2026
 
