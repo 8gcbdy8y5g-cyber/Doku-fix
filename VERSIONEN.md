@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v52 | 26.10.2026 | c558f4b | Rote Zeitlinie im Dienstplan läuft stufenlos durch den laufenden Termin, im Termin blass |
 | v51 | 26.10.2026 | 1e23644 | Hausbesuch-Erkennung: Korrektur von Hand wird gemerkt, gleicher Nachname mit anderem Vornamen und Termine außerhalb der Hausbesuchszeit nicht mehr automatisch Hausbesuch |
 | v50 | 16.10.2026 | 60f2d57 | Arbeitszeit im Dienstplan immer sichtbar, mit Dauer |
 | v49 | 16.10.2026 | 239fb0f | Absturz „e.unter.length“ bei unvollständig gespeicherten Regionen behoben |
@@ -57,6 +58,14 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v52, 26.10.2026
+
+Commit `c558f4b`
+
+- Dienstplan: Die rote Zeitlinie steht nicht mehr vor oder nach einem Termin, sondern läuft während des Termins durch ihn hindurch, passend zur Uhrzeit. Gleiches gilt für Pause, Fahrzeit und Lücke. Sie rückt alle 30 Sekunden weiter.
+- Innerhalb eines Termins ist der Strich blass, damit nichts durchgestrichen wirkt. Die Uhrzeit links bleibt kräftig rot.
+- Offline-Speicher auf `doku-fix-v51`.
 
 ## v51, 26.10.2026
 
