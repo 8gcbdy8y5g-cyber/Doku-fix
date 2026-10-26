@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v53 | 26.10.2026 | 5d04fa2 | Therapiebericht im Aufbau des W&W-Formulars: Felder zum Kopieren, Weitere Verordnungen, Formular als PDF |
 | v52 | 26.10.2026 | c558f4b | Rote Zeitlinie im Dienstplan läuft stufenlos durch den laufenden Termin, im Termin blass |
 | v51 | 26.10.2026 | 1e23644 | Hausbesuch-Erkennung: Korrektur von Hand wird gemerkt, gleicher Nachname mit anderem Vornamen und Termine außerhalb der Hausbesuchszeit nicht mehr automatisch Hausbesuch |
 | v50 | 16.10.2026 | 60f2d57 | Arbeitszeit im Dienstplan immer sichtbar, mit Dauer |
@@ -58,6 +59,16 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v53, 26.10.2026
+
+Commit `5d04fa2`
+
+- Therapiebericht: Neuer Aufbau wie das Papierformular „Therapiebericht“ von W&W Therapiezeit, als Standard. Oben schaltet „W&W-Formular“ / „Ausführlich“ zwischen dem neuen und dem bisherigen Bericht um.
+- Felder Diagnosen, Therapieziele, Therapeutische Maßnahmen, Empfehlungen und Weitere Verordnungen füllen sich aus Erstbefund, Zielen und allen Einheiten im Zeitraum. Jedes Feld hat einen eigenen Kopieren-Knopf, dazu „Alle Felder kopieren“.
+- Neu abgefragt: Verordnung vom, Empfehlungen mit Bausteinen, Weitere Verordnungen ja oder nein mit Art (Physiotherapie, Ergotherapie/Logopädie, Reha-Sport, Rückenschule, Wassergymnastik, Sonstiges) und Begründung mit Vorschlag aus der Doku.
+- „Formular als PDF“ füllt das W&W-Formular aus. Name und Geburtsdatum stehen nur auf dem PDF und werden nicht gespeichert. Ort, Datum und Therapeut*In bleiben frei zum Unterschreiben.
+- Offline-Speicher auf `doku-fix-v52`.
 
 ## v52, 26.10.2026
 
