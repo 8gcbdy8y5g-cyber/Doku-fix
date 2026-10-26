@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v54 | 27.10.2026 | e6074a9 | Leeres W&W-Formular nicht mehr im Code, wird einmal auf dem Gerät hinterlegt |
 | v53 | 26.10.2026 | 5d04fa2 | Therapiebericht im Aufbau des W&W-Formulars: Felder zum Kopieren, Weitere Verordnungen, Formular als PDF |
 | v52 | 26.10.2026 | c558f4b | Rote Zeitlinie im Dienstplan läuft stufenlos durch den laufenden Termin, im Termin blass |
 | v51 | 26.10.2026 | 1e23644 | Hausbesuch-Erkennung: Korrektur von Hand wird gemerkt, gleicher Nachname mit anderem Vornamen und Termine außerhalb der Hausbesuchszeit nicht mehr automatisch Hausbesuch |
@@ -59,6 +60,16 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v54, 27.10.2026
+
+Commit `e6074a9`
+
+- Das leere W&W-Formular steckt nicht mehr als Bild im öffentlichen Code. Es wird auf jedem Gerät einmal unter Therapiebericht › „Formular als PDF“ › „Leeres Formular hinterlegen“ eingelesen und bleibt nur dort (nicht in der Sicherung). Daneben „Formular ersetzen“ und „Formular entfernen“.
+- Ohne hinterlegtes Formular funktionieren alle Felder zum Kopieren wie bisher, nur das PDF fehlt.
+- Die Vorlage liegt im Projekt unter therapiebericht/ww-formular-vorlage.md.
+- Hinweis: Commit 5d04fa2 (v53) enthält das Formular noch in der Geschichte des Repositorys.
+- Offline-Speicher auf `doku-fix-v53`.
 
 ## v53, 26.10.2026
 
