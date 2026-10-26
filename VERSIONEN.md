@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v56 | 27.10.2026 | 4aa199d | Fehler behoben: Komma vor Punkt, Beweglichkeit im Bericht, NAS heißt NRS, Speicherwarnung, Sicherung über Teilen, Red Flags Wirbelsäule, VKB-Pfad, Seitenerkennung |
 | v55 | 27.10.2026 | ea91a4c | Neu: „Aus vorhandener Doku übernehmen“ im Dienstplan, bei Patienten Dokumentation, Schnell Dokumentation und im Verlauf („ergänzen“). Screenshots der bisherigen Doku werden gelesen: Diagnosen, Rezepte mit Zählung, „Therapiebericht verlangt“, eine Einheit pro Tag, „siehe oben“ aufgelöst, Ausfälle erkannt, Prüfliste vor dem Übernehmen. Screenshots und erkannter Text werden nicht gespeichert |
 | v54 | 27.10.2026 | e6074a9 | Leeres W&W-Formular nicht mehr im Code, wird einmal auf dem Gerät hinterlegt |
 | v53 | 26.10.2026 | 5d04fa2 | Therapiebericht im Aufbau des W&W-Formulars: Felder zum Kopieren, Weitere Verordnungen, Formular als PDF |
@@ -61,6 +62,23 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v56, 27.10.2026
+
+Commit `4aa199d`
+
+- Texte: Ein Vorschlag-Chip am Ende eines Feldes ergab „besser,.“. Komma, Semikolon und Doppelpunkt am Ende werden jetzt vor dem Punkt entfernt.
+- Beweglichkeit: Wurde nach den Stufen (Schnell) auf „Pro (Grad)“ umgeschaltet, ohne Gradzahlen einzutragen, fehlte die Beweglichkeit in Text und Therapiebericht. Jetzt steht dann die andere Erfassung im Text.
+- Schmerzskala heißt überall NRS (Numerische Rating-Skala) statt NAS. „Aus vorhandener Doku übernehmen“ erkennt beide Schreibweisen.
+- Speichern: Klappt das Speichern auf dem Gerät nicht (zum Beispiel Speicher voll), erscheint oben ein roter Hinweis mit „Daten kopieren“. Lassen sich gespeicherte Daten beim Start nicht lesen, legt die App vorher eine Kopie an (physio-doku-v1-defekt-…) und bietet sie zum Kopieren an.
+- Sicherung: Öffnet zuerst den Teilen-Dialog (In Dateien sichern, AirDrop, Mail). Die Meldung sagt, was passiert ist (übergeben, Download gestartet oder abgebrochen). Gilt auch für die PDFs.
+- Red Flags der Wirbelsäule (Cauda equina, Fraktur, Tumor, Infektion) erscheinen auch bei „Gesamte Wirbelsäule“.
+- Kurzbefund: Bei Fuß und anderen Regionen ohne Leitbewegungen wird „Beweglichkeit“ in der Prüfliste nicht mehr verlangt. „Mehr Auswahl und Techniken“ öffnet die Behandlung am Tag des Erstbefunds statt der Kurzzusammenfassung.
+- Seitenerkennung: Wörter wie „primäre“ im ICD-Text zählen nicht mehr als „re“ für rechts (aus „Gonarthrose links“ wurde vorher „beidseits“).
+- VKB-Pfad: startet nicht mehr beim hinteren Kreuzband. Das Streckdefizit wird nicht mehr automatisch als erfüllt eingetragen, es wird von Hand gemessen. Stuhltest Phase 3 verlangt wie im Richtwert mehr als 22 Wiederholungen.
+- „Speichert den einen Patienten“ und „eine eigene Formulierung“ statt „1 Patienten“ und „1 eigene Formulierungen“.
+- Bewusst unverändert: Normwerte (fachliche Entscheidung), Zählweise der Einheiten im Bericht, Lückenprüfung bei Schnell-Doku-Patienten.
+- Offline-Speicher auf `doku-fix-v55`.
 
 ## v54, 27.10.2026
 
