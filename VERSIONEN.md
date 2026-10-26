@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v51 | 26.10.2026 | 1e23644 | Hausbesuch-Erkennung: Korrektur von Hand wird gemerkt, gleicher Nachname mit anderem Vornamen und Termine außerhalb der Hausbesuchszeit nicht mehr automatisch Hausbesuch |
 | v50 | 16.10.2026 | 60f2d57 | Arbeitszeit im Dienstplan immer sichtbar, mit Dauer |
 | v49 | 16.10.2026 | 239fb0f | Absturz „e.unter.length“ bei unvollständig gespeicherten Regionen behoben |
 | v48 | 15.10.2026 | b3d06a8 | Vorschläge lernen eigene Formulierungen, Eingabefelder bläulich abgesetzt |
@@ -56,6 +57,16 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v51, 26.10.2026
+
+Commit `1e23644`
+
+- Dienstplan: Schaltest du „Hausbesuch“ unter „Bearbeiten“ oder in der Prüfliste ab, bleibt das so, auch wenn der Plan neu eingelesen wird. Die App merkt sich die Korrektur schon nach einem Mal für die nächsten Tage.
+- Ein Name aus der Fahrtkostenabrechnung zählt nur noch als Hausbesuch, wenn der Termin in der Hausbesuchszeit liegt (Mo/Di vormittags bis mittags, Do/Fr mittags bis nachmittags).
+- Gleicher Nachname, anderer Vorname (z. B. Ehepaar): Nur der Termin, der zum Hausbesuch gehört, wird als Hausbesuch erkannt. Direkt danach zuhause zählt mit.
+- Namensliste aus der Fahrtkostenabrechnung auf den Stand vom 26.10.2026 gebracht.
+- Offline-Speicher auf `doku-fix-v50`.
 
 ## v50, 16.10.2026
 
