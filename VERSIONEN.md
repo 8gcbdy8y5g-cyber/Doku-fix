@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v55 | 27.10.2026 | ea91a4c | Neu: „Aus vorhandener Doku übernehmen“ im Dienstplan, bei Patienten Dokumentation, Schnell Dokumentation und im Verlauf („ergänzen“). Screenshots der bisherigen Doku werden gelesen: Diagnosen, Rezepte mit Zählung, „Therapiebericht verlangt“, eine Einheit pro Tag, „siehe oben“ aufgelöst, Ausfälle erkannt, Prüfliste vor dem Übernehmen. Screenshots und erkannter Text werden nicht gespeichert |
 | v54 | 27.10.2026 | e6074a9 | Leeres W&W-Formular nicht mehr im Code, wird einmal auf dem Gerät hinterlegt |
 | v53 | 26.10.2026 | 5d04fa2 | Therapiebericht im Aufbau des W&W-Formulars: Felder zum Kopieren, Weitere Verordnungen, Formular als PDF |
 | v52 | 26.10.2026 | c558f4b | Rote Zeitlinie im Dienstplan läuft stufenlos durch den laufenden Termin, im Termin blass |
