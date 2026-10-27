@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v60 | 27.10.2026 | 1adfae8 | Weicher Übergang beim Wischen: alte und neue Seite gleiten zusammen, Tempo vom Finger, Überschrift blendet mit |
 | v59 | 27.10.2026 | 551b0bc | Dienstplan: kleine Zahl an der roten Zeitlinie, wie viele Patienten heute noch kommen |
 | v58 | 27.10.2026 | ccc457d | App seitlich fixiert: Wischen in Auswahlzeilen oder ohne Nachbarseite zieht die Seite nicht mehr mit |
 | v57 | 27.10.2026 | e0af16c | „Aus vorhandener Doku übernehmen“ deutlich zuverlässiger: Tabelle wird an der Spaltenlinie geteilt und getrennt gelesen, Feldnamen auch verlesen erkannt, ICD-Codes mit dem Katalog abgeglichen, abgeschnittene Zeilen und Verordnungen sauber behandelt. Trainiert mit rund 470 erfundenen Testseiten, zuletzt ohne Fehler |
@@ -65,6 +66,16 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v60, 27.10.2026
+
+Commit `1adfae8`
+
+- Wischen zwischen Reitern und Schritten: Alte und neue Seite liegen nebeneinander und gleiten zusammen, statt dass die neue Seite auf einen Schlag erscheint und die alte verblasst. Vorbild sind Swiper und Apples „Designing Fluid Interfaces“.
+- Die Bewegung übernimmt das Tempo des Fingers und läuft weich aus (240 bis 420 ms). Ein kurzer schneller Wisch blättert um, ein langsamer braucht gut ein Drittel der Breite, sonst federt die Seite zurück. Zurückziehen am Ende bricht ab.
+- Überschrift: Beim Ziehen wandert der alte Titel halb so schnell mit und blendet aus. Nach dem Loslassen gleitet der neue Titel von der Seite herein und blendet ein. Nur beim Wechsel der Reiter, in den Schritten bleibt die Kopfzeile stehen.
+- Leichter Schatten am Seitenrand während der Bewegung. Die alte Seite wird ohne Neuaufbau des HTML kopiert, das spart Rechenzeit beim Loslassen.
+- Offline-Speicher auf `doku-fix-v59`.
 
 ## v59, 27.10.2026
 
