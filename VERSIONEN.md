@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v61 | 27.10.2026 | 5f49d42 | Reiterleiste unten neu gestaltet (klassisch): vier gleich breite Reiter, aktiver Reiter mit hellblauer Fläche und blauem Strich oben, kürzere Namen „Patienten“ und „Schnell-Doku“ |
 | v60 | 27.10.2026 | 1adfae8 | Weicher Übergang beim Wischen: alte und neue Seite gleiten zusammen, Tempo vom Finger, Überschrift blendet mit |
 | v59 | 27.10.2026 | 551b0bc | Dienstplan: kleine Zahl an der roten Zeitlinie, wie viele Patienten heute noch kommen |
 | v58 | 27.10.2026 | ccc457d | App seitlich fixiert: Wischen in Auswahlzeilen oder ohne Nachbarseite zieht die Seite nicht mehr mit |
