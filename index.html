@@ -1856,7 +1856,7 @@ PX_LBL = [
 ],
 PX_DAT = /^(\d{1,2})[.,](\d{1,2})[.,](\d{4}|\d{2})\b(?:\s*[-–]\s*(\d{1,2})[.,](\d{1,2})[.,](\d{4}|\d{2})\b)?\s*[-–:]?\s*(.*)$/,
 PX_ICD = /\b([A-Z]\d{2}(?:\.\d{1,2})?)([GVAZ])?\b\s*[-–:]?\s*(.*)$/,
-PX_LEIST = /^(\d{1,2})\s*[xX×]\s*(\d{4,5})\s*[:;.]?\s*(.*)$/,
+PX_LEIST = /^(?:\d\s+(?=\d{1,2}\s*[xX×]))?(\d{1,2})\s*(?:[xX×]\s*(\d{4,5})|(2\d{4}))\s*[:;.]?\s*(.*)$/,
 PX_iso = (t, m, j) => {
   let y = j.length === 2 ? "20" + j : j, d = +t, mo = +m;
   if (mo < 1 || mo > 12 || d < 1 || d > 31) return null;
@@ -1867,13 +1867,81 @@ PX_iso = (t, m, j) => {
 PX_dmy = (s) => s ? `${s.slice(8, 10)}.${s.slice(5, 7)}.${s.slice(0, 4)}` : "",
 // Zeile von Tabellenstrichen und Leseresten befreien
 PX_zeile = (z) => {
-  let seg = z.replace(/\t/g, "    ").split(/\s{3,}/).map((s) => s.trim()).filter(Boolean);
+  let seg = (z ?? "").replace(/\t/g, "    ").split(/\s{3,}/).map((s) => s.trim()).filter(Boolean);
   let n0 = seg.length; seg = seg.filter((s, i) => (s.match(/[A-Za-zÄÖÜäöüß0-9]/g) ?? []).length >= (n0 === 1 ? 2 : 3) || (i === 0 && /^[-–•]\s*\S/.test(s)));
   let r = seg.join(" ");
-  r = r.replace(/^(?:[_|‚„.,"'`’”“~»«©®=\])(}{\\/]+\s*|[IlL]\s+(?=\S))+/, "").replace(/(?:\s+[^\sA-Za-zÄÖÜäöüß0-9]{1,3}|\s+[IlA]|\s*[_|]+)+$/, "");
+  if (/^[^\p{L}\p{N}]{0,3}[$§\]|!]\s?\d\d[.,]?\d/u.test(r)) r = PX_icdFix(r.replace(/^[^$§\]|!]*(?=[$§\]|!]\s?\d)/, ""));
+  r = r.replace(/^(?:[^\p{L}\p{N}\-–•(\[]+|[IlL]\s+(?=\S))+/u, "").replace(/^[-–•]\s*$/, "").replace(/(?:\s+[^\sA-Za-zÄÖÜäöüß0-9%)]{1,3}|\s+[IlA]|\s*[_|]+)+$/, "");
   return r.replace(/\s{2,}/g, " ").trim();
 },
-PX_links = (s) => (s ?? "").replace(/^(?:[_|‚„.,"'`’”“~»«©®=\])(}{\\/]+\s*|7”\s*)+/, "").trim(),
+PX_links = (s) => (s ?? "").replace(/^(?:[^\p{L}\p{N}\-–•(\[]+|7”\s*)+/u, "").trim(),
+PX_kompakt = (t) => (t ?? "").toLowerCase().replace(/ä/g, "a").replace(/ö/g, "o").replace(/ü/g, "u").replace(/ß/g, "ss").replace(/[^a-z0-9]/g, ""),
+PX_LABK = [["vom", "verordnungvom"], ["durch", "ausgestelltdurch"], ["kasse", "kostentrager"], ["gruppe", "diagnosegruppe"], ["icd", "icd10"], ["bes", "vobesonderheiten"], ["leist", "behandlungenleistungen"], ["befund", "diagnosebefund"], ["verlauf", "behandlungsverlauf"], ["bericht", "bericht"], ["patient", "patient"], ["geb", "geborenam"]],
+PX_lev = (a, b) => {
+  let v = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) { let p = v[0]; v[0] = i; for (let j = 1; j <= b.length; j++) { let t = v[j]; v[j] = Math.min(v[j] + 1, v[j - 1] + 1, p + (a[i - 1] === b[j - 1] ? 0 : 1)); p = t; } }
+  return v[b.length];
+},
+// Feldname aus der linken Spalte erkennen, auch wenn er schlecht gelesen wurde
+PX_lab = (t, locker) => {
+  let c = PX_kompakt(t).replace(/^1cd/, "icd"); if (c.length < 4) return null;
+  let best = null, bd = 1e9;
+  for (let [k, l] of PX_LABK) { let d = PX_lev(c, l) / l.length; if (c.startsWith(l)) d = Math.min(d, .05); if (d < bd) { bd = d; best = k; } }
+  return bd <= (locker ? .42 : .3) ? best : null;
+},
+// Erkannte Zeilen in linke Spalte (Feldname) und rechte Spalte (Inhalt) teilen
+PX_zeilen = (text, tsv) => {
+  let W = [];
+  for (let z of (tsv ?? "").split(/\r?\n/)) {
+    let c = z.split("\t"); if (c.length < 12 || c[0] !== "5") continue;
+    let t = (c[11] ?? "").trim(); if (!t) continue;
+    W.push({ t, k: `${c[2]}|${c[3]}|${c[4]}`, x: +c[6], x1: +c[6] + +c[8], y: +c[7], h: +c[9], conf: +c[10] });
+  }
+  if (W.length >= 10) {
+    let hs = W.filter((w) => /[A-Za-z]{3}/.test(w.t)).map((w) => w.h).sort((a, b) => a - b), h = hs[hs.length >> 1] || 20;
+    let L = new Map(); for (let w of W) { if (!L.has(w.k)) L.set(w.k, []); L.get(w.k).push(w); }
+    // Zeilen aus verschiedenen Blöcken, die auf gleicher Höhe liegen, zusammenführen und von oben nach unten ordnen
+    let mitte = (ws) => { let g = ws.filter((w) => w.h >= h * .5); if (!g.length) g = ws; return g.reduce((s, w) => s + w.y + w.h / 2, 0) / g.length; };
+    let roh = [...L.values()].map((ws) => ({ ws, y: mitte(ws) })).sort((a, b) => a.y - b.y), zeilen = [];
+    for (let r of roh) {
+      let z = zeilen.find((q) => Math.abs(q.y - r.y) < h * .5 && !q.ws.some((a) => r.ws.some((b) => a.x < b.x1 - 8 && b.x < a.x1 - 8)));
+      if (z) { z.ws.push(...r.ws); z.y = (z.y + r.y) / 2; } else zeilen.push({ ws: [...r.ws], y: r.y });
+    }
+    zeilen = zeilen.sort((a, b) => a.y - b.y).map((z) => z.ws.sort((a, b) => a.x - b.x));
+    // halb verdeckte Zeilen direkt unter der Statusleiste oder am unteren Rand sind deutlich niedriger als normale (kleine Schrift im Bearbeiten-Feld bleibt)
+    let hMax = Math.max(...W.map((w) => w.y + w.h));
+    zeilen = zeilen.filter((z) => { let c = z.filter((w) => /[A-Za-z0-9]{3}/.test(w.t)).map((w) => w.h).sort((a, b) => a - b), oben = Math.min(...z.map((w) => w.y)); return !c.length || c[c.length >> 1] >= h * .62 || oben > hMax * .07 && oben < hMax * .97; });
+    let minX = Math.min(...W.map((w) => w.x)), bins = new Map();
+    for (let z of zeilen) { let x = z[0].x; if (x > minX + 6 * h) { let k = Math.round(x / (h * .6)); bins.set(k, (bins.get(k) ?? 0) + 1); } }
+    let split = Infinity, bestN = 2;
+    for (let [k, n] of bins) { let nn = n + (bins.get(k - 1) ?? 0) + (bins.get(k + 1) ?? 0); if (nn > bestN || nn === bestN && k * h * .6 < split) { bestN = nn; split = k * h * .6; } }
+    split -= h * .9;
+    let sm = /^#split\t(\d+)(?:\t(\d+))?/m.exec(tsv ?? ""); if (sm) split = +sm[1];
+    let bildH = sm?.[2] ? +sm[2] : +((tsv ?? "").split(/\r?\n/).map((z) => z.split("\t")).find((c) => c[0] === "1")?.[9] ?? 0);
+    // Zeile, die am unteren Bildrand abgeschnitten ist, nicht lesen
+    if (bildH) zeilen = zeilen.filter((z) => !(Math.max(...z.map((w) => w.y + w.h)) >= bildH - 1.5 || Math.min(...z.map((w) => w.y)) <= 2));
+    // Feldname und Inhalt liegen manchmal leicht versetzt: reine Feldnamen-Zeilen an die nächste reine Inhaltszeile hängen
+    let istLab = (z) => z.every((w) => w.x < split), istVal = (z) => z.every((w) => w.x >= split), Y = (z) => mitte(z);
+    for (let i = 0; i < zeilen.length; i++) {
+      let z = zeilen[i]; if (!z.length || !istLab(z) || /\d{1,2}[.,]\d{1,2}[.,]\d{4}/.test(z.map((w) => w.t).join(" "))) continue;
+      let kand = [i - 1, i + 1].filter((j) => zeilen[j]?.length && istVal(zeilen[j]) && Math.abs(Y(zeilen[j]) - Y(z)) < h * .8).sort((a, b) => Math.abs(Y(zeilen[a]) - Y(z)) - Math.abs(Y(zeilen[b]) - Y(z)));
+      if (kand.length) { zeilen[kand[0]] = [...z, ...zeilen[kand[0]]]; zeilen[i] = []; }
+    }
+    zeilen = zeilen.filter((z) => z.length);
+    let weg = (w) => /^[^\p{L}\p{N}]+$/u.test(w.t) && !/^[-–+\/%(]$/.test(w.t) || w.t.length === 1 && w.conf < 45 && !/[\dA-Za-z-]/.test(w.t);
+    return zeilen.map((z) => {
+      let ws = z.filter((w) => !weg(w)), lab = ws.filter((w) => w.x < split - 2), val = ws.filter((w) => !lab.includes(w));
+      // Wort, das an der Spaltengrenze zerschnitten wurde, wieder zusammensetzen
+      let voll = ""; z.forEach((w, i) => { let p = z[i - 1]; voll += !p ? w.t : p.x1 >= split - 10 && p.x < split && w.x >= split - 4 && w.x <= split + 10 ? w.t : "   " + w.t; });
+      return { lab: lab.map((w) => w.t).join(" "), val: val.map((w) => w.t).join(" "), voll, tsv: !0 };
+    });
+  }
+  return (text ?? "").replace(/\r/g, "").split("\n").map((roh) => {
+    let seg = roh.split(/\s{3,}/), erst = PX_zeile(seg[0]);
+    if (seg.length > 1 && PX_lab(erst)) return { lab: erst, val: seg.slice(1).join("    "), voll: roh };
+    return { lab: "", val: roh, voll: roh };
+  });
+},
 PX_hm = (txt, ziff) => {
   let t = (txt ?? "") + " " + (ziff ?? "");
   if (/lymph|MLD/i.test(t)) return "MLD";
@@ -1895,89 +1963,168 @@ PX_TAGS = [
   ["Gang/Gleichgewicht", /gang|standbein|schwungbein|spielbein|gleichgewicht|treppe|sprossenwand|balance|posturale/i],
   ["PNF/Bobath", /\bPNF\b|bewegungs?wiederholung|agonistische|bobath|fa(s)?zilit/i],
   ["Wärme", /w[äa]rme|fango|hei[ßs]luft|rotlicht/i],
-  ["Befinden", /schmerz|beschwerd|symptom|nicht gut|\bbesser\b|\bschlechter\b|\bN[AR]S\b|m[üu]de|reizbar|verst[äa]rkt/i]
+  ["Befinden", /schmerz|beschwerd|symptom|nicht gut|\bbesser\b|\bschlechter\b|\bNAS\b|m[üu]de|reizbar|verst[äa]rkt/i]
 ],
-PX_soben = /^(?:siehe\s+oben|s\.\s?[o0]\.?|wie\s+(?:zuvor|letztes\s+mal|oben))(?=$|[\s,.;:–-])\s*[,.;:–-]*\s*/i,
+PX_soben = /^(?:siehe\s+oben|[$§]?[sS5$8§]{1,2}\.\s?[oO0]{1,2}\.?|wie\s+(?:zuvor|letztes\s+mal|oben))(?=$|[\s,.;:–-])\s*[,.;:–-]*\s*/i,
 PX_ausfall = /nicht\s+(?:gekommen|erschienen|da)\b|abgesagt|ausgefallen|kurzfristig\s+abgesagt/i,
 // Ein Screenshot (erkannter Text) -> Verordnungen mit Einträgen
-PX_parse = (text) => {
+PX_parse = (text, tsv) => {
   let out = { vos: [], los: [], name: "", geb: !1, warn: [] }, vo = null, st = "", ord = 0, ein = null, warte = "";
   let neueVO = (d) => { vo = { datum: d ?? "", kasse: "", gruppe: "", icd: [], bes: [], leist: [], befund: "", eintraege: [], warn: [] }; out.vos.push(vo); st = "kopf"; ord = 0; ein = null; },
     ziel = () => vo ? vo.eintraege : out.los,
     verlauf = (z) => {
+      z = z.replace(/\|(?=[a-zäöü])/g, "l");
       let m = PX_DAT.exec(z);
       if (m) {
         let d = PX_iso(m[1], m[2], m[3]);
-        if (d) { ein = { datum: d, text: (m[7] ?? "").replace(/^[-–:]\s*$/, "").trim() }; ziel().push(ein); return; }
+        if (d) {
+          let r = (m[7] ?? "").replace(/^[-–:]\s*$/, "").trim(), g = /^(\d[\d.,]{5,10}\d)\s*[-–:]?\s*/.exec(r);
+          // zweites Datum der Spanne unleserlich ("1112.2025 -"): weglassen, wenn die Ziffern zum ersten passen
+          if (g && g[1].replace(/\D/g, "") === d.slice(8, 10).replace(/^0/, "") + d.slice(5, 7) + d.slice(0, 4) || g && g[1].replace(/\D/g, "") === d.slice(8, 10) + d.slice(5, 7) + d.slice(0, 4)) r = r.slice(g[0].length);
+          ein = { datum: d, text: r }; ziel().push(ein); return;
+        }
       }
       if (/^\W*\d{2,3}[\s.,]+\d{1,2}[\s.,]+\d{4,6}\b/.test(z) || /^\W*\d{1,2}[.,]\d{1,2}[.,]\d{2,5}\W*$/.test(z)) { (vo ? vo.warn : out.warn).push("Ein Datum war nicht lesbar (Bildrand?)"); ein = null; return; }
       if (ein) ein.text = ein.text ? `${ein.text}\n${z}` : z;
       else if (vo && st === "verlauf" && z) (vo.warn.includes("Text ohne Datum am Anfang der Behandlungsverlauf-Zelle") || vo.warn.push("Text ohne Datum am Anfang der Behandlungsverlauf-Zelle"));
     };
-  for (let roh of (text ?? "").replace(/\r/g, "").split("\n")) {
-    if (PX_WT.test(roh) && /\d{1,2}:\d{2}|%/.test(roh)) continue;
-    let z = PX_zeile(roh);
-    if (!z || /^(praxxo|Startseite|Lizenz|angemeldet als|DIGa|Intra ?Web)/i.test(z) || /Startseite.*Logout|Patient suchen/i.test(z)) continue;
-    let pm = /^Patient\b[\s:]*([^/©]+?)(?:\s*\/\s*(\d{1,2}\.\d{1,2}\.\d{2,4}))?(?:\s*[©®=@].*)?$/.exec(z);
-    if (pm && /,/.test(pm[1])) { out.name = pm[1].trim(); if (pm[2]) out.geb = !0; continue; }
-    if (/^geboren\s*am\b/i.test(z)) { out.geb = !0; continue; }
-    let h = /^(\d{1,2})[.,](\d{1,2})[.,](\d{4})\s*[-–]\s*Verordnung\b/i.exec(z);
-    if (h) { neueVO(PX_iso(h[1], h[2], h[3])); continue; }
-    let lab = null, rest = z;
-    for (let [k, re, o] of PX_LBL) { let m = re.exec(z); if (m) { lab = k; rest = PX_links(z.slice(m[0].length)); var lo = o; break; } }
+  let nachPat = 0;
+  for (let it of PX_zeilen(text, tsv)) {
+    if (nachPat > 0) nachPat--;
+    if (PX_WT.test(it.voll) && /\d{1,2}:\d{2}|%/.test(it.voll)) continue;
+    let voll = PX_zeile(it.voll), z = PX_zeile(it.val);
+    if (!voll || /^(praxxo|Startseite|Lizenz|angemeldet als|DIGa|Intra ?Web)/i.test(voll) || /Startseite.*Logout|Patient suchen/i.test(voll)) continue;
+    let pm = /^Patient\b[\s:]*([^/©]+?)(?:\s*\/\s*(\d{1,2}\.\d{1,2}\.\d{2,4}))?(?:\s*[©®=@].*)?$/.exec(voll);
+    if (pm && /,/.test(pm[1])) { out.name = pm[1].trim(); if (pm[2]) out.geb = !0; nachPat = 3; continue; }
+    if (/^geboren\s*am\b/i.test(voll) || it.lab && PX_lab(it.lab, it.tsv) === "geb") { out.geb = !0; continue; }
+    let h = /^(\d{1,2})[.,](\d{1,2})[.,](\d{4})\s*[-–]?\s*Verordnung\b/i.exec(voll);
+    if (h && !/medizinisch/i.test(voll)) { neueVO(PX_iso(h[1], h[2], h[3])); continue; }
+    let lab = it.lab ? PX_lab(it.lab, it.tsv) : null, rest = z, lo = 0;
+    if (lab === "patient" || lab === "geb") { nachPat = 3; continue; }
+    if (!lab && !it.tsv) for (let [k, re] of PX_LBL) { let m = re.exec(z); if (m) { lab = k; rest = PX_links(z.slice(m[0].length)); break; } }
+    else rest = PX_links(z);
+    if (lab) lo = PX_LBL.find((x) => x[0] === lab)?.[2] ?? 0;
+    if (!z && !lab) continue;
+    // Wert "TT.MM.JJJJ - medizinisch indizierte Verordnung" ohne Feldname in derselben Zeile
+    if (!lab && /medizinisch|indizierte\s+Verord/i.test(z)) {
+      let m = /(\d{1,2})[.,](\d{1,2})[.,](\d{4})/.exec(z), d = m ? PX_iso(m[1], m[2], m[3]) : null;
+      if (!vo || ord >= 2 || ord >= 1 && d && vo.datum && vo.datum !== d) neueVO(d);
+      if (d && !vo.datum) vo.datum = d;
+      ord = 1; st = "vom"; continue;
+    }
     if (lab === "vom") {
       let m = /(\d{1,2})[.,](\d{1,2})[.,](\d{4})/.exec(rest), d = m ? PX_iso(m[1], m[2], m[3]) : null;
+      if (!d && vo && st === "vom") continue;
       if (!vo || ord >= 1) neueVO(d);
       if (d && !vo.datum) vo.datum = d;
       ord = 1; st = "vom"; continue;
     }
     // Feldnamen gelten nur in der richtigen Reihenfolge, sonst sind sie Text (z. B. "ICD-10" im Befund)
-    if (lab && vo && lo <= ord && !(lab === "verlauf" || lab === "bericht" || lab === "befund")) lab = null, rest = z;
-    if (lab && !vo) { if (lab === "verlauf" || lab === "bericht" || lab === "befund") { st = lab === "verlauf" ? "verlauf" : "aus"; if (lab === "verlauf" && rest) verlauf(rest); continue; } neueVO(""); }
+    if (lab && vo && lo <= ord && !rest && !(lab === "verlauf" || lab === "bericht" || lab === "befund")) continue;
+    if (lab && vo && lo <= ord && !(lab === "verlauf" || lab === "bericht" || lab === "befund")) { lab = null; rest = it.tsv ? z : PX_zeile(it.voll); z = rest; }
+    if (lab && !vo) { if (lab === "verlauf" || lab === "bericht" || lab === "befund") { if (lab === "verlauf" || lab === "befund" && st !== "verlauf") st = lab === "verlauf" ? "verlauf" : "befundlos"; else if (lab === "bericht") { st = "aus"; ein = null; } if (rest && st !== "aus") { let m = PX_DAT.exec(rest); if (st === "verlauf" || m && PX_iso(m[1], m[2], m[3])) { st = "verlauf"; verlauf(rest); } } continue; } neueVO(""); }
     if (lab && !rest && /^(kasse|gruppe|icd|bes|leist)$/.test(lab)) warte = lab; else if (lab) warte = "";
     if (lab) {
-      var stVor = st; ord = Math.max(ord, lo); st = lab;
+      let stVor = st; ord = Math.max(ord, lo); st = lab;
       if (lab === "kasse") vo.kasse = rest.replace(/^[^A-Za-zÄÖÜ]+/, "");
-      else if (lab === "gruppe") vo.gruppe = rest.replace(/^[^A-Za-z]+/, "").replace(/\s+/g, "");
+      else if (lab === "gruppe") vo.gruppe = PX_gruppe(rest);
       else if (lab === "icd") { if (rest) PX_icd(vo, rest); }
-      else if (lab === "bes") { if (rest) vo.bes.push(rest.replace(/^[-–•]\s*/, "")); }
+      else if (lab === "bes") { if (rest) PX_besDazu(vo, rest); }
       else if (lab === "leist") PX_leist(vo, rest);
-      else if (lab === "befund") { if (rest) vo.befund += (vo.befund ? "\n" : "") + rest; if (rest && PX_DAT.test(rest)) { st = "verlauf"; verlauf(rest); } }
-      else if (lab === "verlauf") { if (!/^verlauf/.test(stVor)) ein = null; if (rest) verlauf(rest); }
+      else if (lab === "befund") { if (rest && PX_DAT.test(rest) && PX_iso(...PX_DAT.exec(rest).slice(1, 4))) { st = "verlauf"; verlauf(rest); } else if (rest) vo.befund += (vo.befund ? "\n" : "") + rest; }
+      else if (lab === "verlauf") { if (stVor !== "verlauf") ein = null; if (rest) verlauf(rest); }
       else if (lab === "bericht") { ein = null; }
       continue;
     }
+    z = PX_links(z);
+    if (!z) continue;
+    // Geburtsdatum in der Kopfzeile der Bearbeiten-Ansicht (Datum allein, noch keine Verordnung)
+    if (!vo && nachPat > 0 && /^\d{1,2}[.,]\d{1,2}[.,]\d{4}\W*$/.test(z)) { out.geb = !0; nachPat = 0; continue; }
     // Zeile ohne Feldnamen
     if (warte && vo) {
       let w = warte; warte = "";
       if (w === "kasse") { vo.kasse = z; continue; }
-      if (w === "gruppe" && z.length <= 6) { vo.gruppe = z.replace(/\s+/g, ""); continue; }
-      if (w === "icd" && /[A-Z]\d{2}/.test(z)) { PX_icd(vo, z); continue; }
-      if (w === "leist" && PX_LEIST.test(z.replace(/^[^\d]+/, ""))) { PX_leist(vo, z); continue; }
-      if (w === "bes" && /^[-–•]/.test(z)) { vo.bes.push(z.replace(/^[-–•]\s*/, "")); continue; }
+      if (w === "gruppe" && z.length <= 6) { vo.gruppe = PX_gruppe(z); continue; }
+      if (w === "icd" && /[A-Z]\d{2}/.test(PX_icdFix(z))) { PX_icd(vo, z); continue; }
+      if (w === "leist" && PX_LEIST.test(PX_leistNorm(z))) { PX_leist(vo, z); continue; }
+      if (w === "bes" && (/^[-–•]/.test(z) || PX_BES.test(z))) { PX_besDazu(vo, z); continue; }
     }
+    if (vo && ord < 8 && st !== "verlauf" && !vo.leist.length && PX_LEIST.test(PX_leistNorm(z))) { PX_leist(vo, z); ord = Math.max(ord, 7); st = "leist"; continue; }
     if (st === "vom" && vo && !vo.datum) { let m = /(\d{1,2})[.,](\d{1,2})[.,](\d{4})/.exec(z); if (m) { vo.datum = PX_iso(m[1], m[2], m[3]) ?? ""; continue; } }
-    if (st === "icd") { if (PX_ICD.test(z) && /^[^a-z]{0,3}[A-Z]\d{2}/.test(z)) { PX_icd(vo, z); continue; } if (/^[-–•]\s*\S/.test(z)) { vo.bes.push(z.replace(/^[-–•]\s*/, "")); continue; } }
-    if (st === "gruppe" || st === "kasse") { if (/^[^a-z]{0,3}[A-Z]\d{2}\.\d/.test(z)) { PX_icd(vo, z); st = "icd"; continue; } if (/^[-–•]\s*\S/.test(z)) { vo.bes.push(z.replace(/^[-–•]\s*/, "")); continue; } }
-    if (st === "bes") { if (/^[-–•]\s*\S/.test(z)) { vo.bes.push(z.replace(/^[-–•]\s*/, "")); continue; } }
-    if (st === "leist") { if (PX_LEIST.test(z)) { PX_leist(vo, z); continue; } st = "befund"; }
+    if (st === "icd" || st === "gruppe" || st === "kasse" || st === "durch") {
+      if (/^[^a-z]{0,3}[A-Z]\d{2,3}[.,]?\d{0,2}[GVAZ]?\s*[-–]/.test(PX_icdFix(z))) { PX_icd(vo, z); st = "icd"; continue; }
+      if (/^[-–•]\s*\S/.test(z) || PX_BES.test(z)) { PX_besDazu(vo, z); continue; }
+      if (st === "icd" && vo.icd.length && /^[a-zäöü(\[]/.test(z)) { let x = vo.icd[vo.icd.length - 1]; x.text = `${x.text} ${z}`.replace(/\s*\[[^\]]*\]?\s*$/, "").trim(); continue; }
+    }
+    if (st === "bes") { if (/^[-–•]\s*\S/.test(z) || PX_BES.test(z)) { PX_besDazu(vo, z); continue; } }
+    if (st === "leist") { if (PX_LEIST.test(PX_leistNorm(z))) { PX_leist(vo, z); continue; } st = "befund"; }
     if (st === "befund") { let m = PX_DAT.exec(z); if (m && PX_iso(m[1], m[2], m[3])) { st = "verlauf"; } else { vo.befund += (vo.befund ? "\n" : "") + z; continue; } }
+    if (st === "befundlos") { let m = PX_DAT.exec(z); if (m && PX_iso(m[1], m[2], m[3])) st = "verlauf"; else continue; }
     if (st === "verlauf" || st === "") { verlauf(z); continue; }
   }
   return out;
 },
+PX_GRP = ["WS", "EX", "CS", "ZN", "PN", "AT", "GE", "LY", "SO"],
+PX_gruppe = (t) => {
+  let r = (t ?? "").replace(/^[^A-Za-z]+/, "").replace(/\s+/g, "");
+  for (let q of [r, r.slice(1)]) for (let g of PX_GRP) { let m = new RegExp(`^${g[0]}[a-z]?${g[1]}(?:[a-z](?=[a-c]$))?([a-cD]{0,2})`, "i").exec(q); if (m && (q === r || /^[A-Z]{2}/.test(q))) return g + (m[1] ?? "").replace(/D/g, "b").toLowerCase(); }
+  let e = /^([YXTL])([a-c]{0,2})$/.exec(r); if (e) return { Y: "LY", X: "EX", T: "AT", L: "LY" }[e[1]] + e[2];
+  return r;
+},
+PX_BES = /^(?:[\W\d_]|[A-Za-z]{1,2}(?=\s)){0,3}\s*(Therapiebericht|Hausbesuch|Frequenz|Dringlich|Langfrist|Doppelbehandlung|Blanko|Behandlungsbeginn|Heilmittel)/i,
+PX_besDazu = (vo, z) => { z = z.replace(/(\d\s?[-–]\s?\d)\s+\S$/, "$1"); let b = z.replace(/^[ıIl|!]?\s*[-–•]\s*/, "").replace(/^(?:\S{1,3}\s+)+(?=(Therapiebericht|Hausbesuch|Frequenz|Dringlich|Langfrist|Doppelbehandlung|Blanko)\b)/i, "").replace(/^[^\p{L}]*\b[\dA-Za-z]\s+(?=[A-ZÄÖÜ][a-zäöü])/u, "").replace(/^[^\p{L}]+/u, "").trim(); if (b && !vo.bes.includes(b)) vo.bes.push(b); },
+PX_icdFix = (s) => (s ?? "").replace(/^([^A-Za-z0-9]*)S[$§](?=\s?\d\d)/, "$1S").replace(/^([^A-Za-z0-9]*[A-Z])(\d\d)\2(?=[.,]\d)/, "$1$2").replace(/^([^A-Za-z0-9]*)\d(?=[A-Z]\d\d[.,]?\d?[GVAZ]?\s*[-–])/, "$1").replace(/^([^A-Za-z0-9$§]*)[$§]8(\d\d[.,]\d)/, "$1S$2").replace(/^([^A-Za-z0-9\]|]*)[\]|]1(\d\d[.,]\d)/, "$1J$2").replace(/^([^A-Za-z0-9$§]*)[$§]\s?(\d\d)/, "$1S$2").replace(/^([^A-Za-z0-9\]]*)[\]]\s?(\d\d)/, "$1J$2").replace(/^([^A-Za-z0-9|!]*)[|!]\s?(\d\d)/, "$1I$2").replace(/^([^A-Za-z0-9]*[A-Z]\d\d)(\d{1,2})([GVAZ]?\s*[-–])/, "$1.$2$3").replace(/^([^A-Za-z0-9]*[A-Z0-9]\d\d)\s*[.,]+\s*(\d)/, "$1.$2").replace(/^([^A-Za-z0-9]*[A-Z0-9]\d\d)[.,]([GVAZ])\b/, "$1$2").replace(/^([^A-Za-z0-9]*)([0-9])(\d\d(?:[.,]\d{1,2})?[GVAZ]?\s*[-–])/, (_, a, d, r) => a + ({ 1: "I", 8: "S", 5: "S", 0: "O", 2: "Z", 6: "G", 7: "T", 4: "A" }[d] ?? d) + r).replace(/^([^A-Za-z0-9]*[A-Z]\d\d),(\d)/, "$1.$2"),
+PX_kat = () => typeof Gc !== "undefined" && Gc?.kodes ? Gc.kodes : null,
+// Code gegen den ICD-Katalog der App prüfen: falsch gelesener erster Buchstabe, fehlende Nachkommastelle
+PX_icdPruef = (kode, txt) => {
+  let K = PX_kat(); if (!K) return kode;
+  let t = PX_kompakt(txt.replace(/(\s+\S{1,2})+$/, "")), nachText = t.length > 5 ? Object.entries(K).filter(([k, v]) => PX_kompakt(v[0]) === t) : [];
+  if (!nachText.length && t.length >= 15) nachText = Object.entries(K).filter(([k, v]) => PX_kompakt(v[0]).startsWith(t) && k.slice(1, 3) === kode.slice(1, 3));
+  if (!K[kode] && /\.\d6$/.test(kode) && nachText.some(([n]) => n === kode.slice(0, -1))) return kode.slice(0, -1);
+  if (K[kode] && (!nachText.length || nachText.some(([n]) => n === kode))) return kode;
+  if (K[kode]) { let st = nachText.find(([n]) => n.slice(0, 3) === kode.slice(0, 3)); return st ? st[0] : kode; }
+  let rest = kode.slice(1), alt = "IJSOZGTALMRE".split("").map((b) => b + rest).filter((k) => K[k]);
+  let beide = alt.filter((k) => nachText.some(([n]) => n === k));
+  if (beide.length) return beide[0];
+  let gleicherStamm = nachText.filter(([n]) => n.slice(0, 3) === kode.slice(0, 3) || n.slice(1, 3) === kode.slice(1, 3));
+  if (gleicherStamm.length) return gleicherStamm[0][0];
+  if (alt.length === 1) return alt[0];
+  // Diagnosetext stimmt genau mit genau einem Katalogeintrag überein und die Ziffern passen ungefähr
+  let ziff = (k) => k.replace(/\D/g, "");
+  if (nachText.length === 1 && t.length >= 12 && (ziff(kode).includes(ziff(nachText[0][0]).slice(0, 2)) || ziff(kode).endsWith(ziff(nachText[0][0]).slice(-2)))) return nachText[0][0];
+  return kode;
+},
 PX_icd = (vo, s) => {
-  let m = PX_ICD.exec(s); if (!m) return;
+  s = PX_icdFix(s);
+  let m = /^[^A-Za-z0-9]*[A-Z]\d\d(?:\.\d{1,2})?[GVAZ]?\s*[-–:]/.test(s) ? PX_ICD.exec(s) : null;
+  if (!m) { let g = /^[^A-Za-z0-9]*([A-Z]\d\d)(\S{0,4}?)\s*[-–]\s*(.*)$/.exec(s); if (g && PX_kat()) m = [null, g[1] + g[2].replace(/G$/, ""), /G$/.test(g[2]) ? "G" : "", g[3]]; }
+  if (!m) m = PX_ICD.exec(s);
+  if (!m || /^[^A-Za-z]*\d\d[.,]\d/.test(s) && !/^[^A-Za-z]*[A-Z]\d\d/.test(s)) {
+    // erster Buchstabe nicht gelesen: über den Diagnosetext im Katalog ergänzen
+    let o = /^[^A-Za-z0-9]*(\d\d(?:[.,]\d{1,2})?)([GVAZ])?\s*[-–:]?\s*(.*)$/.exec(s), K = PX_kat();
+    if (!o || !K) return;
+    let t = PX_kompakt(o[3].replace(/\s*\[[^\]]*\]?\s*$/, "")), num = o[1].replace(",", ".");
+    let k = Object.entries(K).filter(([c, v]) => c.slice(1) === num && (PX_kompakt(v[0]) === t || t.length < 6));
+    if (k.length !== 1) k = Object.entries(K).filter(([c, v]) => c.slice(1) === num && PX_kompakt(v[0]) === t);
+    if (k.length !== 1) return;
+    m = [null, k[0][0], o[2], o[3]];
+  }
   let kode = m[1], zus = m[2] ?? "", txt = (m[3] ?? "").trim();
   if (/\[\s*gesichert/i.test(txt)) zus = zus || "G";
   txt = txt.replace(/\s*\[[^\]]*\]?\s*$/, "").replace(/\s+/g, " ").trim();
+  let k2 = PX_icdPruef(kode, txt);
+  // "1G" wird gern als "6" gelesen: G20.1G -> G20.6 bzw. G20.16
+  if (k2 !== kode && /6$/.test(kode) && (kode.startsWith(k2) && kode.length === k2.length + 1 || kode.slice(0, -1) === k2.slice(0, -1) && kode.length === k2.length)) zus = zus || "G";
+  kode = k2;
   if (!vo.icd.some((x) => x.kode === kode)) vo.icd.push({ kode, zusatz: zus, text: txt });
   else { let x = vo.icd.find((y) => y.kode === kode); if (zus && !x.zusatz) x.zusatz = zus; if (txt.length > x.text.length) x.text = txt; }
 },
+PX_leistNorm = (s) => (s ?? "").replace(/^[^\d]+/, "").replace(/^(\d)(\d{2})(\s*[xX×])/, (a, b, c, d) => +(b + c) > 30 ? c + d : a),
 PX_leist = (vo, s) => {
-  let m = PX_LEIST.exec(s.replace(/^[^\d]+/, ""));
+  let m = PX_LEIST.exec(PX_leistNorm(s));
   if (!m) { if (s) vo.leist.push({ anz: null, ziffer: "", text: s, hm: PX_hm(s) }); return; }
-  vo.leist.push({ anz: +m[1], ziffer: m[2], text: m[3].replace(/\s+/g, " ").trim(), hm: PX_hm(m[3], m[2]) });
+  let zf = m[2] ?? m[3], tx = m[4] ?? "";
+  vo.leist.push({ anz: +m[1], ziffer: zf, text: tx.replace(/\s+/g, " ").trim(), hm: PX_hm(tx, zf) });
 },
 PX_norm = (t) => (t ?? "").toLowerCase().replace(/[^a-z0-9äöüß]+/g, ""),
 PX_aehnlich = (a, b) => {
@@ -1996,7 +2143,7 @@ PX_zusammen = (teile) => {
     if (p.name) namen.add(p.name); if (p.geb) geb = !0; warn.push(...p.warn);
     for (let v of p.vos) {
       if (!v.datum && !v.leist.length && !v.eintraege.length && !v.icd.length) continue;
-      let a = vos.find((x) => v.datum && x.datum === v.datum && (key(x) === key(v) || !x.leist.length || !v.leist.length));
+      let a = vos.find((x) => v.datum && x.datum === v.datum && (key(x) === key(v) || (!x.leist.length || !v.leist.length) && (vos.filter((y) => y.datum === v.datum).length === 1 || v.eintraege.some((e) => !PX_soben.test(e.text) && x.eintraege.some((y) => y.datum === e.datum && PX_aehnlich(y.text, e.text))))));
       if (!a) { vos.push(structuredClone(v)); continue; }
       if (!a.leist.length) a.leist = v.leist;
       a.kasse ||= v.kasse; a.gruppe ||= v.gruppe;
@@ -2008,6 +2155,15 @@ PX_zusammen = (teile) => {
     }
     for (let e of p.los) PX_eintragDazu(los, e);
   }
+  // Verordnungen ohne lesbares Datum (Kopf abgeschnitten): über gemeinsame Einträge einer datierten zuordnen, sonst lose
+  let zif = (v) => v.leist.map((l) => l.ziffer).filter(Boolean).join(","), trivial = (t) => PX_soben.test(t ?? "") && (t ?? "").replace(PX_soben, "").trim().length < 4 || PX_ausfall.test(t ?? "");
+  for (let v of vos.filter((x) => !x.datum)) {
+    let a = vos.find((x) => x.datum && x !== v && (!zif(x) || !zif(v) || zif(x) === zif(v)) && v.eintraege.some((e) => !trivial(e.text) && x.eintraege.some((y) => y.datum === e.datum && PX_aehnlich(y.text, e.text))));
+    if (a) { for (let e of v.eintraege) PX_eintragDazu(a.eintraege, e); for (let i of v.icd) PX_icd(a, `${i.kode}${i.zusatz} ${i.text}`); for (let b of v.bes) if (!a.bes.includes(b)) a.bes.push(b); if (!a.leist.length) a.leist = v.leist; v.weg = !0; }
+    else if (!v.leist.length) { for (let e of v.eintraege) PX_eintragDazu(los, e); v.weg = !0; }
+    else v.eintraege = v.eintraege.filter((e) => !vos.some((x) => x.datum && x.eintraege.some((y) => y.datum === e.datum && PX_aehnlich(y.text, e.text) && !trivial(e.text))));
+  }
+  vos = vos.filter((x) => !x.weg && (x.datum || x.eintraege.length));
   // lose Einträge (Verordnung oben abgeschnitten) nur behalten, wenn das Datum sonst nirgends vorkommt
   los = los.filter((e) => !vos.some((v) => v.eintraege.some((x) => x.datum === e.datum)));
   return { vos: vos.sort((a, b) => (b.datum ?? "").localeCompare(a.datum ?? "")), los, namen: [...namen], geb, warn: [...new Set(warn)] };
@@ -2051,7 +2207,7 @@ PX_auswerten = (z, heute) => {
       : t.teile[0].text;
     let alles = t.teile.map((p) => p.text).join(" "), tags = PX_TAGS.filter(([, re]) => re.test(alles)).map(([n]) => n);
     for (let m of alles.matchAll(/\b(KGG|MT|KG|PNF|MLD)\s*:/g)) { let h = m[1] === "PNF" ? "KG ZNS (PNF)" : m[1]; if (!t.hm.includes(h)) t.hm.push(h); }
-    let nas = /NRS\)?:?[^0-9]{0,30}(\d{1,2})\s*\/\s*10/i.exec(alles);
+    let nas = /NAS\)?:?[^0-9]{0,30}(\d{1,2})\s*\/\s*10/i.exec(alles);
     let ausfall = PX_ausfall.test(alles) && alles.replace(PX_ausfall, "").replace(/[^A-Za-zÄÖÜäöü]/g, "").length < 12;
     return { datum: t.datum, text: text.trim(), hm: t.hm, tags, nas: nas ? +nas[1] : null, ausfall, bezug: t.bezug, warn: [...new Set(t.warn)], vos: t.vos };
   });
@@ -2085,6 +2241,43 @@ PX_kurzName = (praxxoName) => {
   return v && nn ? `${v} ${nn.replace(/^(von|van|de|zu)\s+/i, "")[0].toUpperCase()}.` : "";
 };
 var PX_BSP = "",
+// Texterkennung für Doku-Seiten. Die Tabelle wird an der senkrechten Linie zwischen Feldname und Inhalt geteilt
+// und beide Spalten einzeln gelesen. So verschmelzen mehrzeilige Zellen nicht mit dem Feldnamen daneben.
+PX_spalte = async (file) => {
+  try {
+    let bm = await createImageBitmap(file), cv = document.createElement("canvas"), W = bm.width, Hh = bm.height;
+    cv.width = W; cv.height = Hh; let cx = cv.getContext("2d", { willReadFrequently: !0 }); cx.drawImage(bm, 0, 0);
+    let d = cx.getImageData(0, 0, W, Hh).data, best = -1, bn = 0;
+    for (let x = Math.round(W * .06); x < W * .45; x++) {
+      let n = 0;
+      for (let y = Math.round(Hh * .04); y < Hh; y += 2) { let i = (y * W + x) * 4, r = d[i], g = d[i + 1], b = d[i + 2]; if (b > r + 25 && b > g + 25 && r < 130) n++; }
+      if (n > bn) { bn = n; best = x; }
+    }
+    return bn > Hh * .5 * .25 ? { x: best, w: W } : null;
+  } catch { return null; }
+},
+PX_ocrKern = async (file, w, prog) => {
+  let bild = await DP_bild(file), sp = await PX_spalte(file);
+  let lies = async (cv) => { let r = await w.recognize(cv, {}, { text: !0, tsv: !0 }); return { text: r.data.text ?? "", tsv: r.data.tsv ?? "" }; };
+  if (!sp || !(bild instanceof HTMLCanvasElement)) return await lies(bild);
+  let k = bild.width / sp.w, x0 = Math.round(sp.x * k), teil = (a, b) => { let c = document.createElement("canvas"); c.width = b - a; c.height = bild.height; let g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); g.drawImage(bild, a, 0, b - a, bild.height, 0, 0, b - a, bild.height); return c; };
+  prog?.(5, "Linke Spalte wird gelesen");
+  let L = await lies(teil(0, x0));
+  prog?.(35, "Inhalt wird gelesen");
+  let R = await lies(teil(x0, bild.width));
+  let tsv = L.tsv.split(/\r?\n/).filter((z) => z.split("\t")[0] === "5").join("\n") + "\n" + R.tsv.split(/\r?\n/).filter((z) => z.split("\t")[0] === "5").map((z) => { let c = z.split("\t"); c[2] = String(+c[2] + 1000); c[6] = String(+c[6] + x0); return c.join("\t"); }).join("\n");
+  return { text: R.text, tsv: `#split\t${x0}\t${bild.height}\n${tsv}`, links: L.text };
+},
+PX_ocr = (file, prog0) => new Promise((ok, no) => {
+  let tm, arm = () => { clearTimeout(tm); tm = setTimeout(() => no(Error("haengt")), 90000) }, prog = (a, b) => { arm(); prog0(a, b) }; arm();
+  (async () => {
+    let T = await DP_ladeTess(); prog(0, "Texterkennung startet …");
+    let w = await T.createWorker("deu", 1, { logger: (m) => { if (m.status === "recognizing text") prog(null, "Text wird erkannt"); else if (m.status) prog(null, "Wird vorbereitet …") } });
+    try { try { await w.setParameters({ tessedit_pageseg_mode: "4", preserve_interword_spaces: "1" }) } catch { } return await PX_ocrKern(file, w, prog) }
+    finally { try { await w.terminate() } catch { } }
+  })().then((r) => { clearTimeout(tm); ok(r) }, (e) => { clearTimeout(tm); no(e) });
+}),
+PX_gleicherName = (a, b) => { let t = (n) => (n ?? "").trim().split(/\s+/), x = t(a), y = t(b), k = (w) => PX_kompakt(w ?? ""); return k(x[0]).slice(0, 4) === k(y[0]).slice(0, 4) && k(x[x.length - 1])[0] === k(y[y.length - 1])[0]; },
 PX_herkunft = (x) => ["Aus vorhandener Doku übernommen", ...(x.imp?.hm ?? []), x.imp?.ausfall ? "Ausfall" : ""].filter(Boolean).join(" · "),
 PX_anwenden = (X, sel) => {
   let eb = X.erstbefund, n = 0;
@@ -2124,8 +2317,8 @@ PX_Import = ({ name, P, alle, mutiere, root, zu }) => {
     for (let i = 0; i < L.length; i++) {
       setLauf({ i: i + 1, n: L.length, pct: 4, text: "Wird vorbereitet …" });
       try {
-        let r = await DP_ocr(L[i], (p0, t0) => setLauf({ i: i + 1, n: L.length, pct: p0 ?? 6, text: t0 ?? "" }));
-        neu.push({ name: `Screenshot ${teile.length + neu.length + 1}`, text: r.text, p: PX_parse(r.text) });
+        let r = await PX_ocr(L[i], (p0, t0) => setLauf({ i: i + 1, n: L.length, pct: p0 ?? 6, text: t0 ?? "" }));
+        neu.push({ name: `Screenshot ${teile.length + neu.length + 1}`, text: r.text, p: PX_parse(r.text, r.tsv) });
       } catch (er) {
         setFehler(test ? "In der Testversion läuft die Texterkennung nicht. Zum Ausprobieren unten den Text einfügen oder das Beispiel nehmen. In der echten App werden die Screenshots direkt gelesen." : "Die Texterkennung hat nicht geklappt. Bitte noch einmal versuchen oder den Text einfügen.");
         break;
@@ -2143,7 +2336,7 @@ PX_Import = ({ name, P, alle, mutiere, root, zu }) => {
   }) : [];
   let dgVorh = zielP?.erstbefund?.diagnose ?? "", D = a ? a.diag.map((d) => ({ ...d, da: dgVorh.includes(d.kode), an: dv[d.kode] ?? (d.an && !dgVorh.includes(d.kode)) })) : [];
   let rz = a?.rezept, nAn = E.filter((e) => e.an).length, fertigName = P ? P.name : DP_kurz(nm);
-  let andererName = scrName && fertigName && DP_schluessel(scrName) !== DP_schluessel(fertigName);
+  let andererName = scrName && fertigName && !PX_gleicherName(scrName, fertigName);
   let uebernehmen = () => {
     let sel = { einheiten: E.filter((e) => e.an && e.text.trim()), diag: PX_diagText(D), gruppen: a.gruppen, rezept: rzAn && rz?.be ? { be: rz.be, ab: rz.datum } : null };
     let n = 0, wer = fertigName;
@@ -2199,7 +2392,7 @@ PX_Import = ({ name, P, alle, mutiere, root, zu }) => {
       e.warn.length > 0 && u("p", { className: "px-warn", children: e.warn.join(" · ") }),
       e.an && u("textarea", { className: "eingabe px-text-feld", rows: Math.min(10, Math.max(2, e.text.split("\n").reduce((n, z) => n + Math.max(1, Math.ceil(z.length / 34)), 0))), value: e.text, "aria-label": `Text der Einheit vom ${ke(e.datum)}`, onChange: (x) => { let t = x.target.value; setOv((v) => ({ ...v, [e.orig]: { ...v[e.orig], text: t } })) } }),
       !e.an && u("p", { className: "px-vorschau", children: e.text.length > 90 ? e.text.slice(0, 89) + "…" : e.text }),
-      e.an && e.tags.length > 0 && u("p", { className: "px-schwer", children: e.tags.join(" · ") + (e.nas != null ? ` · NRS ${e.nas}/10` : "") })] }, e.orig)),
+      e.an && e.tags.length > 0 && u("p", { className: "px-schwer", children: e.tags.join(" · ") + (e.nas != null ? ` · NAS ${e.nas}/10` : "") })] }, e.orig)),
     a.warn.map((w) => u("p", { className: "hinweis-box warn", children: w }, w)),
     lauf && f("div", { className: "dp-ocr", children: [u("span", { children: `Screenshot ${lauf.i} von ${lauf.n}: ${lauf.text}` }), u("span", { className: "dp-fortschritt", style: { marginTop: 6 }, children: u("span", { style: { width: `${lauf.pct}%` } }) })] }),
     fehler && u("p", { className: "hinweis-box warn", children: fehler }),
@@ -2222,7 +2415,7 @@ PX_Knopf = ({ name, P, alle, mutiere, root, klein }) => {
       P ? "Aus vorhandener Doku ergänzen" : "Aus vorhandener Doku übernehmen"] }),
     msg && u("p", { className: "hinweis-box", role: "status", children: msg })] });
 };
-function K0({z:e,mutiere:n,wechsel:t}){let[i,r]=H(""),[a,l]=H(null),[s,o]=H({}),h=e.patienten.filter((m)=>m.art==="nurVerlauf"),g=h.find((m)=>m.id===e.aktivKurz)??null,k=(m)=>n((c)=>{let p=c.patienten.find((v)=>v.id===c.aktivKurz);if(p)m(p)}),d=(m)=>k((c)=>m(c.erstbefund)),b=()=>{let m=Math.random().toString(36).slice(2,9);n((c)=>{c.patienten.unshift(av(i,m)),c.aktivKurz=m}),r(""),t?.()};if(!g&&(DSW.f=(q0,pr)=>{if(q0>=0)return!1;if(!pr)n((Q)=>{Q.tab="patienten"});return!0},!0))return f("div",{className:"schritt",children:[u(O,{hinweis:"Für Patienten, die schon länger bei dir sind oder nur zur Vertretung kommen. Du hältst nur den Verlauf fest, einen Erstbefund gibt es nicht. Im Test nur erfundene Daten verwenden.",children:"Wen dokumentierst du?"}),f("div",{className:"knopfreihe",style:{marginTop:0},children:[u("input",{className:"eingabe",style:{flex:1,minWidth:160},value:i,placeholder:"Name suchen oder neu anlegen","aria-label":"Name des Patienten ohne Erstbefund",autoComplete:"off",onChange:(m)=>r(m.target.value),onKeyDown:(m)=>{if(m.key==="Enter")b()}}),u("button",{type:"button",className:"weiter",style:{flex:"none",width:"auto",padding:"0 20px",marginTop:0},onClick:b,children:"Anlegen"})]}),u(PX_Knopf,{name:i,alle:e.patienten,mutiere:n,root:!0}),h.length===0?u("p",{className:"hinweis",style:{marginTop:18},children:"Noch kein Patient. Lege oben den ersten an."}):i.trim()?f("div",{className:"kz-treffer",children:[PV_filter(h,i).length?u("p",{className:"gruppe",style:{margin:"10px 0 6px"},children:"Passende Patienten"}):u("p",{className:"hinweis klein",style:{margin:"10px 0 0"},children:"Kein Patient passt. Mit „Anlegen“ neu anlegen."}),PV_filter(h,i).map((m)=>f("div",{className:"pt-zeile",children:[f("button",{type:"button",className:"haupt",onClick:()=>{n((c)=>{c.aktivKurz=m.id}),t?.()},children:[f("div",{className:"pt-name",children:[PV_name(m.name,i),FA_tag(m,h)]}),f("div",{className:"sek",children:[m.erstbefund.diagnose.trim()?lv(m.erstbefund.diagnose.trim(),40):"Diagnose noch offen"," · ",m.verlauf?.einheiten.length??0," Einheiten"]})]}),a===m.id?u("button",{type:"button",className:"kleinknopf rot",onClick:()=>{n((c)=>{if(c.patienten=c.patienten.filter((p)=>p.id!==m.id),c.aktivKurz===m.id)c.aktivKurz=null}),l(null)},children:"Wirklich löschen?"}):u("button",{type:"button",className:"kleinknopf rot",onClick:()=>l(m.id),children:"Löschen"})]},m.id))]}):f("details",{className:"aufklapp kz-alle",children:[f("summary",{children:[u("span",{children:"Alle Patienten"}),u("span",{className:"zaehler",children:h.length})]}),f("div",{className:"inhalt",children:[...h].sort((x,y)=>(!!x.abgeschlossen-!!y.abgeschlossen)||x.name.localeCompare(y.name,"de")).map((m)=>f("div",{className:"pt-zeile",children:[f("button",{type:"button",className:"haupt",onClick:()=>{n((c)=>{c.aktivKurz=m.id}),t?.()},children:[f("div",{className:"pt-name",children:[PV_name(m.name,i),FA_tag(m,h)]}),f("div",{className:"sek",children:[m.erstbefund.diagnose.trim()?lv(m.erstbefund.diagnose.trim(),40):"Diagnose noch offen"," · ",m.verlauf?.einheiten.length??0," Einheiten"]})]}),a===m.id?u("button",{type:"button",className:"kleinknopf rot",onClick:()=>{n((c)=>{if(c.patienten=c.patienten.filter((p)=>p.id!==m.id),c.aktivKurz===m.id)c.aktivKurz=null}),l(null)},children:"Wirklich löschen?"}):u("button",{type:"button",className:"kleinknopf rot",onClick:()=>l(m.id),children:"Löschen"})]},m.id))})]}),]});let S=g.erstbefund,z=()=>n((m)=>{m.aktivKurz=null});if(!g.kurzFertig){let m=tv(S),c=Math.min(S.schritt,m.length-1),p=()=>c+1>=m.length?k(rv):d((v)=>{v.schritt=c+1});DSW.f=(q0,pr)=>{let n0=c+q0;if(n0<0||n0>=m.length)return!1;if(!pr)d((v)=>{v.schritt=n0});return!0};return f("div",{children:[f("div",{className:"v-kopf",children:[u("button",{type:"button",className:"kleinknopf",onClick:()=>{if(m[c]==="region"&&s.bereich){if(s.seite)o({bereich:s.bereich,region:s.region});else if(s.region)o({bereich:s.bereich});else o({});return}if(c===0)z();else d((v)=>{v.schritt=c-1})},children:c===0?"‹ Zur Liste":"‹ Zurück"}),f("span",{className:"zahl",children:[FA_name(g,h)," · Schritt ",c+1,"/",m.length]})]}),m[c]==="diagnose"&&u(Su,{e:S,aendern:d,weiter:p,name:g.name}),m[c]==="bsv"&&u(Bu,{e:S,aendern:d,weiter:p}),m[c]==="ursache"&&u(UR_Schritt,{e:S,aendern:(m0)=>k((c0)=>{m0(c0.erstbefund);UR_merke(c0)}),weiter:p}),m[c]==="region"&&u(zu,{e:S,aendern:d,weiter:p,entwurf:s,setEntwurf:o})]})}let K=!!rl(g);let KE=!K&&f("div",{className:"kurz-extras",children:[u("p",{className:"hinweis klein",children:[S.diagnose.trim(),(S.ursachen??[]).join(", "),S.stellen.map(se).join(", ")].filter(Boolean).join(" · ")||"Ohne Diagnose und Region"}),f("div",{className:"kurz-klein",children:[u("button",{type:"button",className:"kleinknopf",onClick:()=>k((m)=>{m.kurzFertig=!1,m.erstbefund.schritt=0}),children:"Diagnose, Auslöser oder Region ändern"}),u("button",{type:"button",className:"kleinknopf",onClick:z,children:"Neuer Patient"})]}),u(FA_Wahl,{P:g,mutiere:n})]});return f("div",{children:[u(_u,{patient:g,mutiere:k,kurz:!0,extras:KE,zumPlan:()=>n((m)=>{m.tab="dienst"}),loeschen:()=>n((m)=>{qs(m,g.id)})})]})}var N0={ruhe:null,bewegung:null,tageszeit:[],schmerzBei:""};function sv(e){let n=[{art:"diagnose"},...st(e)?[{art:"bsv"}]:[],{art:"beginn"},{art:"ursache"},{art:"region"},...PF_RE.test((e.diagnose??"")+" "+(e.krankheitsbild??""))?[{art:"pfad"}]:[],{art:"vorgeschichte"},{art:"sozial"},{art:"flags"}];if(!e.stellen.length&&(e.diagnoseKat==="neuro"||pr(e)))n.push({art:"nschmerz"});if(e.stellen.forEach((t)=>n.push({art:"schmerz",stelle:t.id},{art:"beweg",stelle:t.id},{art:"schwellung",stelle:t.id})),Rb(e))n.push({art:"wurzel"});if(ru(e).length)n.push({art:"tests"});n.push({art:"ziel"});if(n.push({art:"befund"}),kr(e))n.push({art:"neurobv"});return e.stellen.forEach((t)=>n.push({art:"deton",stelle:t.id},{art:"mobi",stelle:t.id},{art:"uebung",stelle:t.id})),n.push({art:"ausgabe"}),n}var G0=(e,n)=>e.length>n?e.slice(0,n-1).trimEnd()+"…":e,uv=()=>Math.random().toString(36).slice(2,9),BH_ARTEN=new Set(["neurobv","deton","mobi","uebung"]),BH_liste=(l,bh)=>bh?[...l.filter((x)=>BH_ARTEN.has(x.art)),{art:"ausgabe"}]:l.filter((x)=>!BH_ARTEN.has(x.art)&&x.art!=="ausgabe"),Lu={dienst:f("svg",{viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"1.8",children:[u("rect",{x:"3.5",y:"5",width:"17",height:"15.5",rx:"2.5"}),u("path",{d:"M3.5 10h17M8 3v4M16 3v4"}),u("path",{d:"M8 14h2M14 14h2M8 17.5h2"})]}),beh:f("svg",{viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"1.8",children:[u("path",{d:"M7 11V6a1.5 1.5 0 0 1 3 0v4"}),u("path",{d:"M10 10V4.5a1.5 1.5 0 0 1 3 0V10"}),u("path",{d:"M13 10V5.5a1.5 1.5 0 0 1 3 0V12"}),u("path",{d:"M16 9.5a1.5 1.5 0 0 1 3 0V14a7 7 0 0 1-7 7h-.5a6 6 0 0 1-4.6-2.2L4.2 15.4a1.6 1.6 0 0 1 2.4-2.1L7 14v-3"})]}),pat:f("svg",{viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"1.8",children:[u("circle",{cx:"12",cy:"8",r:"4"}),u("path",{d:"M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"})]}),erst:f("svg",{viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"1.8",children:[u("rect",{x:"5",y:"3",width:"14",height:"18",rx:"2"}),u("path",{d:"M9 8h6M9 12h6M9 16h4"})]}),verl:u("svg",{viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"1.8",children:u("path",{d:"M3 18l5-6 4 3 5-8 4 5"})}),kurz:f("svg",{viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"1.8",children:[u("path",{d:"M4 6h16M4 12h10M4 18h6"}),u("path",{d:"M17 15l3 3-3 3"})]})};var DSW={f:null,x:0,y:0,t:0,ok:!1,lock:0,dx:0,m:null},DS_ruhig=()=>!!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches,DS_aufraeumen=()=>{document.querySelectorAll(".ds-klon").forEach((x)=>x.remove());let m0=document.querySelector("main");if(m0&&!DSW.lock){m0.style.transform="";m0.style.opacity="";m0.style.transition=""}},DS_start=(ev)=>{DS_aufraeumen();let q=ev.touches?.[0];DSW.lock=0;DSW.dx=0;if(!q||ev.touches.length>1||!DSW.f){DSW.ok=!1;return}let el=ev.target;DSW.ok=!(el.closest&&el.closest('input,textarea,select,svg,.chips,.ziele,.nj-rolle,.pw-seg,.sn-liste,[role="tablist"]'));DSW.x=q.clientX;DSW.y=q.clientY;DSW.t=Date.now();DSW.m=ev.currentTarget},DS_zug=(ev)=>{if(!DSW.ok)return;let q=ev.touches?.[0];if(!q)return;let dx=q.clientX-DSW.x,dy=q.clientY-DSW.y;if(!DSW.lock){if(Math.abs(dx)<10&&Math.abs(dy)<10)return;DSW.lock=Math.abs(dx)>Math.abs(dy)*1.3?1:-1}if(DSW.lock!==1)return;let m=DSW.m;if(!m)return;let geht=DSW.f?.(dx<0?1:-1,!0),w=m.clientWidth||1,x=geht?dx:dx*.22;DSW.dx=dx;m.style.transition="none";m.style.transform=`translate3d(${x}px,0,0)`;m.style.opacity=String(1-Math.min(.35,Math.abs(x)/w*.5))},DS_zurueck=(m)=>{m.style.transition="transform .28s cubic-bezier(.22,.61,.36,1),opacity .28s ease";m.style.transform="";m.style.opacity="";setTimeout(()=>{m.style.transition=""},300)},DS_ende=(ev)=>{let m=DSW.m;if(!DSW.ok||DSW.lock!==1||!m){return}let q=ev.changedTouches?.[0],dx=q?q.clientX-DSW.x:DSW.dx,dt=Math.max(1,Date.now()-DSW.t),v=Math.abs(dx)/dt,dir=dx<0?1:-1,w=m.clientWidth||1;if(!(Math.abs(dx)>w*.22||v>.45&&Math.abs(dx)>40)||!DSW.f?.(dir,!0)){DS_zurueck(m);return}if(DS_ruhig()){m.style.transform="";m.style.opacity="";DSW.f(dir);return}let r=m.getBoundingClientRect(),cs=getComputedStyle(m),k=document.createElement("div"),st=m.scrollTop;k.innerHTML=m.innerHTML;k.setAttribute("aria-hidden","true");k.inert=!0;Object.assign(k.style,{display:"flex",flexDirection:"column",padding:cs.padding,boxSizing:"border-box",position:"fixed",left:(r.left)+"px",top:r.top+"px",width:r.width+"px",height:r.height+"px",margin:"0",overflow:"hidden",zIndex:"40",pointerEvents:"none",background:getComputedStyle(document.body).backgroundColor,transform:m.style.transform,opacity:m.style.opacity,willChange:"transform,opacity"});k.className="ds-klon";document.body.appendChild(k);k.scrollTop=st;setTimeout(()=>k.remove(),700);m.style.transition="none";m.style.transform=`translate3d(${dir*w*.28}px,0,0)`;m.style.opacity="0";DSW.f(dir);let rest=Math.max(.35,1-Math.abs(dx)/w),dauer=Math.round(Math.min(360,Math.max(200,(w*rest)/Math.max(v,1.2)))),ez="cubic-bezier(.22,.61,.36,1)";requestAnimationFrame(()=>{try{k.animate([{transform:k.style.transform,opacity:Number(k.style.opacity)||1},{transform:`translate3d(${dir*-w}px,0,0)`,opacity:.2}],{duration:dauer,easing:ez,fill:"forwards"}).onfinish=()=>k.remove()}catch{k.remove()}m.style.transition=`transform ${dauer}ms ${ez},opacity ${dauer}ms ease`;m.style.transform="translate3d(0,0,0)";m.style.opacity="1";setTimeout(()=>{m.style.transition="";m.style.transform="";m.style.opacity=""},dauer+40)})};var DF_VERSION="v56",DP_KEY="doku-fix-dienstplan",
+function K0({z:e,mutiere:n,wechsel:t}){let[i,r]=H(""),[a,l]=H(null),[s,o]=H({}),h=e.patienten.filter((m)=>m.art==="nurVerlauf"),g=h.find((m)=>m.id===e.aktivKurz)??null,k=(m)=>n((c)=>{let p=c.patienten.find((v)=>v.id===c.aktivKurz);if(p)m(p)}),d=(m)=>k((c)=>m(c.erstbefund)),b=()=>{let m=Math.random().toString(36).slice(2,9);n((c)=>{c.patienten.unshift(av(i,m)),c.aktivKurz=m}),r(""),t?.()};if(!g&&(DSW.f=(q0,pr)=>{if(q0>=0)return!1;if(!pr)n((Q)=>{Q.tab="patienten"});return!0},!0))return f("div",{className:"schritt",children:[u(O,{hinweis:"Für Patienten, die schon länger bei dir sind oder nur zur Vertretung kommen. Du hältst nur den Verlauf fest, einen Erstbefund gibt es nicht. Im Test nur erfundene Daten verwenden.",children:"Wen dokumentierst du?"}),f("div",{className:"knopfreihe",style:{marginTop:0},children:[u("input",{className:"eingabe",style:{flex:1,minWidth:160},value:i,placeholder:"Name suchen oder neu anlegen","aria-label":"Name des Patienten ohne Erstbefund",autoComplete:"off",onChange:(m)=>r(m.target.value),onKeyDown:(m)=>{if(m.key==="Enter")b()}}),u("button",{type:"button",className:"weiter",style:{flex:"none",width:"auto",padding:"0 20px",marginTop:0},onClick:b,children:"Anlegen"})]}),u(PX_Knopf,{name:i,alle:e.patienten,mutiere:n,root:!0}),h.length===0?u("p",{className:"hinweis",style:{marginTop:18},children:"Noch kein Patient. Lege oben den ersten an."}):i.trim()?f("div",{className:"kz-treffer",children:[PV_filter(h,i).length?u("p",{className:"gruppe",style:{margin:"10px 0 6px"},children:"Passende Patienten"}):u("p",{className:"hinweis klein",style:{margin:"10px 0 0"},children:"Kein Patient passt. Mit „Anlegen“ neu anlegen."}),PV_filter(h,i).map((m)=>f("div",{className:"pt-zeile",children:[f("button",{type:"button",className:"haupt",onClick:()=>{n((c)=>{c.aktivKurz=m.id}),t?.()},children:[f("div",{className:"pt-name",children:[PV_name(m.name,i),FA_tag(m,h)]}),f("div",{className:"sek",children:[m.erstbefund.diagnose.trim()?lv(m.erstbefund.diagnose.trim(),40):"Diagnose noch offen"," · ",m.verlauf?.einheiten.length??0," Einheiten"]})]}),a===m.id?u("button",{type:"button",className:"kleinknopf rot",onClick:()=>{n((c)=>{if(c.patienten=c.patienten.filter((p)=>p.id!==m.id),c.aktivKurz===m.id)c.aktivKurz=null}),l(null)},children:"Wirklich löschen?"}):u("button",{type:"button",className:"kleinknopf rot",onClick:()=>l(m.id),children:"Löschen"})]},m.id))]}):f("details",{className:"aufklapp kz-alle",children:[f("summary",{children:[u("span",{children:"Alle Patienten"}),u("span",{className:"zaehler",children:h.length})]}),f("div",{className:"inhalt",children:[...h].sort((x,y)=>(!!x.abgeschlossen-!!y.abgeschlossen)||x.name.localeCompare(y.name,"de")).map((m)=>f("div",{className:"pt-zeile",children:[f("button",{type:"button",className:"haupt",onClick:()=>{n((c)=>{c.aktivKurz=m.id}),t?.()},children:[f("div",{className:"pt-name",children:[PV_name(m.name,i),FA_tag(m,h)]}),f("div",{className:"sek",children:[m.erstbefund.diagnose.trim()?lv(m.erstbefund.diagnose.trim(),40):"Diagnose noch offen"," · ",m.verlauf?.einheiten.length??0," Einheiten"]})]}),a===m.id?u("button",{type:"button",className:"kleinknopf rot",onClick:()=>{n((c)=>{if(c.patienten=c.patienten.filter((p)=>p.id!==m.id),c.aktivKurz===m.id)c.aktivKurz=null}),l(null)},children:"Wirklich löschen?"}):u("button",{type:"button",className:"kleinknopf rot",onClick:()=>l(m.id),children:"Löschen"})]},m.id))})]}),]});let S=g.erstbefund,z=()=>n((m)=>{m.aktivKurz=null});if(!g.kurzFertig){let m=tv(S),c=Math.min(S.schritt,m.length-1),p=()=>c+1>=m.length?k(rv):d((v)=>{v.schritt=c+1});DSW.f=(q0,pr)=>{let n0=c+q0;if(n0<0||n0>=m.length)return!1;if(!pr)d((v)=>{v.schritt=n0});return!0};return f("div",{children:[f("div",{className:"v-kopf",children:[u("button",{type:"button",className:"kleinknopf",onClick:()=>{if(m[c]==="region"&&s.bereich){if(s.seite)o({bereich:s.bereich,region:s.region});else if(s.region)o({bereich:s.bereich});else o({});return}if(c===0)z();else d((v)=>{v.schritt=c-1})},children:c===0?"‹ Zur Liste":"‹ Zurück"}),f("span",{className:"zahl",children:[FA_name(g,h)," · Schritt ",c+1,"/",m.length]})]}),m[c]==="diagnose"&&u(Su,{e:S,aendern:d,weiter:p,name:g.name}),m[c]==="bsv"&&u(Bu,{e:S,aendern:d,weiter:p}),m[c]==="ursache"&&u(UR_Schritt,{e:S,aendern:(m0)=>k((c0)=>{m0(c0.erstbefund);UR_merke(c0)}),weiter:p}),m[c]==="region"&&u(zu,{e:S,aendern:d,weiter:p,entwurf:s,setEntwurf:o})]})}let K=!!rl(g);let KE=!K&&f("div",{className:"kurz-extras",children:[u("p",{className:"hinweis klein",children:[S.diagnose.trim(),(S.ursachen??[]).join(", "),S.stellen.map(se).join(", ")].filter(Boolean).join(" · ")||"Ohne Diagnose und Region"}),f("div",{className:"kurz-klein",children:[u("button",{type:"button",className:"kleinknopf",onClick:()=>k((m)=>{m.kurzFertig=!1,m.erstbefund.schritt=0}),children:"Diagnose, Auslöser oder Region ändern"}),u("button",{type:"button",className:"kleinknopf",onClick:z,children:"Neuer Patient"})]}),u(FA_Wahl,{P:g,mutiere:n})]});return f("div",{children:[u(_u,{patient:g,mutiere:k,kurz:!0,extras:KE,zumPlan:()=>n((m)=>{m.tab="dienst"}),loeschen:()=>n((m)=>{qs(m,g.id)})})]})}var N0={ruhe:null,bewegung:null,tageszeit:[],schmerzBei:""};function sv(e){let n=[{art:"diagnose"},...st(e)?[{art:"bsv"}]:[],{art:"beginn"},{art:"ursache"},{art:"region"},...PF_RE.test((e.diagnose??"")+" "+(e.krankheitsbild??""))?[{art:"pfad"}]:[],{art:"vorgeschichte"},{art:"sozial"},{art:"flags"}];if(!e.stellen.length&&(e.diagnoseKat==="neuro"||pr(e)))n.push({art:"nschmerz"});if(e.stellen.forEach((t)=>n.push({art:"schmerz",stelle:t.id},{art:"beweg",stelle:t.id},{art:"schwellung",stelle:t.id})),Rb(e))n.push({art:"wurzel"});if(ru(e).length)n.push({art:"tests"});n.push({art:"ziel"});if(n.push({art:"befund"}),kr(e))n.push({art:"neurobv"});return e.stellen.forEach((t)=>n.push({art:"deton",stelle:t.id},{art:"mobi",stelle:t.id},{art:"uebung",stelle:t.id})),n.push({art:"ausgabe"}),n}var G0=(e,n)=>e.length>n?e.slice(0,n-1).trimEnd()+"…":e,uv=()=>Math.random().toString(36).slice(2,9),BH_ARTEN=new Set(["neurobv","deton","mobi","uebung"]),BH_liste=(l,bh)=>bh?[...l.filter((x)=>BH_ARTEN.has(x.art)),{art:"ausgabe"}]:l.filter((x)=>!BH_ARTEN.has(x.art)&&x.art!=="ausgabe"),Lu={dienst:f("svg",{viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"1.8",children:[u("rect",{x:"3.5",y:"5",width:"17",height:"15.5",rx:"2.5"}),u("path",{d:"M3.5 10h17M8 3v4M16 3v4"}),u("path",{d:"M8 14h2M14 14h2M8 17.5h2"})]}),beh:f("svg",{viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"1.8",children:[u("path",{d:"M7 11V6a1.5 1.5 0 0 1 3 0v4"}),u("path",{d:"M10 10V4.5a1.5 1.5 0 0 1 3 0V10"}),u("path",{d:"M13 10V5.5a1.5 1.5 0 0 1 3 0V12"}),u("path",{d:"M16 9.5a1.5 1.5 0 0 1 3 0V14a7 7 0 0 1-7 7h-.5a6 6 0 0 1-4.6-2.2L4.2 15.4a1.6 1.6 0 0 1 2.4-2.1L7 14v-3"})]}),pat:f("svg",{viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"1.8",children:[u("circle",{cx:"12",cy:"8",r:"4"}),u("path",{d:"M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"})]}),erst:f("svg",{viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"1.8",children:[u("rect",{x:"5",y:"3",width:"14",height:"18",rx:"2"}),u("path",{d:"M9 8h6M9 12h6M9 16h4"})]}),verl:u("svg",{viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"1.8",children:u("path",{d:"M3 18l5-6 4 3 5-8 4 5"})}),kurz:f("svg",{viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"1.8",children:[u("path",{d:"M4 6h16M4 12h10M4 18h6"}),u("path",{d:"M17 15l3 3-3 3"})]})};var DSW={f:null,x:0,y:0,t:0,ok:!1,lock:0,dx:0,m:null},DS_ruhig=()=>!!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches,DS_aufraeumen=()=>{document.querySelectorAll(".ds-klon").forEach((x)=>x.remove());let m0=document.querySelector("main");if(m0&&!DSW.lock){m0.style.transform="";m0.style.opacity="";m0.style.transition=""}},DS_start=(ev)=>{DS_aufraeumen();let q=ev.touches?.[0];DSW.lock=0;DSW.dx=0;if(!q||ev.touches.length>1||!DSW.f){DSW.ok=!1;return}let el=ev.target;DSW.ok=!(el.closest&&el.closest('input,textarea,select,svg,.chips,.ziele,.nj-rolle,.pw-seg,.sn-liste,[role="tablist"]'));DSW.x=q.clientX;DSW.y=q.clientY;DSW.t=Date.now();DSW.m=ev.currentTarget},DS_zug=(ev)=>{if(!DSW.ok)return;let q=ev.touches?.[0];if(!q)return;let dx=q.clientX-DSW.x,dy=q.clientY-DSW.y;if(!DSW.lock){if(Math.abs(dx)<10&&Math.abs(dy)<10)return;DSW.lock=Math.abs(dx)>Math.abs(dy)*1.3?1:-1}if(DSW.lock!==1)return;let m=DSW.m;if(!m)return;let geht=DSW.f?.(dx<0?1:-1,!0),w=m.clientWidth||1,x=geht?dx:dx*.22;DSW.dx=dx;m.style.transition="none";m.style.transform=`translate3d(${x}px,0,0)`;m.style.opacity=String(1-Math.min(.35,Math.abs(x)/w*.5))},DS_zurueck=(m)=>{m.style.transition="transform .28s cubic-bezier(.22,.61,.36,1),opacity .28s ease";m.style.transform="";m.style.opacity="";setTimeout(()=>{m.style.transition=""},300)},DS_ende=(ev)=>{let m=DSW.m;if(!DSW.ok||DSW.lock!==1||!m){return}let q=ev.changedTouches?.[0],dx=q?q.clientX-DSW.x:DSW.dx,dt=Math.max(1,Date.now()-DSW.t),v=Math.abs(dx)/dt,dir=dx<0?1:-1,w=m.clientWidth||1;if(!(Math.abs(dx)>w*.22||v>.45&&Math.abs(dx)>40)||!DSW.f?.(dir,!0)){DS_zurueck(m);return}if(DS_ruhig()){m.style.transform="";m.style.opacity="";DSW.f(dir);return}let r=m.getBoundingClientRect(),cs=getComputedStyle(m),k=document.createElement("div"),st=m.scrollTop;k.innerHTML=m.innerHTML;k.setAttribute("aria-hidden","true");k.inert=!0;Object.assign(k.style,{display:"flex",flexDirection:"column",padding:cs.padding,boxSizing:"border-box",position:"fixed",left:(r.left)+"px",top:r.top+"px",width:r.width+"px",height:r.height+"px",margin:"0",overflow:"hidden",zIndex:"40",pointerEvents:"none",background:getComputedStyle(document.body).backgroundColor,transform:m.style.transform,opacity:m.style.opacity,willChange:"transform,opacity"});k.className="ds-klon";document.body.appendChild(k);k.scrollTop=st;setTimeout(()=>k.remove(),700);m.style.transition="none";m.style.transform=`translate3d(${dir*w*.28}px,0,0)`;m.style.opacity="0";DSW.f(dir);let rest=Math.max(.35,1-Math.abs(dx)/w),dauer=Math.round(Math.min(360,Math.max(200,(w*rest)/Math.max(v,1.2)))),ez="cubic-bezier(.22,.61,.36,1)";requestAnimationFrame(()=>{try{k.animate([{transform:k.style.transform,opacity:Number(k.style.opacity)||1},{transform:`translate3d(${dir*-w}px,0,0)`,opacity:.2}],{duration:dauer,easing:ez,fill:"forwards"}).onfinish=()=>k.remove()}catch{k.remove()}m.style.transition=`transform ${dauer}ms ${ez},opacity ${dauer}ms ease`;m.style.transform="translate3d(0,0,0)";m.style.opacity="1";setTimeout(()=>{m.style.transition="";m.style.transform="";m.style.opacity=""},dauer+40)})};var DF_VERSION="v57",DP_KEY="doku-fix-dienstplan",
 DP_lesen=()=>{try{let x=JSON.parse(localStorage.getItem(DP_KEY)??"{}");return x&&typeof x==="object"?x:{}}catch{return{}}},
 DP_schreiben=(x)=>{try{localStorage.setItem(DP_KEY,JSON.stringify(x))}catch{}try{DP_hbLernen(x)}catch{}},
 DP_min=(t)=>{let m=/^(\d{1,2}):(\d{2})/.exec(t??"");return m?+m[1]*60+ +m[2]:null},
