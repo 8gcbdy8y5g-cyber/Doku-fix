@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v57 | 27.10.2026 | e0af16c | „Aus vorhandener Doku übernehmen“ deutlich zuverlässiger: Tabelle wird an der Spaltenlinie geteilt und getrennt gelesen, Feldnamen auch verlesen erkannt, ICD-Codes mit dem Katalog abgeglichen, abgeschnittene Zeilen und Verordnungen sauber behandelt. Trainiert mit rund 470 erfundenen Testseiten, zuletzt ohne Fehler |
 | v56 | 27.10.2026 | 4aa199d | Fehler behoben: Komma vor Punkt, Beweglichkeit im Bericht, NAS heißt NRS, Speicherwarnung, Sicherung über Teilen, Red Flags Wirbelsäule, VKB-Pfad, Seitenerkennung |
 | v55 | 27.10.2026 | ea91a4c | Neu: „Aus vorhandener Doku übernehmen“ im Dienstplan, bei Patienten Dokumentation, Schnell Dokumentation und im Verlauf („ergänzen“). Screenshots der bisherigen Doku werden gelesen: Diagnosen, Rezepte mit Zählung, „Therapiebericht verlangt“, eine Einheit pro Tag, „siehe oben“ aufgelöst, Ausfälle erkannt, Prüfliste vor dem Übernehmen. Screenshots und erkannter Text werden nicht gespeichert |
 | v54 | 27.10.2026 | e6074a9 | Leeres W&W-Formular nicht mehr im Code, wird einmal auf dem Gerät hinterlegt |
