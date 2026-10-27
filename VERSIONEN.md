@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v58 | 27.10.2026 | ccc457d | App seitlich fixiert: Wischen in Auswahlzeilen oder ohne Nachbarseite zieht die Seite nicht mehr mit |
 | v57 | 27.10.2026 | e0af16c | „Aus vorhandener Doku übernehmen“ deutlich zuverlässiger: Tabelle wird an der Spaltenlinie geteilt und getrennt gelesen, Feldnamen auch verlesen erkannt, ICD-Codes mit dem Katalog abgeglichen, abgeschnittene Zeilen und Verordnungen sauber behandelt. Trainiert mit rund 470 erfundenen Testseiten, zuletzt ohne Fehler |
 | v56 | 27.10.2026 | 4aa199d | Fehler behoben: Komma vor Punkt, Beweglichkeit im Bericht, NAS heißt NRS, Speicherwarnung, Sicherung über Teilen, Red Flags Wirbelsäule, VKB-Pfad, Seitenerkennung |
 | v55 | 27.10.2026 | ea91a4c | Neu: „Aus vorhandener Doku übernehmen“ im Dienstplan, bei Patienten Dokumentation, Schnell Dokumentation und im Verlauf („ergänzen“). Screenshots der bisherigen Doku werden gelesen: Diagnosen, Rezepte mit Zählung, „Therapiebericht verlangt“, eine Einheit pro Tag, „siehe oben“ aufgelöst, Ausfälle erkannt, Prüfliste vor dem Übernehmen. Screenshots und erkannter Text werden nicht gespeichert |
@@ -63,6 +64,15 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v58, 27.10.2026
+
+Commit `ccc457d`
+
+- Die Seite bleibt beim Wischen seitlich stehen. Gibt es links oder rechts keine Seite zum Blättern (zum Beispiel in der Kurz-Doku), bewegt sich nichts mehr. Vorher wanderte die ganze Seite mit dem Finger mit und federte zurück.
+- Wischen in waagerecht scrollbaren Auswahlzeilen (Vorschläge unter den Textfeldern, Phasenleiste im VKB-Pfad, Ziel-Chips und andere) blättert nicht mehr die Seite um.
+- Die App kann insgesamt nicht mehr seitlich verschoben werden. Blättern zwischen Reitern und Schritten per Wisch funktioniert wie bisher.
+- Offline-Speicher auf `doku-fix-v57`.
 
 ## v56, 27.10.2026
 
