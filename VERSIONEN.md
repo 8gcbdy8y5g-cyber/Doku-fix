@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v59 | 27.10.2026 | 551b0bc | Dienstplan: kleine Zahl an der roten Zeitlinie, wie viele Patienten heute noch kommen |
 | v58 | 27.10.2026 | ccc457d | App seitlich fixiert: Wischen in Auswahlzeilen oder ohne Nachbarseite zieht die Seite nicht mehr mit |
 | v57 | 27.10.2026 | e0af16c | „Aus vorhandener Doku übernehmen“ deutlich zuverlässiger: Tabelle wird an der Spaltenlinie geteilt und getrennt gelesen, Feldnamen auch verlesen erkannt, ICD-Codes mit dem Katalog abgeglichen, abgeschnittene Zeilen und Verordnungen sauber behandelt. Trainiert mit rund 470 erfundenen Testseiten, zuletzt ohne Fehler |
 | v56 | 27.10.2026 | 4aa199d | Fehler behoben: Komma vor Punkt, Beweglichkeit im Bericht, NAS heißt NRS, Speicherwarnung, Sicherung über Teilen, Red Flags Wirbelsäule, VKB-Pfad, Seitenerkennung |
@@ -64,6 +65,14 @@ Neue Versionen kommen oben dazu.
 | v3 | 13.10.2026 | 1577076 | Änderungen aus der Testversion übernommen (siehe unten) |
 | v2 | 11.10.2026 | f6f5fb3 | Knopf „Behandlung abgeschlossen“ mit Bericht und Nur Verlauf |
 | v1 | 11.10.2026 | 1db82ca | Erste Version mit Offline-Betrieb |
+
+## v59, 27.10.2026
+
+Commit `551b0bc`
+
+- Dienstplan: Links neben der roten Uhrzeit an der Zeitlinie steht eine kleine rote Zahl. Sie zeigt, wie viele Patienten heute noch kommen.
+- Gezählt werden Termine, die noch nicht begonnen haben. Der laufende Termin zählt nicht mehr mit, zwei Termine desselben Patienten direkt hintereinander zählen einmal.
+- Offline-Speicher auf `doku-fix-v58`.
 
 ## v58, 27.10.2026
 
