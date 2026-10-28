@@ -3,7 +3,7 @@
 // Schematische Zusatzstrukturen (Menisken, Kreuzbänder, Außenbänder, Plantarfaszie, Nerven) selbst modelliert.
 import * as THREE from './three.module.min.js';
 import {CSS} from './ana_css.js';
-import {benenne, REGIONEN, SZENEN, BEWEGUNGEN, BEW_JE_REGION, BEH_MAP} from './ana_daten.js';
+import {benenne, REGIONEN, SZENEN, BEWEGUNGEN, BEW_JE_REGION, BEH_MAP, DERM} from './ana_daten.js';
 
 const V3 = THREE.Vector3;
 const FARBE = {zahn:'#F6F3EA', knochen:'#E9E1CF', knorpel:'#CBDCE3', disk:'#A7C6DA', muskel:'#BD5E52', band:'#E6EAEE', menisk:'#D3E5EE'};
@@ -88,7 +88,7 @@ function baue(d) {
     g.teile.push(t.i); t.g = g;
   }
   for (const t of teile) kugel(t, pos);
-  return {geo, pos, idx, teile, gruppen, nrm: geo.attributes.normal.array, over};
+  return {meta, geo, pos, idx, teile, gruppen, nrm: geo.attributes.normal.array, over};
 }
 function kugel(t, pos) {
   let a = [1e9, 1e9, 1e9], b = [-1e9, -1e9, -1e9];
@@ -167,7 +167,8 @@ class Viewer {
     this.laden = el('div', 'ana-laden', '');
     this.laden.innerHTML = '<div class="ana-laden-box"><b>Anatomie wird geladen</b><div class="ana-balken"><i></i></div><small>Einmalig etwa 2,5 MB, danach offline.</small></div>';
     this.vollZu = knopf('ana-vollzu', ICON.klein + '<span>Fertig</span>', 'Vollbild beenden', () => this.vollbild(false));
-    this.buehne.append(this.canvas, this.labelEbene, this.legende, this.hinweis, this.vollZu, this.alleKnopf, this.laden);
+    this.seitenPanel = el('aside', 'ana-sp'); this.seitenPanel.hidden = true; this.seitenPanel.setAttribute('aria-label', 'Strukturen');
+    this.buehne.append(this.canvas, this.labelEbene, this.legende, this.hinweis, this.vollZu, this.seitenPanel, this.laden);
 
     this.blatt = el('div', 'ana-blatt');
     this.blattGriff = knopf('ana-griff', '<i></i><span>Erklärung</span>', 'Blatt ein- oder ausklappen', () => this.blattKlein(!this.blatt.classList.contains('klein')));
@@ -175,6 +176,7 @@ class Viewer {
     this.blatt.append(this.blattGriff, this.blattInhalt);
     this.blattInhalt.addEventListener('click', (e) => { if (this.blatt.classList.contains('klein') && !e.target.closest('button')) this.blattKlein(false); });
     this.blattWisch();
+    new ResizeObserver(() => this.versatzNeu()).observe(this.blatt);
     this.blatt.hidden = true;
 
     const wz = el('div', 'ana-werkzeug');
@@ -186,7 +188,11 @@ class Viewer {
     W('bewegung', 'bewegung', 'Bewegung', () => this.panel('bewegung'));
     W('ansicht', 'ansicht', 'Ansicht', () => this.ansichtZurueck());
     W('voll', 'voll', 'Vollbild', () => this.vollbild(!this.root.classList.contains('voll')));
-    R.append(kopf, this.buehne, this.blatt, wz);
+    const rechts = el('div', 'ana-rechts');
+    this.resetKnopf = knopf('ana-reset-k', ICON.rueck + '<span>Auswahl zurück&shy;setzen</span>', 'Auswahl zurücksetzen', () => this.auswahlZuruecksetzen());
+    rechts.append(wz, this.resetKnopf);
+    this.buehne.append(rechts); this.wzLeiste = wz;
+    R.append(kopf, this.buehne, this.blatt);
     this.markiereKopf();
   }
 
@@ -263,7 +269,7 @@ class Viewer {
     if (!this.renderer) return;
     const w = this.buehne.clientWidth, h = this.buehne.clientHeight;
     if (!w || !h) return;
-    this.renderer.setSize(w, h, false); this.cam.aspect = w / h; this.cam.updateProjectionMatrix(); this.anstossen();
+    this.renderer.setSize(w, h, false); this.cam.aspect = w / h; this.cam.updateProjectionMatrix(); this.versatzSetzen(true); this.versatzNeu(); this.anstossen();
   }
 
   // ----- Kamera und Gesten -----
@@ -277,8 +283,10 @@ class Viewer {
       if (P.size === 1) {
         start = {x: e.clientX, y: e.clientY, t: performance.now(), zug: false};
         if (this.zustand.modus === 'stift') this.strichStart(e);
+        if (this.zustand.modus === 'hautmal' && this.zustand.schicht === 'dermatom') { this.malt = true; this.malZug(e); }
       } else if (P.size === 2) {
         if (this.aktStrich) this.strichEnde();
+        this.malt = false;
         const [a, b] = [...P.values()]; pinch = {d: Math.hypot(a.x - b.x, a.y - b.y), mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2, dist: this.kam.dist}; start = null;
       }
     });
@@ -288,6 +296,7 @@ class Viewer {
       if (P.size === 1 && start) {
         if (Math.hypot(e.clientX - start.x, e.clientY - start.y) > 6) start.zug = true;
         if (this.zustand.modus === 'stift' && this.aktStrich) { this.strichZug(e); return; }
+        if (this.malt) { this.malZug(e); return; }
         if (!start.zug) return;
         const k = 0.0062, now = performance.now(), dt = Math.max(8, now - letzte); letzte = now;
         this.kam.az -= dx * k; this.kam.pol = Math.min(Math.PI - 0.05, Math.max(0.05, this.kam.pol - dy * k));
@@ -304,6 +313,7 @@ class Viewer {
       if (!P.has(e.pointerId)) return;
       P.delete(e.pointerId);
       if (this.aktStrich && P.size === 0) this.strichEnde();
+      if (this.malt && P.size === 0) { this.malt = false; this.zeigeDermatome(); }
       if (start && !start.zug && performance.now() - start.t < 450 && P.size === 0) this.tippen(e);
       if (P.size === 0) { start = null; pinch = null; if (performance.now() - letzte > 80) this.kam.vaz = this.kam.vpol = 0; this.anstossen(); }
       if (P.size === 1) { const [p] = P.values(); start = {x: p.x, y: p.y, t: 0, zug: true}; pinch = null; }
@@ -312,7 +322,7 @@ class Viewer {
     c.addEventListener('wheel', (e) => { e.preventDefault(); this.kam.dist = Math.min(6000, Math.max(120, this.kam.dist * Math.exp(e.deltaY * 0.0012))); this.anstossen(); }, {passive: false});
   }
   verschiebe(dx, dy) {
-    const h = this.buehne.clientHeight || 1, f = 2 * this.kam.dist * Math.tan(THREE.MathUtils.degToRad(this.cam.fov / 2)) / h;
+    const h = this.buehne.clientHeight || 1, f = 2 * this.kam.dist * Math.tan(THREE.MathUtils.degToRad(this.cam.fov / 2)) / h / (this.cam.zoom || 1);
     const re = new V3().setFromMatrixColumn(this.cam.matrixWorld, 0), ob = new V3().setFromMatrixColumn(this.cam.matrixWorld, 1);
     this.kam.ziel.addScaledVector(re, -dx * f).addScaledVector(ob, dy * f);
   }
@@ -343,6 +353,7 @@ class Viewer {
       k.az += k.vaz; k.pol = Math.min(Math.PI - 0.05, Math.max(0.05, k.pol + k.vpol)); k.vaz *= 0.9; k.vpol *= 0.9; weiter = true;
     }
     if (this.anim) { weiter = this.animSchritt() || weiter; }
+    if (this.versatzSetzen()) weiter = true;
     this.kameraSetzen();
     const zeit = this.uhr.getElapsedTime();
     this.matA.userData.u.uTime.value = zeit; this.matB.userData.u.uTime.value = zeit;
@@ -362,7 +373,7 @@ class Viewer {
     this.pulsiert = false;
     const c = new THREE.Color();
     for (const t of this.m.teile) {
-      const g = t.g, cls = g.cls, mark = this.marken.get(g.id), imFokus = fokus.has(g.id);
+      const g = t.g, cls = g.cls, imFokus = fokus.has(g.id); let mark = this.marken.get(g.id);
       let al = 1, puls = 0, hell = 0;
       c.set(FARBE[cls] || FARBE.knochen);
       const weich = cls === 'muskel' || cls === 'band' || cls === 'menisk';
@@ -378,6 +389,7 @@ class Viewer {
         else al = (cls === 'knochen' && imFokus) ? 0.18 : 0;
       }
       if (this.aus.has(g.id)) al = 0;
+      if (Z.schicht === 'dermatom') { al = 0; mark = null; }
       if (mark && !(Z.gesund && mark === 'p')) {
         c.set(mark === 'p' ? PROBLEM : BEH);
         if (mark === 'p') { puls = 1; this.pulsiert = true; }
@@ -388,7 +400,15 @@ class Viewer {
       st[j] = Math.round(al * 255); st[j + 1] = puls ? 160 : 0; st[j + 2] = hell * 255; st[j + 3] = 255;
     }
     this.statTex.needsUpdate = true;
+    const derm = Z.schicht === 'dermatom';
+    if (derm && !this.haut) this.hautLaden();
+    if (this.haut) { this.haut.mesh.visible = derm; }
+    for (const x of this.extras) x.visible = !derm && !(this.zustand.gesund && x.userData.befund);
+    this.labelEbene.hidden = derm; this.pinGruppe.visible = !derm;
+    if (derm && this.bew) this.bewegungAus();
     this.legendeSetzen();
+    this.listeNeu();
+    this.resetStatus();
     this.anstossen();
   }
   fokusGruppen(reg) {
@@ -431,7 +451,7 @@ class Viewer {
     const akt = this.regionLeiste.querySelector('.an'); if (akt) akt.scrollIntoView({block: 'nearest', inline: 'center', behavior: 'smooth'});
     this.seiteSeg.hidden = !reg?.seite;
     for (const b of this.seiteSeg.children) b.classList.toggle('an', b.dataset.k === Z.seite);
-    this.alleKnopf.hidden = !this.allein && this.aus.size === 0;
+    this.resetStatus();
     if (this.wz?.bewegung) this.wz.bewegung.disabled = !(BEW_JE_REGION[Z.region]);
   }
   ansichtZurueck(sofort) {
@@ -542,6 +562,7 @@ class Viewer {
   }
   tippen(e) {
     if (!this.m) return;
+    if (this.zustand.schicht === 'dermatom') { if (this.zustand.modus !== 'hautmal') { const h = this.hautTreffer(e); if (h) this.waehleDerm(h.d); } return; }
     const h = this.treffer(this.strahl(e));
     if (this.zustand.modus === 'punkt') { if (h) this.setzePin(h); return; }
     if (this.zustand.modus === 'stift') return;
@@ -551,6 +572,8 @@ class Viewer {
   waehle(id, h) {
     this.wahl = id; this.wahlLabel = h ? {f: h.f, bary: h.bary} : this.ankerFuer(id);
     this.aktualisiere(); this.zeigeStruktur(id);
+    const key = this.m.gruppen.get(id)?.key || '';
+    if (/^(masseter|temporalis|pterygoid|Mandibula)$|^zahn:/.test(key) && this.zustand.modus === 'drehen' && (!this.bew || this.bew.k === 'kiefer')) this.kieferZeigen();
   }
   ankerFuer(id) {
     const L = this.verts(id); if (!L.length) return null;
@@ -596,10 +619,54 @@ class Viewer {
   blattOeffnen(art, aufbau) {
     this.blattArt = art; this.blatt.hidden = false; this.blatt.classList.remove('klein');
     this.blattInhalt.innerHTML = ''; aufbau(this.blattInhalt);
-    for (const [k, b] of Object.entries(this.wz)) b.classList.toggle('an', k === art);
+    this.wzMarkieren();
     this.blattInhalt.scrollTop = 0;
+    this.root.classList.add('blatt-auf'); this.versatzNeu();
   }
-  blattZu() { this.blatt.hidden = true; this.blattArt = null; for (const b of Object.values(this.wz)) b.classList.remove('an'); if (this.zustand.modus !== 'drehen') this.setzeModus('drehen'); }
+  blattZu() { this.blatt.hidden = true; this.blattArt = null; this.wzMarkieren(); this.root.classList.remove('blatt-auf'); this.versatzNeu(); }
+  wzMarkieren() { for (const [k, b] of Object.entries(this.wz)) b.classList.toggle('an', k === this.seiteArt || (k === 'bewegung' && this.blattArt === 'bewegung')); }
+  seiteOeffnen(art, titel, unter, aufbau) {
+    const P = this.seitenPanel, alt = this.seiteArt === art, scroll = alt && this.spInhalt ? this.spInhalt.scrollTop : 0;
+    this.seiteArt = art; P.hidden = false; this.root.classList.add('sp-auf');
+    this.root.classList.toggle('sp-schmal', art === 'stift'); P.classList.toggle('schmal', art === 'stift');
+    if (!alt) { P.style.animation = 'none'; void P.offsetWidth; P.style.animation = ''; }
+    P.innerHTML = '';
+    const kopf = el('div', 'ana-sp-kopf'); this.spTitel = el('div', 'ana-btitel');
+    this.spTitel.append(el('h3', '', titel)); if (unter) this.spTitel.append(el('small', '', unter));
+    kopf.append(this.spTitel, knopf('ana-x', ICON.zu, titel + ' schließen', () => this.seiteZu()));
+    this.spInhalt = el('div', 'ana-sp-inhalt');
+    P.append(kopf); aufbau(this.spInhalt, P); P.append(this.spInhalt);
+    this.spInhalt.scrollTop = scroll;
+    this.wzMarkieren();
+    this.versatzNeu();
+  }
+  seiteZu() {
+    const art = this.seiteArt; this.seiteArt = null; this.seitenPanel.hidden = true; this.root.classList.remove('sp-auf');
+    if (art === 'stift' && this.zustand.modus !== 'drehen') this.setzeModus('drehen');
+    this.wzMarkieren();
+    this.versatzNeu();
+  }
+  versatzNeu() {
+    requestAnimationFrame(() => {
+      if (!this.renderer) return;
+      const b = this.buehne.getBoundingClientRect(), breit = this.root.clientWidth >= 700;
+      this.seitenPanel.style.bottom = breit && !this.blatt.hidden && this.seiteArt ? Math.max(8, b.bottom - this.blatt.getBoundingClientRect().top + 8) + 'px' : '';
+      let links = this.wzLeiste.getBoundingClientRect().left;
+      if (this.seiteArt) links = Math.min(links, this.seitenPanel.getBoundingClientRect().left);
+      if (breit && !this.blatt.hidden) links = Math.min(links, this.blatt.getBoundingClientRect().left);
+      const belegt = Math.max(0, b.right - links + 8), frei = Math.max(60, b.width - belegt);
+      this.zielVersatz = {x: belegt / 2, z: Math.min(1, Math.max(0.55, frei / Math.max(1, b.width - 90)))};
+      this.anstossen();
+    });
+  }
+  versatzSetzen(sofort) {
+    const z = this.zielVersatz; if (!z || !this.renderer) return false;
+    const a = this.versatz || (this.versatz = {x: z.x, z: z.z});
+    if (sofort) { a.x = z.x; a.z = z.z; } else { a.x += (z.x - a.x) * 0.2; a.z += (z.z - a.z) * 0.2; }
+    const w = this.buehne.clientWidth, h = this.buehne.clientHeight;
+    this.cam.setViewOffset(w, h, a.x, 0, w, h); this.cam.zoom = a.z; this.cam.updateProjectionMatrix();
+    return Math.abs(z.x - a.x) > 0.5 || Math.abs(z.z - a.z) > 0.003;
+  }
   blattKlein(k) { this.blatt.classList.toggle('klein', k); this.blattGriff.setAttribute('aria-expanded', String(!k)); }
   blattWisch() {
     let y0 = null;
@@ -613,7 +680,8 @@ class Viewer {
     B.append(k); return k;
   }
   panel(k) {
-    if (this.blattArt === k) { this.blattZu(); return; }
+    if (k === 'liste' || k === 'schicht' || k === 'stift') { if (this.seiteArt === k) { this.seiteZu(); return; } }
+    else if (this.blattArt === k) { this.blattZu(); return; }
     if (k === 'schicht') this.zeigeSchichten();
     else if (k === 'liste') this.zeigeListe();
     else if (k === 'stift') this.zeigeStift();
@@ -640,63 +708,276 @@ class Viewer {
   allesZeigen() { this.aus.clear(); this.allein = null; this.markiereKopf(); this.aktualisiere(); }
 
   zeigeSchichten() {
-    this.blattOeffnen('schicht', (B) => {
-      this.kopfzeile(B, 'Schichten');
+    this.seiteOeffnen('schicht', 'Schichten', 'Was ist zu sehen', (B) => {
       const Z = this.zustand;
       const seg = (titel, k, opts) => {
         B.append(el('p', 'ana-gruppe', titel));
         const s = el('div', 'ana-seg breit');
-        for (const [v, t] of opts) { const b = knopf(Z[k] === v ? 'an' : '', t, null, () => { Z[k] = v; this.aktualisiere(); this.zeigeSchichten(); }); s.append(b); }
+        for (const [v, t] of opts) { const b = knopf(Z[k] === v ? 'an' : '', t, null, () => { const vorher = Z[k]; Z[k] = v; this.aktualisiere(); this.zeigeSchichten(); if (k === 'schicht' && v === 'dermatom' && vorher !== v) this.zeigeDermatome(); if (k === 'schicht' && vorher === 'dermatom' && v !== 'dermatom') { if (this.zustand.modus === 'hautmal') this.setzeModus('drehen'); if (this.blattArt === 'derm' || this.blattArt === 'dermwahl') this.blattZu(); } }); s.append(b); }
         B.append(s);
       };
-      seg('Was ist zu sehen', 'schicht', [['alle', 'Alle Muskeln'], ['tief', 'Tiefe Muskeln'], ['knochen', 'Knochen und Bänder']]);
+      seg('Was ist zu sehen', 'schicht', [['alle', 'Alle Muskeln'], ['tief', 'Tiefe Muskeln'], ['knochen', 'Knochen und Bänder'], ['dermatom', 'Dermatome']]);
       seg('Rest des Körpers', 'umgebung', [['blass', 'Blass zeigen'], ['aus', 'Ausblenden']]);
       seg('Begriffe', 'sprache', [['lat', 'Latein'], ['de', 'Deutsch']]);
       B.append(el('p', 'ana-fein', '3D-Modell: BodyParts3D, © The Database Center for Life Science, CC BY-SA 2.1 JP, für Doku-Fix verkleinert. Menisken, Kreuz- und Außenbänder, Plantarfaszie und Nerven sind schematisch ergänzt.'));
-      if (this.aus.size || this.allein) { const b = knopf('ana-akt', 'Ausgeblendetes wieder zeigen', null, () => { this.allesZeigen(); this.zeigeSchichten(); }); B.append(b); }
     });
   }
 
-  zeigeListe(filter = '') {
-    this.blattOeffnen('liste', (B) => {
-      this.kopfzeile(B, 'Strukturen', REGIONEN.find((r) => r.k === this.zustand.region).t);
-      const such = el('input', 'ana-suche'); such.type = 'search'; such.placeholder = 'Suchen, z. B. Bizeps oder supraspinatus'; such.value = filter;
-      const liste = el('div', 'ana-liste');
-      const fuell = () => {
-        liste.innerHTML = '';
-        const q = norm(such.value).trim();
-        const reg = REGIONEN.find((r) => r.k === this.zustand.region), fok = this.fokusGruppen(reg);
-        const L = [...this.m.gruppen.values()].filter((g) => (q ? true : fok.has(g.id)) && (g.seite === 'm' || g.seite === this.zustand.seite || !reg.seite));
-        const treff = L.filter((g) => !q || norm(g.de + ' ' + g.lat + ' ' + g.key).includes(q));
-        const seen = new Set(), sort = treff.sort((a, b) => this.nm(a).localeCompare(this.nm(b), 'de')).filter((g) => { const k = g.de + g.seite; if (seen.has(k)) return false; seen.add(k); return true; });
-        const gruppenNamen = {muskel: 'Muskeln', band: 'Sehnen und Bänder', menisk: 'Sehnen und Bänder', knochen: 'Knochen', knorpel: 'Knochen', disk: 'Bandscheiben', zahn: 'Zähne'};
-        for (const kat of ['Muskeln', 'Sehnen und Bänder', 'Bandscheiben', 'Knochen', 'Zähne']) {
-          const T = sort.filter((g) => gruppenNamen[g.cls] === kat).slice(0, q ? 40 : 200); if (!T.length) continue;
-          liste.append(el('p', 'ana-gruppe', kat));
-          for (const g of T) {
-            const m = this.marken.get(g.id);
-            const b = knopf('ana-zeile', `<span><b>${this.nm(g)}</b><small>${this.nm2(g)}${g.seite === 'r' ? ' · re.' : g.seite === 'l' ? ' · li.' : ''}</small></span>${m ? `<i class="${m === 'p' ? 'rot' : 'blau'}"></i>` : ''}`, null, () => {
-              if (q && !fok.has(g.id)) { this.zustand.umgebung = 'blass'; }
-              this.waehle(g.id);
-            });
-            liste.append(b);
-          }
+  zeigeListe() {
+    if (!this.spAuf) this.spAuf = new Set();
+    const vorher = this.spSuche?.value || '';
+    this.seiteOeffnen('liste', 'Strukturen', '', (B, P) => {
+      this.spSuche = el('input', 'ana-suche'); this.spSuche.type = 'search'; this.spSuche.id = 'ana-suche'; this.spSuche.placeholder = 'Suchen, z. B. supraspinatus'; this.spSuche.value = vorher;
+      this.spSuche.addEventListener('input', () => this.listeNeu());
+      this.spListe = B; P.append(this.spSuche);
+    });
+    this.listeNeu();
+  }
+  listeNeu() {
+    if (this.seiteArt !== 'liste' || !this.m) return;
+    const reg = REGIONEN.find((r) => r.k === this.zustand.region), fok = this.fokusGruppen(reg);
+    this.spTitel.innerHTML = '';
+    this.spTitel.append(el('h3', '', 'Strukturen'), el('small', '', reg.t + (reg.seite ? (this.zustand.seite === 'r' ? ' rechts' : ' links') : '')));
+    const q = norm(this.spSuche.value).trim(), scroll = this.spListe.scrollTop;
+    const L = [...this.m.gruppen.values()].filter((g) => (q ? true : fok.has(g.id)) && (g.seite === 'm' || g.seite === this.zustand.seite || !reg.seite));
+    const treff = L.filter((g) => !q || norm(g.de + ' ' + g.lat + ' ' + g.key).includes(q));
+    const seen = new Set(), sort = treff.sort((a, b) => this.nm(a).localeCompare(this.nm(b), 'de')).filter((g) => { const k = g.de + g.seite; if (seen.has(k)) return false; seen.add(k); return true; });
+    const KAT = {muskel: 'Muskeln', band: 'Sehnen und Bänder', menisk: 'Sehnen und Bänder', knochen: 'Knochen', knorpel: 'Knochen', disk: 'Bandscheiben', zahn: 'Zähne'};
+    const zeile = (g) => {
+      const m = this.marken.get(g.id);
+      return knopf('ana-zeile' + (this.wahl === g.id ? ' an' : ''), `<span><b>${this.nm(g)}</b><small>${this.nm2(g)}${!reg.seite && g.seite === 'r' ? ' · re.' : !reg.seite && g.seite === 'l' ? ' · li.' : ''}</small></span>${m ? `<i class="${m === 'p' ? 'rot' : 'blau'}"></i>` : ''}`, null, () => {
+        if (q && !fok.has(g.id)) this.zustand.umgebung = 'blass';
+        this.waehle(g.id);
+      });
+    };
+    const akk = (id, titel, n, inhalt, tief) => {
+      const offen = !!q || this.spAuf.has(id);
+      const w = el('div', 'ana-akk' + (offen ? ' auf' : '') + (tief ? ' tief' : ''));
+      const k = knopf('ana-akk-kopf', `<span>${titel}</span><em>${n}</em><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>`, null, () => {
+        const jetzt = !w.classList.contains('auf'); w.classList.toggle('auf', jetzt); k.setAttribute('aria-expanded', String(jetzt));
+        if (jetzt) this.spAuf.add(id); else this.spAuf.delete(id);
+      });
+      k.setAttribute('aria-expanded', String(offen));
+      const body = el('div', 'ana-akk-body'), inn = el('div', 'ana-akk-inn'); inn.append(...inhalt); body.append(inn);
+      w.append(k, body); return w;
+    };
+    const out = [];
+    for (const kat of ['Muskeln', 'Sehnen und Bänder', 'Bandscheiben', 'Knochen', 'Zähne']) {
+      const T = sort.filter((g) => KAT[g.cls] === kat).slice(0, q ? 60 : 400); if (!T.length) continue;
+      let inhalt;
+      if (reg.alles && !q && T.length > 25) {
+        // Ganzer Körper: nach Bereichen unterteilen
+        const fach = new Map(), rest = [];
+        for (const g of T) {
+          const r = REGIONEN.slice(1).find((r) => r.m?.includes(g.key) || (r.b && g.teile.some((i) => r.b.test(this.m.teile[i].base))));
+          if (r) { if (!fach.has(r.t)) fach.set(r.t, []); fach.get(r.t).push(g); } else rest.push(g);
         }
-        if (!liste.children.length) liste.append(el('p', 'ana-fein', 'Nichts gefunden.'));
+        if (rest.length) fach.set('Weitere', rest);
+        const ord = (t) => { const i = REGIONEN.findIndex((r) => r.t === t); return i < 0 ? 99 : i; };
+        inhalt = [...fach].sort((x, y) => ord(x[0]) - ord(y[0])).map(([t, G]) => akk(kat + '/' + t, t, G.length, G.map(zeile), true));
+      } else inhalt = T.map(zeile);
+      out.push(akk(kat, kat, T.length, inhalt));
+    }
+    this.spListe.innerHTML = '';
+    if (out.length) this.spListe.append(...out); else this.spListe.append(el('p', 'ana-fein', 'Nichts gefunden.'));
+    this.spListe.scrollTop = scroll;
+  }
+
+  // ----- Haut mit Dermatomen -----
+  hautLaden() {
+    if (this._hautP) return this._hautP;
+    this.hinweisZeigen('Haut mit Dermatomen wird geladen …');
+    this._hautP = (async () => {
+      const r = await fetch(new URL('./anatomie-haut.wasm', import.meta.url));
+      let buf = await r.arrayBuffer(); const b0 = new Uint8Array(buf, 0, 2);
+      if (b0[0] === 0x1f && b0[1] === 0x8b) buf = await new Response(new Blob([buf]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer();
+      const hl = new DataView(buf).getUint32(0, true), meta = JSON.parse(new TextDecoder().decode(new Uint8Array(buf, 4, hl)));
+      const nv = meta.v, nt = meta.t, o0 = 4 + hl, q = new Uint16Array(buf, o0, nv * 3), ix = new Uint16Array(buf, o0 + nv * 6, nt * 3), D = new Uint8Array(buf, o0 + nv * 6 + nt * 6, nv), W = new Uint8Array(buf, o0 + nv * 6 + nt * 6 + nv, nv * 32), oS = o0 + nv * 6 + nt * 6 + nv * 33, S16 = new Uint16Array(buf.slice(oS, oS + nv * 2));
+      const aS = new Float32Array(nv); for (let i = 0; i < nv; i++) aS[i] = S16[i] / 2000 - 5;
+      const mn = this.m.meta.min, mx = this.m.meta.max, pos = new Float32Array(nv * 3);
+      for (let i = 0; i < nv; i++) { const x = mn[0] + q[i * 3] * (mx[0] - mn[0]) / 65535, y = mn[1] + q[i * 3 + 1] * (mx[1] - mn[1]) / 65535, z = mn[2] + q[i * 3 + 2] * (mx[2] - mn[2]) / 65535; pos[i * 3] = x; pos[i * 3 + 1] = z - 820; pos[i * 3 + 2] = -y - 100; }
+      const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); geo.setIndex(new THREE.BufferAttribute(Uint32Array.from(ix), 1)); geo.computeVertexNormals();
+      // je Punkt 32 weiche Anteile (an der Haut entlang geglättet), im Shader zu einer fließenden Grenze geschärft
+      const Wc = W.slice();
+      geo.setAttribute('aCol', new THREE.BufferAttribute(new Float32Array(nv * 3), 3));
+      const aX = new Float32Array(nv * 3); for (let i = 0; i < nv; i++) { aX[i * 3 + 1] = aS[i]; aX[i * 3 + 2] = W[i * 32 + 31] / 255; }
+      geo.setAttribute('aX', new THREE.BufferAttribute(aX, 3));
+      const mat = new THREE.MeshStandardMaterial({roughness: 0.85, metalness: 0});
+      const pal = DERM.map((d) => new THREE.Color(d.farbe)); while (pal.length < 32) pal.push(new THREE.Color('#F4F1EC'));
+      mat.userData.u = {uPal: {value: pal}, uWahl: {value: -1}};
+      const wv = [0, 1, 2, 3, 4, 5, 6, 7];
+      mat.onBeforeCompile = (sh) => {
+        Object.assign(sh.uniforms, mat.userData.u);
+        sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute vec3 aCol; varying vec3 vCol; attribute vec3 aX; varying vec3 vX;')
+          .replace('#include <begin_vertex>', '#include <begin_vertex>\nvCol = aCol; vX = aX;');
+        sh.fragmentShader = sh.fragmentShader.replace('#include <common>', `#include <common>
+          uniform vec3 uPal[32]; uniform int uWahl; varying vec3 vX;
+          int rumpfIdx(float s) { if (s < 2.0) return 3; if (s < 13.0) return 9 + int(s) - 2; if (s < 14.0) return 20; if (s < 15.0) return 21; return 22; }
+          varying vec3 vCol;
+          vec3 dPal(int i) { vec3 c = uPal[i]; if (uWahl >= 0 && i != uWahl) c = mix(c, vec3(0.93, 0.91, 0.88), 0.74); return c; }`)
+          .replace('vec4 diffuseColor = vec4( diffuse, opacity );', `
+          vec3 col = vCol;
+          float wT = vX.z;
+          // Rumpf: Bänder direkt aus dem stetigen Segmentfeld, Kanten weich über ca. 1 Pixelbreite plus 0,06 Segment
+          float sc = clamp(vX.y, 0.0, 16.5), fs = fract(sc), ws = max(fwidth(sc), 0.0005) * 1.2 + 0.05;
+          int ia = rumpfIdx(sc), ib = rumpfIdx(sc - 0.5), ic = rumpfIdx(sc + 0.5);
+          vec3 ca = dPal(ia);
+          vec3 cr = fs < 0.5 ? mix(dPal(ib), ca, smoothstep(-ws, ws, fs)) : mix(ca, dPal(ic), smoothstep(1.0 - ws, 1.0 + ws, fs));
+          col = mix(col, cr, smoothstep(0.42, 0.58, wT));
+          col = mix(col, vec3(0.62, 0.02, 0.1), clamp(vX.x, 0.0, 1.0) * 0.62);
+          vec4 diffuseColor = vec4(col, 1.0);`);
       };
-      such.addEventListener('input', fuell);
-      B.append(such, liste); fuell();
+      mat.customProgramCacheKey = () => 'haut3';
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.frustumCulled = false; this.szeneObj.add(mesh);
+      const raster = new Map(); for (let i = 0; i < nv; i++) { const k = Math.floor(pos[i * 3] / 14) + ',' + Math.floor(pos[i * 3 + 1] / 14) + ',' + Math.floor(pos[i * 3 + 2] / 14); (raster.get(k) || raster.set(k, []).get(k)).push(i); }
+      const blass = new THREE.Color(0.93, 0.91, 0.88);
+      this.haut = {mesh, geo, mat, colWahl: null, pal: pal.map((c) => c.clone()), palBlass: pal.map((c) => c.clone().lerp(blass, 0.74)), D: D.slice(), W: Wc, S: aS, pos, mal: new Float32Array(nv), raster};
+      this.hinweisZeigen('');
+      this.hautFaerben(); this.aktualisiere();
+    })().catch((e) => { this._hautP = null; this.hinweisZeigen('Haut konnte nicht geladen werden: ' + (e?.message || e)); });
+    return this._hautP;
+  }
+  rumpfIdx(s) { s = Math.min(16.5, Math.max(0, s)); return s < 2 ? 3 : s < 13 ? 9 + Math.floor(s) - 2 : s < 14 ? 20 : s < 15 ? 21 : 22; }
+  hautFaerben() {
+    const H = this.haut; if (!H) return;
+    const X = H.geo.attributes.aX.array; for (let i = 0; i < H.mal.length; i++) X[i * 3] = H.mal[i]; H.geo.attributes.aX.needsUpdate = true;
+    if (H.colWahl !== (this.dermWahl ?? -1)) {
+      // Farben aus den geglätteten Anteilen, leicht geschärft (Potenz), damit die Übergänge schmal und weich bleiben
+      H.colWahl = this.dermWahl ?? -1;
+      const C = H.geo.attributes.aCol.array, pal = H.pal, w = new Float32Array(DERM.length);
+      for (let i = 0, n = H.D.length; i < n; i++) {
+        let sum = 0; for (let k = 0; k < DERM.length; k++) { const v = H.W[i * 32 + k] / 255; const q = v * v * v; w[k] = q; sum += q; }
+        let r = 0, g = 0, b = 0;
+        for (let k = 0; k < DERM.length; k++) { if (!w[k]) continue; const f = w[k] / sum, c = (H.colWahl >= 0 && k !== H.colWahl) ? H.palBlass[k] : pal[k]; r += c.r * f; g += c.g * f; b += c.b * f; }
+        C[i * 3] = r; C[i * 3 + 1] = g; C[i * 3 + 2] = b;
+      }
+      H.geo.attributes.aCol.needsUpdate = true;
+    }
+    H.mat.userData.u.uWahl.value = this.dermWahl ?? -1;
+    this.resetStatus(); this.anstossen();
+  }
+  hautTreffer(e) {
+    if (!this.haut) return null;
+    const rc = new THREE.Raycaster(); rc.ray.copy(this.strahl(e));
+    const h = rc.intersectObject(this.haut.mesh, false)[0]; if (!h) return null;
+    const H = this.haut, fv = [h.face.a, h.face.b, h.face.c], P3 = fv.map((v) => new V3(H.pos[v * 3], H.pos[v * 3 + 1], H.pos[v * 3 + 2]));
+    const bc = new THREE.Triangle(...P3).getBarycoord(h.point, new V3()), g = [bc.x, bc.y, bc.z];
+    const wt = (g[0] * H.W[fv[0] * 32 + 31] + g[1] * H.W[fv[1] * 32 + 31] + g[2] * H.W[fv[2] * 32 + 31]) / 255;
+    if (wt > 0.5) { const sv = g[0] * H.S[fv[0]] + g[1] * H.S[fv[1]] + g[2] * H.S[fv[2]]; return {p: h.point, d: this.rumpfIdx(sv)}; }
+    let d = 0, bw = -1;
+    for (let k = 0; k < DERM.length; k++) { const w = g[0] * H.W[fv[0] * 32 + k] + g[1] * H.W[fv[1] * 32 + k] + g[2] * H.W[fv[2] * 32 + k]; if (w > bw) { bw = w; d = k; } }
+    return {p: h.point, d};
+  }
+  malZug(e) {
+    const now = performance.now(); if (this._mz && now - this._mz < 16) return; this._mz = now;
+    const h = this.hautTreffer(e); if (!h) return;
+    const H = this.haut, p = h.p, r = 16, cx = Math.floor(p.x / 14), cy = Math.floor(p.y / 14), cz = Math.floor(p.z / 14);
+    for (let a = -2; a <= 2; a++) for (let b = -2; b <= 2; b++) for (let c = -2; c <= 2; c++) {
+      const L = H.raster.get((cx + a) + ',' + (cy + b) + ',' + (cz + c)); if (!L) continue;
+      for (const i of L) { const dx = H.pos[i * 3] - p.x, dy = H.pos[i * 3 + 1] - p.y, dz = H.pos[i * 3 + 2] - p.z, d = Math.sqrt(dx * dx + dy * dy + dz * dz); if (d < r) H.mal[i] = Math.max(H.mal[i], 1 - ss(r * 0.55, r, d)); }
+    }
+    this.hautFaerben();
+  }
+  malAuswertung() {
+    const H = this.haut; if (!H) return [];
+    const n = new Array(DERM.length).fill(0); let ges = 0;
+    for (let i = 0; i < H.mal.length; i++) if (H.mal[i] > 0.5) { n[H.W[i * 32 + 31] > 127 ? this.rumpfIdx(H.S[i]) : H.D[i]] += 1; ges += 1; }
+    return n.map((x, i) => ({i, x, p: ges ? x / ges : 0})).filter((o) => o.p >= 0.08).sort((a, b) => b.x - a.x);
+  }
+  hatAuswahl() {
+    return !!(this.wahl || this.marken.size || this.szene || this.allein || this.aus.size || this.dermWahl != null || this.haut?.mal.some((x) => x > 0) || this.punkte.length || this.pinGruppe?.children.length || this.bew || this.zustand.gesund || this.zustand.modus !== 'drehen');
+  }
+  resetStatus() { if (this.resetKnopf) this.resetKnopf.disabled = !this.hatAuswahl(); }
+  auswahlZuruecksetzen() {
+    if (!this.m) return;
+    this.bewegungAus();
+    this.szeneAus();
+    this.wahl = null; this.wahlLabel = null; this.allein = null; this.aus.clear(); this.marken.clear();
+    this.dermWahl = null; if (this.haut) this.haut.mal.fill(0);
+    if (this.punkte.length || this.pinGruppe.children.length) this.zeichnungLoeschen();
+    this.setzeModus('drehen'); this.zustand.gesund = false;
+    this.hautFaerben(); this.markiereKopf(); this.aktualisiere();
+    if (this.zustand.schicht === 'dermatom') this.zeigeDermatome(); else this.blattZu();
+    if (this.seiteArt === 'stift') this.zeigeStift(); else if (this.seiteArt === 'schicht') this.zeigeSchichten();
+    this.ansichtZurueck();
+  }
+  waehleDerm(i) {
+    this.dermWahl = this.dermWahl === i ? null : i; this.hautFaerben();
+    if (this.dermWahl == null) this.zeigeDermatome(); else this.zeigeDerm(i);
+  }
+  dermInfo(B, d) {
+    const z = (t, v) => { if (!v || v === '–') return; const r = el('div', 'ana-info'); r.append(el('span', '', t), el('b', '', v)); B.append(r); };
+    z('Nervenwurzel', d.wurzel);
+    z('Typische Bandscheibe', d.bs.length ? d.bs.join(' oder ') : '');
+    z('Kennmuskel', d.km); z('Reflex', d.ref);
+    if (d.bsText) B.append(el('p', d.alarm ? 'ana-alarm' : 'ana-fein', d.bsText));
+  }
+  zeigeDerm(i) {
+    const d = DERM[i];
+    this.blattOeffnen('dermwahl', (B) => {
+      this.kopfzeile(B, d.k === 'V' ? 'N. trigeminus' : 'Dermatom ' + d.k, d.gebiet);
+      this.dermInfo(B, d);
+      const r = el('div', 'ana-aktionen');
+      if (d.bs.length) r.append(knopf('ana-akt', 'An der Wirbelsäule zeigen', null, () => this.wurzelZeigen(d)));
+      r.append(knopf('ana-akt', 'Bereich malen', null, () => { this.dermWahl = null; this.hautFaerben(); this.setzeModus('hautmal'); this.zeigeDermatome(); }));
+      B.append(r, el('p', 'ana-fein', 'Dermatome überlappen sich, die Karte ist vereinfacht. Befund immer mit Kennmuskel und Reflex absichern. Entwurf, fachlich prüfen.'));
+    });
+  }
+  zeigeDermatome() {
+    this.blattOeffnen('derm', (B) => {
+      const mal = this.zustand.modus === 'hautmal';
+      this.kopfzeile(B, 'Dermatome', mal ? 'Mit dem Finger die betroffene Fläche anmalen' : 'Auf die Haut tippen oder unten ein Segment wählen');
+      const seg = el('div', 'ana-seg breit');
+      for (const [m, t] of [['drehen', 'Antippen'], ['hautmal', 'Bereich malen']]) seg.append(knopf((mal ? 'hautmal' : 'drehen') === m ? 'an' : '', t, null, () => { this.setzeModus(m); this.zeigeDermatome(); }));
+      B.append(seg);
+      const erg = this.malAuswertung();
+      if (erg.length) {
+        B.append(el('p', 'ana-gruppe', 'Rückschluss aus der markierten Fläche'));
+        const top = DERM[erg[0].i];
+        const satz = el('p', 'ana-text');
+        satz.innerHTML = top.k === 'V' ? 'Die Fläche liegt im Gesicht. Das ist der N. trigeminus, kein Spinalnerv.' : `Am ehesten Nervenwurzel <b>${top.wurzel}</b>${top.bs.length ? `, typisch bei Bandscheibe ${top.bs.join(' oder ')}` : ''}.`;
+        B.append(satz);
+        for (const o of erg.slice(0, 4)) {
+          const d = DERM[o.i], z = knopf('ana-zeile', `<span><b>${d.k === 'V' ? 'N. trigeminus' : 'Wurzel ' + d.wurzel}</b><small>${Math.round(o.p * 100)} % der Fläche · ${d.km}</small></span><i style="background:${d.farbe}"></i>`, null, () => this.waehleDerm(o.i));
+          B.append(z);
+        }
+        if (top.alarm) B.append(el('p', 'ana-alarm', top.bsText));
+        const r = el('div', 'ana-aktionen');
+        if (top.bs.length) r.append(knopf('ana-akt', 'An der Wirbelsäule zeigen', null, () => this.wurzelZeigen(top)));
+        B.append(r);
+      }
+      const gruppen = [['Hals', /^(V|C)/], ['Brust', /^T/], ['Lende', /^L/], ['Kreuzbein', /^S/]];
+      for (const [t, re] of gruppen) {
+        B.append(el('p', 'ana-gruppe', t));
+        const w = el('div', 'ana-chips');
+        DERM.forEach((d, i) => { if (!re.test(d.k)) return; const b = knopf('ana-dchip', d.k === 'V' ? 'V' : d.k, null, () => this.waehleDerm(i)); b.style.setProperty('--c', d.farbe); w.append(b); });
+        B.append(w);
+      }
+      B.append(el('p', 'ana-fein', 'Vereinfachte Karte nach Keegan und Garrett (1948) und Lee et al. (2008). Dermatome überlappen sich. Entwurf, fachlich prüfen.'));
+    });
+  }
+  wurzelZeigen(d) {
+    this.setzeModus('drehen'); this.dermWahl = null; this.hautFaerben();
+    this.szeneAus(); this.zustand.schicht = 'knochen'; this.zustand.region = d.region === 'kiefer' ? 'hws' : d.region; this.allein = null; this.aus.clear();
+    for (const s of d.bs) { const id = 'disk:' + s + '|m'; if (this.m.gruppen.has(id)) this.marken.set(id, 'p'); }
+    this.markiereKopf(); this.aktualisiere(); this.ansichtZurueck();
+    setTimeout(() => { this.labels = this.labels.filter((x) => x.pin); for (const id of this.marken.keys()) { const a = this.ankerFuer(id); if (a) this.labels.push({a, t: this.m.gruppen.get(id).de, art: 'problem', id}); } this.anstossen(); }, 700);
+    this.blattOeffnen('dermwahl', (B) => {
+      this.kopfzeile(B, 'Wurzel ' + d.wurzel, 'Rot: typische Bandscheibenhöhe');
+      this.dermInfo(B, d);
+      B.append(knopf('ana-akt', 'Zurück zu den Dermatomen', null, () => { this.marken.clear(); this.labels = this.labels.filter((x) => x.pin); this.zustand.schicht = 'dermatom'; this.zustand.region = 'koerper'; this.markiereKopf(); this.aktualisiere(); this.ansichtZurueck(); this.zeigeDermatome(); }));
     });
   }
 
   // ----- Zeichnen und Punkte -----
   setzeModus(m) {
-    this.zustand.modus = m; this.canvas.classList.toggle('stift', m === 'stift'); this.canvas.classList.toggle('punkt', m === 'punkt');
+    queueMicrotask(() => this.resetStatus());
+    this.zustand.modus = m; this.canvas.classList.toggle('stift', m === 'stift'); this.canvas.classList.toggle('punkt', m === 'punkt'); this.canvas.classList.toggle('hautmal', m === 'hautmal');
   }
   zeigeStift() {
     if (this.zustand.modus === 'drehen') this.setzeModus('stift');
-    this.blattOeffnen('stift', (B) => {
-      this.kopfzeile(B, 'Zeichnen und markieren', 'Mit dem Finger direkt aufs Modell. Zwei Finger drehen weiter.');
+    this.seiteOeffnen('stift', 'Zeichnen', 'Mit dem Finger aufs Modell, zwei Finger drehen', (B) => {
       const s = el('div', 'ana-seg breit');
       for (const [m, t] of [['stift', 'Stift'], ['punkt', 'Schmerzpunkt'], ['drehen', 'Nur drehen']]) s.append(knopf(this.zustand.modus === m ? 'an' : '', t, null, () => { this.setzeModus(m); this.zeigeStift(); }));
       B.append(s);
@@ -738,7 +1019,7 @@ class Viewer {
       const p = pt.h.punkt ? pt.h.punkt : this.ortVon(pt.h, 1.4);
       mat.makeTranslation(p.x, p.y, p.z); M.setMatrixAt(i, mat); M.setColorAt(i, pt.c);
     });
-    M.count = this.punkte.length; M.instanceMatrix.needsUpdate = true; if (M.instanceColor) M.instanceColor.needsUpdate = true; this.anstossen();
+    M.count = this.punkte.length; this.resetStatus(); M.instanceMatrix.needsUpdate = true; if (M.instanceColor) M.instanceColor.needsUpdate = true; this.anstossen();
   }
   setzePin(h) {
     const g = new THREE.Group();
@@ -899,7 +1180,7 @@ class Viewer {
   zeigeBewegung(k) {
     const Z = this.zustand, liste = BEW_JE_REGION[Z.region] || [];
     if (!k) k = this.bew?.k || liste[0];
-    if (!k) { this.hinweisZeigen('Bewegung gibt es für Schulter, Ellenbogen, Hüfte, Knie und Fuß.'); return; }
+    if (!k) { this.hinweisZeigen('Bewegung gibt es für Kiefer, Schulter, Ellenbogen, Hüfte, Knie und Fuß.'); return; }
     const def = BEWEGUNGEN[k];
     if (def.r !== Z.region) { this.setzeRegion(def.r); }
     if (!this.bew || this.bew.k !== k) { this.bewegungAn(k); this.kameraBewegung(k); }
@@ -911,31 +1192,53 @@ class Viewer {
       const r = el('input'); r.type = 'range'; r.min = def.min; r.max = def.max; r.step = 1; r.value = this.bew.wert;
       const spur = el('div', 'ana-spur');
       const pr = (v) => ((v - def.min) / (def.max - def.min)) * 100;
-      const n0 = Math.max(def.min, def.norm[0]), n1 = Math.min(def.max, def.norm[1]);
-      const nb = el('i', 'norm'); nb.style.left = pr(n0) + '%'; nb.style.width = (pr(n1) - pr(n0)) + '%'; spur.append(nb);
+      if (def.norm) { const n0 = Math.max(def.min, def.norm[0]), n1 = Math.min(def.max, def.norm[1]);
+        const nb = el('i', 'norm'); nb.style.left = pr(n0) + '%'; nb.style.width = (pr(n1) - pr(n0)) + '%'; spur.append(nb); }
       if (this.szene?.bogen && this.szene.bew === k) { const b = el('i', 'bogen'); b.style.left = pr(this.szene.bogen[0]) + '%'; b.style.width = (pr(this.szene.bogen[1]) - pr(this.szene.bogen[0])) + '%'; spur.append(b); }
       wrap.append(spur, r);
       const zahl = el('b', 'ana-grad');
-      const setze = (v) => { zahl.textContent = (def.neg && v < 0 ? (-v) + '° ' + def.neg.split(' ')[1] : v + '°'); this.bewegungWert(+v); };
+      const text = (v) => def.mm ? (this.kieferMM ?? 0) + ' mm' : (def.neg && v < 0 ? Math.round(-v) + '° senken' : Math.round(v) + '°');
+      const setze = (v) => { this.bewegungWert(+v); zahl.textContent = text(+v); };
       r.addEventListener('input', () => { this.anim = null; play.innerHTML = ICON.play; setze(r.value); });
-      this._regler = r; this._reglerSetze = (v) => { r.value = v; zahl.textContent = (def.neg && v < 0 ? Math.round(-v) + '° senken' : Math.round(v) + '°'); };
+      this._regler = r; this._reglerSetze = (v) => { r.value = v; zahl.textContent = text(v); };
       zeile.append(play, wrap, zahl); B.append(zeile);
       const leg = el('div', 'ana-bewleg');
-      leg.innerHTML = `<span><i class="norm"></i>Normbereich ${def.norm[0] < 0 ? `${-def.norm[0]}° senken bis ${def.norm[1]}° heben` : `${def.norm[0]} bis ${def.norm[1]}°`}</span>` + (this.szene?.bogen && this.szene.bew === k ? '<span><i class="bogen"></i>Typischer Schmerzbereich</span>' : '');
+      leg.innerHTML = def.mm ? '<span>Gemessen zwischen den Schneidekanten. Richtwert normal etwa 40 bis 50 mm, ab etwa 35 mm gilt die Öffnung als eingeschränkt.</span>' : `<span><i class="norm"></i>Normbereich ${def.norm[0] < 0 ? `${-def.norm[0]}° senken bis ${def.norm[1]}° heben` : `${def.norm[0]} bis ${def.norm[1]}°`}</span>` + (this.szene?.bogen && this.szene.bew === k ? '<span><i class="bogen"></i>Typischer Schmerzbereich</span>' : '');
       B.append(leg);
+      if (k === 'kiefer') B.append(el('p', 'ana-fein', 'Der Unterkiefer dreht sich und gleitet gleichzeitig etwas nach vorn.'));
       if (k === 'schulter_abd') B.append(el('p', 'ana-fein', 'Das Schulterblatt dreht mit: etwa 2 Teile Oberarm, 1 Teil Schulterblatt.'));
       B.append(el('p', 'ana-fein', 'Muskeln werden bei der Bewegung vereinfacht mitgebogen. Normwerte nach der Neutral-Null-Methode: Richtwerte, fachlich prüfen.'));
       setze(this.bew.wert);
     });
   }
+  kieferPivot() {
+    if (this._kp) return this._kp;
+    const pos = this.m.basis || this.m.pos, L = this.verts('Mandibula|m').map((i) => new V3(pos[i * 3], pos[i * 3 + 1], pos[i * 3 + 2]));
+    const y1 = Math.max(...L.map((p) => p.y)), kopf = L.filter((p) => p.y > y1 - 9);
+    const c = kopf.reduce((a, b) => a.add(b), new V3()).multiplyScalar(1 / kopf.length); c.x = 0; c.y -= 4;
+    return (this._kp = c);
+  }
+  schneidekante() {
+    const pos = this.m.pos, kante = (ids, oben) => { let best = null; for (const id of ids) for (const i of this.verts(id)) { const y = pos[i * 3 + 1]; if (!best || (oben ? y > best.y : y < best.y)) best = {y, z: pos[i * 3 + 2]}; } return best; };
+    const o = kante(['zahn:11|m', 'zahn:21|m'], false), u = kante(['zahn:31|m', 'zahn:41|m'], true);
+    if (!o || !u) return 0;
+    const d = Math.hypot(o.y - u.y, o.z - u.z) * (u.y < o.y ? 1 : -1);
+    if (this._mm0 == null && this.bew?.wert === 0) this._mm0 = d;
+    return Math.max(0, Math.round(d - (this._mm0 ?? 0)));
+  }
+  kieferZeigen() {
+    if (!this.bereit) return;
+    if (!this.bew || this.bew.k !== 'kiefer') { this.bewegungAn('kiefer'); this.bewegungWert(0); }
+    this.anim = {t0: performance.now(), zyklen: 2, per: 2.6}; this.anstossen();
+  }
   kameraBewegung(k) {
     const s = this.zustand.seite, P = this.pivots(s), sx = s === 'r' ? -1 : 1;
     const def = {knie_flex: [P.knie, [0, -120, 20], 300, [1, 0.12, 0.06]], huefte_flex: [P.huefte, [0, -210, 80], 440, [1, 0.12, 0.1]], osg: [P.osg, [0, 10, 40], 180, [1, 0.15, 0.1]],
-      ellenbogen_flex: [P.ell, [0, -40, 80], 270, [1, 0.15, 0.1]], schulter_abd: [P.gh, [sx * -120, 60, 0], 440, [-0.25 * sx * sx, 0.12, 1]]}[k];
+      kiefer: [this.kieferPivot(), [0, -30, 35], 115, [1, 0.08, 0.3]], ellenbogen_flex: [P.ell, [0, -40, 80], 270, [1, 0.15, 0.1]], schulter_abd: [P.gh, [sx * -120, 60, 0], 440, [-0.25 * sx * sx, 0.12, 1]]}[k];
     if (!def) return;
     const [p, off, r, bl0] = def, c = p.clone().add(new V3(off[0] * (k === 'schulter_abd' ? -1 : 1), off[1], off[2]));
     if (k === 'schulter_abd') c.x = p.x + sx * 130;
-    const bl = new V3(...bl0); if (k !== 'schulter_abd' && s === 'r') bl.x *= -1; bl.normalize();
+    const bl = new V3(...bl0); if (k !== 'schulter_abd' && k !== 'kiefer' && s === 'r') bl.x *= -1; bl.normalize();
     const dist = r / Math.tan(THREE.MathUtils.degToRad(this.cam.fov / 2)) / Math.min(1, this.cam.aspect || 1);
     this.fliege(c, dist, Math.atan2(bl.x, bl.z), Math.acos(bl.y));
   }
@@ -969,6 +1272,10 @@ class Viewer {
       const scStarr = [...armStarr, ...gs(/^Scapula$/), ...gk(['biceps','triceps','coracobr','deltoid','supraspinatus','infraspinatus','teresminor','subscapularis'])];
       const sc = st(P.scap, Z3, sg / 3, scStarr, [...W(gs(/^Clavicula$/), lat, -110, -25, P.scap), ...W(gk(['trapdesc','traptrans','trapasc','levscap','rhomboid','pecmin']), lat, -80, 0, P.scap).map((w) => ({...w, nah: [80, 160]})), ...W(gk(['pecmaj','latdorsi','teresmajor']), lat, -60, 0, P.scap).map((w) => ({...w, nah: [90, 170], um: P.gh}))]);
       stufen = [gh, sc];
+    } else if (k === 'kiefer') {
+      const KP = this.kieferPivot(), alle = (re) => [...m.gruppen.values()].filter((g) => re.test(g.key));
+      const kst = st(KP, X, 1, alle(/^(Mandibula|zahn:[34]\d)$/), [...W(alle(/^masseter$/), ab, 2, 30), ...W(alle(/^temporalis$/), ab, -14, 16), ...W(alle(/^pterygoid$/), ab, -8, 26)]);
+      kst.trans = new V3(0, -3, 9); stufen = [kst];
     }
     // Gewichte je Vertex berechnen
     const idxSet = new Map(); // vi -> Float32 Gewichte je Stufe
@@ -996,21 +1303,24 @@ class Viewer {
         const st = S[s], a = rad * st.faktor * w, c = Math.cos(a), sn = Math.sin(a), p = st.pivot;
         if (st.achse.x) { const yy = y - p.y, zz = z - p.z; y = p.y + yy * c - zz * sn; z = p.z + yy * sn + zz * c; const n1 = ny * c - nz * sn, n2 = ny * sn + nz * c; ny = n1; nz = n2; }
         else { const xx = x - p.x, yy = y - p.y; x = p.x + xx * c - yy * sn; y = p.y + xx * sn + yy * c; const n1 = nx * c - ny * sn, n2 = nx * sn + ny * c; nx = n1; ny = n2; }
+        if (st.trans) { const f = w * v / BEWEGUNGEN[B.k].max; x += st.trans.x * f; y += st.trans.y * f; z += st.trans.z * f; }
       }
       pos[vi * 3] = x; pos[vi * 3 + 1] = y; pos[vi * 3 + 2] = z; nr[vi * 3] = nx; nr[vi * 3 + 1] = ny; nr[vi * 3 + 2] = nz;
     }
     m.geo.attributes.position.needsUpdate = true; m.geo.attributes.normal.needsUpdate = true;
     for (const t of B.teile) t.dirty = true;
+    if (B.k === 'kiefer') this.kieferMM = this.schneidekante();
     if (this.punkte.length) this.punkteNeu(); this.pinsNeu();
     this.anstossen();
   }
   animSchritt() {
     const B = this.bew; if (!B || !this.anim) { this.anim = null; return false; }
-    const def = BEWEGUNGEN[B.k], t = (performance.now() - this.anim.t0) / 1000, per = 4.2;
+    const def = BEWEGUNGEN[B.k], t = (performance.now() - this.anim.t0) / 1000, per = this.anim.per || 4.2;
+    if (this.anim.zyklen && t >= per * this.anim.zyklen) { this.anim = null; this.bewegungWert(0); if (this.blattArt === 'bewegung') this._reglerSetze?.(0); return false; }
     const lo = Math.max(def.min, def.k === 'osg' ? def.min : 0), hi = def.max;
     const ph = (t % per) / per, e = 0.5 - 0.5 * Math.cos(ph * 2 * Math.PI);
     const v = def.min < 0 ? def.min + (def.max - def.min) * e : lo + (hi - lo) * e;
-    this.bewegungWert(v); this._reglerSetze?.(v);
+    this.bewegungWert(v); if (this.blattArt === 'bewegung') this._reglerSetze?.(v);
     return true;
   }
   bewegungAus() {

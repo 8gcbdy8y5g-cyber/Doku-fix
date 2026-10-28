@@ -306,7 +306,33 @@ export const BEWEGUNGEN = {
   ellenbogen_flex: {t:'Ellenbogen beugen', fach:'Flexion Ellenbogen', min:0, max:145, norm:[140, 150], r:'ellenbogen'},
   huefte_flex: {t:'Hüfte beugen', fach:'Flexion Hüfte', min:0, max:125, norm:[120, 140], r:'huefte'},
   knie_flex: {t:'Knie beugen', fach:'Flexion Knie', min:0, max:140, norm:[120, 150], r:'knie'},
+  kiefer: {t:'Mund öffnen', fach:'Mundöffnung', min:0, max:30, norm:null, mm:true, r:'kiefer'},
   osg: {t:'Fuß heben und senken', fach:'Dorsalextension / Plantarflexion OSG', min:-45, max:20, norm:[-50, 20], r:'fuss', neg:'Fuß senken', pos:'Fuß heben'},
 };
-export const BEW_JE_REGION = {schulter:['schulter_abd'], ellenbogen:['ellenbogen_flex'], huefte:['huefte_flex'], knie:['knie_flex'], fuss:['osg']};
+export const BEW_JE_REGION = {kiefer:['kiefer'], schulter:['schulter_abd'], ellenbogen:['ellenbogen_flex'], huefte:['huefte_flex'], knie:['knie_flex'], fuss:['osg']};
 export {BEIN_K, ARM_K};
+
+// Dermatome (vereinfachte Karte nach Keegan & Garrett 1948 und Lee et al. 2008). Reihenfolge = Index in anatomie-haut.wasm.
+// bs: typische Bandscheibenhöhe. HWS: Wurzel tritt über ihrem Wirbel aus (C5/C6 -> C6). LWS: mediolateraler Vorfall trifft die untere Wurzel (L4/L5 -> L5), foraminaler die obere.
+const T = (n) => ({k:'T' + n, farbe: n % 2 ? '#4FB98A' : '#DDEB7E', wurzel:'Th' + n, bs:n < 12 ? [`Th${n - 1}/Th${n}`] : ['Th11/Th12'], bsText:'Thorakale Bandscheibenvorfälle sind selten. Häufiger sind Gürtelschmerz bei Blockierungen, Zoster oder Ursachen innerer Organe.', km:n <= 6 ? 'Zwischenrippenmuskeln' : 'Zwischenrippen- und Bauchmuskeln', ref:n >= 7 ? 'Bauchhautreflex' : '–', gebiet:n === 4 ? 'Gürtelförmig, vorn auf Höhe der Brustwarzen.' : n === 10 ? 'Gürtelförmig, vorn auf Höhe des Bauchnabels.' : n === 7 ? 'Gürtelförmig, vorn auf Höhe des Rippenbogens.' : 'Gürtelförmiger Streifen um den Rumpf, vorn tiefer als hinten.', region:'bws'});
+export const DERM = [
+  {k:'V', farbe:'#D9CDBB', wurzel:'N. trigeminus (Hirnnerv V)', bs:[], bsText:'Kein Spinalnerv. Das Gesicht wird vom N. trigeminus versorgt.', km:'Kaumuskeln', ref:'Masseterreflex', gebiet:'Gesicht und vorderer Kopf.', region:'kiefer'},
+  {k:'C2', farbe:'#5B8DEF', wurzel:'C2', bs:[], bsText:'Bandscheibe C1/C2 gibt es nicht. Reizungen eher durch Gelenke der oberen HWS.', km:'Kopfbeuger und -strecker', ref:'–', gebiet:'Hinterkopf bis zum Scheitel, hinter dem Ohr.', region:'hws'},
+  {k:'C3', farbe:'#9DB9F7', wurzel:'C3', bs:['C2/C3'], bsText:'Selten betroffen.', km:'Seitneigung der HWS', ref:'–', gebiet:'Hals vorn und seitlich, unter dem Kiefer.', region:'hws'},
+  {k:'C4', farbe:'#3E6FD8', wurzel:'C4', bs:['C3/C4'], bsText:'', km:'Zwerchfell (C3 bis C5), Schulterheber', ref:'–', gebiet:'Schulterhöhe wie ein Umhang, Bereich über dem Schlüsselbein.', region:'hws'},
+  {k:'C5', farbe:'#7FB2E5', wurzel:'C5', bs:['C4/C5'], bsText:'', km:'M. deltoideus (Abduktion), M. biceps brachii', ref:'Bizepssehnenreflex', gebiet:'Außenseite Oberarm über dem Deltamuskel.', region:'hws'},
+  {k:'C6', farbe:'#2FA9C9', wurzel:'C6', bs:['C5/C6'], bsText:'Zweithäufigste Höhe für Vorfälle der HWS.', km:'M. biceps brachii, M. brachioradialis, Handgelenkstrecker', ref:'Bizepssehnenreflex, Brachioradialisreflex', gebiet:'Daumenseite von Unterarm und Hand, Daumen und Zeigefinger.', region:'hws'},
+  {k:'C7', farbe:'#8FD6E8', wurzel:'C7', bs:['C6/C7'], bsText:'Häufigste Höhe für Vorfälle der HWS.', km:'M. triceps brachii, Handgelenkbeuger, Fingerstrecker', ref:'Trizepssehnenreflex', gebiet:'Mittelfinger und Mitte der Hand, Rückseite Unterarm.', region:'hws'},
+  {k:'C8', farbe:'#1F7FA3', wurzel:'C8', bs:['C7/Th1'], bsText:'', km:'Fingerbeuger, kleine Handmuskeln', ref:'Trömner-Reflex', gebiet:'Ring- und Kleinfinger, Kleinfingerseite von Hand und Unterarm.', region:'hws'},
+  {k:'T1', farbe:'#6CC3A0', wurzel:'Th1', bs:['C7/Th1', 'Th1/Th2'], bsText:'Selten betroffen.', km:'Kleine Handmuskeln (Finger spreizen)', ref:'–', gebiet:'Innenseite Unterarm und Ellenbogen.', region:'hws'},
+  ...[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(T),
+  {k:'L1', farbe:'#F7B267', wurzel:'L1', bs:['Th12/L1', 'L1/L2'], bsText:'', km:'M. iliopsoas', ref:'Kremasterreflex', gebiet:'Leiste und oberer vorderer Oberschenkel.', region:'lws'},
+  {k:'L2', farbe:'#F4845F', wurzel:'L2', bs:['L1/L2', 'L2/L3'], bsText:'', km:'M. iliopsoas, Adduktoren', ref:'Adduktorenreflex', gebiet:'Vorderseite und Außenseite des Oberschenkels, schräg nach innen.', region:'lws'},
+  {k:'L3', farbe:'#F9C784', wurzel:'L3', bs:['L2/L3', 'L3/L4'], bsText:'', km:'M. quadriceps femoris, Adduktoren', ref:'Patellarsehnenreflex', gebiet:'Unteres Drittel Oberschenkel vorn bis zur Innenseite des Knies.', region:'lws'},
+  {k:'L4', farbe:'#E76F51', wurzel:'L4', bs:['L3/L4', 'L4/L5'], bsText:'Mediolateraler Vorfall L3/L4 oder foraminaler Vorfall L4/L5.', km:'M. quadriceps femoris, M. tibialis anterior', ref:'Patellarsehnenreflex', gebiet:'Innenseite Unterschenkel bis zum Innenknöchel.', region:'lws'},
+  {k:'L5', farbe:'#FFD166', wurzel:'L5', bs:['L4/L5', 'L5/S1'], bsText:'Häufigste Wurzel: mediolateraler Vorfall L4/L5 oder foraminaler Vorfall L5/S1.', km:'M. extensor hallucis longus (Großzehe heben), M. gluteus medius', ref:'Tibialis-posterior-Reflex (wenig zuverlässig)', gebiet:'Außenseite Unterschenkel, Fußrücken bis zur Großzehe.', region:'lws'},
+  {k:'S1', farbe:'#C77DFF', wurzel:'S1', bs:['L5/S1'], bsText:'Sehr häufig: mediolateraler Vorfall L5/S1.', km:'M. triceps surae (Zehenstand), Mm. fibulares, M. gluteus maximus', ref:'Achillessehnenreflex', gebiet:'Fußaußenrand, Kleinzehe, Ferse und Wade hinten.', region:'lws'},
+  {k:'S2', farbe:'#E0AAFF', wurzel:'S2', bs:['S1/S2'], bsText:'Selten isoliert, eher bei Kauda-Beteiligung.', km:'Zehenbeuger, kurze Fußmuskeln', ref:'–', gebiet:'Streifen an der Rückseite des Oberschenkels und der Kniekehle.', region:'lws'},
+  {k:'S3', farbe:'#9D4EDD', wurzel:'S3', bs:[], bsText:'Gefühlsstörung hier zusammen mit Blasen- oder Darmstörung ist ein Alarmzeichen (Kauda-Syndrom): sofort ärztlich abklären.', km:'Beckenboden', ref:'Analreflex', gebiet:'Innerer Gesäßbereich (Reithosenregion).', region:'lws', alarm:true},
+  {k:'S4-5', farbe:'#7B2CBF', wurzel:'S4 und S5', bs:[], bsText:'Gefühlsstörung hier zusammen mit Blasen- oder Darmstörung ist ein Alarmzeichen (Kauda-Syndrom): sofort ärztlich abklären.', km:'Schließmuskeln, Beckenboden', ref:'Analreflex', gebiet:'Um den After (Reithosenregion).', region:'lws', alarm:true},
+];
