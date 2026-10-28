@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v62 | 28.10.2026 | 4a2df3c | Dienstplan: neuer Knopf „Patientenhistorie“ (Diagnosen, Erstbefunde, Verlaufsdokumentation, eingeklappt) und „Neubefundung“ (neuer Befund mit übernommener Diagnose und Anamnese, bisheriger Befund und Verlauf werden abgeschlossen und bleiben in der Historie) |
 | v61 | 27.10.2026 | 5f49d42 | Reiterleiste unten neu gestaltet (klassisch): vier gleich breite Reiter, aktiver Reiter mit hellblauer Fläche und blauem Strich oben, kürzere Namen „Patienten“ und „Schnell-Doku“ |
 | v60 | 27.10.2026 | 1adfae8 | Weicher Übergang beim Wischen: alte und neue Seite gleiten zusammen, Tempo vom Finger, Überschrift blendet mit |
 | v59 | 27.10.2026 | 551b0bc | Dienstplan: kleine Zahl an der roten Zeitlinie, wie viele Patienten heute noch kommen |
