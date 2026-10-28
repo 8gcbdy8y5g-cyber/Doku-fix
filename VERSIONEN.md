@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v70 | 28.10.2026 | f2fe29f | Anatomie: neue Schicht „Dermatome“ (Figur mit Haut, Dermatome farbig mit weichen Übergängen, Antippen oder Bereich malen mit Rückschluss auf Nervenwurzel, Bandscheibenhöhe, Kennmuskel und Reflex, „An der Wirbelsäule zeigen“, Kauda-Hinweis bei S3 bis S5). Kiefer öffnet sich animiert beim Antippen von Kaumuskeln, Unterkiefer oder Zähnen, dazu „Mund öffnen“ mit Millimeterangabe. Werkzeugleiste senkrecht rechts, Schichten, Strukturen und Zeichnen öffnen links daneben, Strukturen als Aufklappbereiche, Figur rückt in den freien Platz. Kein Schild mehr beim Antippen. Eigener Knopf „Auswahl zurücksetzen“ unter der Werkzeugleiste |
 | v69 | 28.10.2026 | 7b12fb6 | Mehr-Seite neu gestaltet: jeder Bereich als Karte mit farbigem rundem Symbol, Titel und Untertitel (z. B. Textstil, Zahl der Tagespläne, „Noch nie gesichert“), weiche Schatten statt Rahmen, auch im Dunkelmodus |
 | v68 | 28.10.2026 | 3488ce4 | Mehr-Seite: Testdatenbank als schlichte Zeile ohne Erklärtext, Gelernte Vorschläge zugeklappt wie Verlaufsdoku und Dienstpläne, alle Kacheln gleich hoch und kompakter |
 | v67 | 28.10.2026 | ee2d83e | Reiter „Mehr“ mit Zahnrad-Symbol. Mehr-Seite neu sortiert: Testdatenbank oben, Sicherung ganz unten; Verlaufsdoku und Dienstpläne zugeklappt, erst beim Antippen mit Auswahl bzw. Liste |
