@@ -149,4 +149,29 @@ html.ana-voll body{overflow:hidden}
 .ana-reset-k{flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;width:72px;min-height:62px;padding:6px 4px;border:0;border-radius:18px;background:color-mix(in srgb,var(--flaeche,#fff) 86%,transparent);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);box-shadow:0 2px 14px rgba(0,0,0,.14);color:var(--warn,#C4001A);font-size:10.5px!important;font-weight:700;line-height:1.15;text-align:center;hyphens:manual;transition:opacity .2s}
 .ana-reset-k:disabled{opacity:.38;color:var(--schrift2,#6C6C70)}
 @media (min-width:700px){.ana-reset-k{width:82px;font-size:11px!important}}
+.ana-modus{position:absolute;z-index:4;left:50%;top:10px;transform:translateX(-50%);display:flex;gap:2px;padding:4px;border-radius:14px;background:color-mix(in srgb,var(--flaeche,#fff) 86%,transparent);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);box-shadow:0 2px 14px rgba(0,0,0,.14)}
+.ana-modus button{border:0;background:none;min-height:36px;padding:0 14px;border-radius:10px;font-weight:600;font-size:14px;color:var(--schrift2,#3a3a3c)}
+.ana-modus button.an{background:var(--tape,#146C99);color:var(--tape-auf,#fff)}
+.ana.tour-an .ana-modus{display:none}
+.ana-wzk{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.ana-wzk .ana-akt{display:flex;align-items:center;justify-content:center;gap:7px;min-height:44px;padding:0 8px}
+.ana-wzk .ana-akt svg{width:18px;height:18px}
+.ana-wzk .ana-akt.an:not(.rot):not(.blau){background:var(--tape,#146C99);border-color:var(--tape,#146C99);color:var(--tape-auf,#fff)}
+.ana-wzk .ana-akt.rot.an{background:#FF3B30;color:#fff}.ana-wzk .ana-akt.blau.an{background:#2E8FD9;color:#fff}
+.ana-tourstart{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;margin:4px 0 2px;min-height:46px;background:var(--tape,#146C99)!important;border-color:var(--tape,#146C99)!important;color:var(--tape-auf,#fff)!important}
+.ana-tourstart svg{width:20px;height:20px}
+.ana-tour{position:absolute;z-index:6;left:10px;right:90px;bottom:10px;display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:18px;background:color-mix(in srgb,var(--flaeche,#fff) 92%,transparent);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);box-shadow:0 4px 22px rgba(0,0,0,.16);animation:ana-auf .28s cubic-bezier(.2,.8,.2,1)}
+.ana-tour-pf{flex:none;width:46px;height:46px;border-radius:23px;border:0;background:var(--seite,#E5E5EA);font-size:22px!important;font-weight:700;display:flex;align-items:center;justify-content:center}
+.ana-tour-pf.vor{background:var(--tape,#146C99);color:var(--tape-auf,#fff)}
+.ana-tour-pf:disabled{opacity:.35}
+.ana-tour-mitte{flex:1;min-width:0}
+.ana-tour-mitte small{display:block;font-size:12px;color:var(--schrift2,#6C6C70)}
+.ana-tour-mitte b{display:block;font-size:17px;margin:2px 0 6px;line-height:1.2}
+.ana-tour-mitte p{margin:6px 0 0;font-size:13.5px;line-height:1.38;max-height:5.6em;overflow-y:auto}
+.ana-tour-dots{display:flex;gap:5px}
+.ana-tour-dots button{flex:1;height:6px;min-height:0;padding:0;border:0;border-radius:3px;background:#D8DCE2}
+.ana-tour-dots button.an{background:var(--tape,#146C99)}
+.ana-tour-zu{position:absolute;top:-12px;right:-6px;width:30px!important;height:30px!important;box-shadow:0 1px 6px rgba(0,0,0,.18);background:var(--flaeche,#fff)!important}
+.ana.tour-an .ana-legende{bottom:auto;top:10px}
+@media (max-width:699px){.ana-tour{left:6px;right:86px;bottom:6px;padding:10px;gap:8px}.ana-tour-pf{width:40px;height:40px}.ana-tour-mitte b{font-size:15px}.ana-tour-mitte p{font-size:12.5px;max-height:4.2em}}
 `;

@@ -34,6 +34,11 @@ const ICON = {
   info: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>',
   diag: '<svg viewBox="0 0 24 24"><path d="M12 21s-8-4.5-8-11a5 5 0 0 1 8-3.9A5 5 0 0 1 20 10c0 6.5-8 11-8 11z"/></svg>',
   rueck: '<svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>',
+  allein: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>',
+  aus: '<svg viewBox="0 0 24 24"><path d="M3 3l18 18"/><path d="M10.6 6.2A9.8 9.8 0 0 1 12 6c5 0 9 6 9 6a16 16 0 0 1-3 3.5M6.5 7.6C4.2 9.2 3 12 3 12s4 6 9 6c1.4 0 2.6-.4 3.7-.9"/></svg>',
+  durch: '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="11" height="11" rx="2"/><rect x="9" y="9" width="11" height="11" rx="2" stroke-dasharray="2 2"/></svg>',
+  roent: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" stroke-dasharray="2.5 2"/><circle cx="12" cy="12" r="3.2" fill="currentColor"/></svg>',
+  tour: '<svg viewBox="0 0 24 24"><path d="M5 5h9v14H5z"/><path d="M14 9h5v10h-5"/><path d="M8 9h3M8 12h3"/></svg>',
 };
 
 // ---------- Laden ----------
@@ -131,6 +136,9 @@ class Viewer {
     this.aus = new Set();    // ausgeblendete Gruppen
     this.allein = null;      // isolierte Gruppe
     this.wahl = null;        // gewählte Gruppe
+    this.roentgen = null;    // Gruppe, die bei „Rest durchsichtig“ deckend bleibt
+    this.durch = new Set();  // durchsichtig geschaltete Gruppen
+    this.tour = null;
     this.szene = null; this.patient = null;
     this.extras = []; this.labels = [];
     this.punkte = []; this.striche = [];
@@ -167,8 +175,12 @@ class Viewer {
     this.laden = el('div', 'ana-laden', '');
     this.laden.innerHTML = '<div class="ana-laden-box"><b>Anatomie wird geladen</b><div class="ana-balken"><i></i></div><small>Einmalig etwa 2,5 MB, danach offline.</small></div>';
     this.vollZu = knopf('ana-vollzu', ICON.klein + '<span>Fertig</span>', 'Vollbild beenden', () => this.vollbild(false));
+    this.modusPille = el('div', 'ana-modus');
+    for (const [m, t] of [['drehen', 'Ansehen'], ['sezieren', 'Sezieren']]) { const b = knopf('', t, null, () => { this.setzeModus(this.zustand.modus === m ? 'drehen' : m); if (m === 'sezieren' && this.zustand.modus === 'sezieren') this.hinweisZeigen('Antippen entfernt eine Struktur. „Auswahl zurücksetzen“ holt alles zurück.'); }); b.dataset.m = m; this.modusPille.append(b); }
+    this.tourLeiste = el('div', 'ana-tour'); this.tourLeiste.hidden = true;
+    queueMicrotask(() => this.setzeModus('drehen'));
     this.seitenPanel = el('aside', 'ana-sp'); this.seitenPanel.hidden = true; this.seitenPanel.setAttribute('aria-label', 'Strukturen');
-    this.buehne.append(this.canvas, this.labelEbene, this.legende, this.hinweis, this.vollZu, this.seitenPanel, this.laden);
+    this.buehne.append(this.canvas, this.labelEbene, this.legende, this.hinweis, this.vollZu, this.modusPille, this.tourLeiste, this.seitenPanel, this.laden);
 
     this.blatt = el('div', 'ana-blatt');
     this.blattGriff = knopf('ana-griff', '<i></i><span>Erklärung</span>', 'Blatt ein- oder ausklappen', () => this.blattKlein(!this.blatt.classList.contains('klein')));
@@ -388,8 +400,11 @@ class Viewer {
         if (g.id === this.allein) al = 1;
         else al = (cls === 'knochen' && imFokus) ? 0.18 : 0;
       }
+      if (this.durch.has(g.id)) al = Math.min(al, 0.22);
+      if (this.roentgen && g.id !== this.roentgen && al > 0) al = Math.min(al, cls === 'muskel' ? 0.16 : cls === 'knochen' || cls === 'zahn' ? 0.3 : 0.22);
       if (this.aus.has(g.id)) al = 0;
       if (Z.schicht === 'dermatom') { al = 0; mark = null; }
+      if (this.tour?.neutral) mark = null;
       if (mark && !(Z.gesund && mark === 'p')) {
         c.set(mark === 'p' ? PROBLEM : BEH);
         if (mark === 'p') { puls = 1; this.pulsiert = true; }
@@ -404,7 +419,8 @@ class Viewer {
     if (derm && !this.haut) this.hautLaden();
     if (this.haut) { this.haut.mesh.visible = derm; }
     for (const x of this.extras) x.visible = !derm && !(this.zustand.gesund && x.userData.befund);
-    this.labelEbene.hidden = derm; this.pinGruppe.visible = !derm;
+    this.labelEbene.hidden = derm || !!this.tour?.ohneLabel; this.pinGruppe.visible = !derm;
+    this.modusPille.hidden = derm;
     if (derm && this.bew) this.bewegungAus();
     this.legendeSetzen();
     this.listeNeu();
@@ -427,6 +443,7 @@ class Viewer {
 
   // ----- Region und Seite -----
   setzeRegion(k, sofort) {
+    if (this.tour && this.bereit) this.tourEnde(true);
     if (!this.bereit) { this.wartend = () => this.setzeRegion(k, sofort); this.zustand.region = k; this.markiereKopf(); return; }
     this.bewegungAus();
     this.zustand.region = k; this.allein = null; this.wahl = null;
@@ -566,6 +583,8 @@ class Viewer {
     const h = this.treffer(this.strahl(e));
     if (this.zustand.modus === 'punkt') { if (h) this.setzePin(h); return; }
     if (this.zustand.modus === 'stift') return;
+    if (this.zustand.modus === 'sezieren') { if (h) { const id = h.teil.g.id; this.aus.add(id); if (this.wahl === id) this.wahl = null; if (this.blattArt === 'struktur') this.blattZu(); this.aktualisiere(); } return; }
+    if (!h && this.roentgen) { this.roentgen = null; this.aktualisiere(); }
     if (!h) { if (this.wahl) { this.wahl = null; this.wahlLabel = null; this.aktualisiere(); if (this.blattArt === 'struktur') this.szene ? this.zeigeSzeneBlatt() : this.blattZu(); } return; }
     this.waehle(h.teil.g.id, h);
   }
@@ -601,7 +620,8 @@ class Viewer {
     });
   }
   legendeSetzen() {
-    const hatP = [...this.marken.values()].includes('p'), hatB = [...this.marken.values()].includes('b'), nerv = this.extras.some((x) => x.userData.nerv);
+    const neutral = !!this.tour?.neutral || this.zustand.schicht === 'dermatom';
+    const hatP = !neutral && [...this.marken.values()].includes('p'), hatB = !neutral && [...this.marken.values()].includes('b'), nerv = this.extras.some((x) => x.userData.nerv);
     const arth = !!this.arthroseAn;
     let h = '';
     if (hatP && !this.zustand.gesund) h += '<span><i style="background:' + PROBLEM + '"></i>Beschwerden</span>';
@@ -693,12 +713,14 @@ class Viewer {
       this.kopfzeile(B, this.nm(g), this.nm2(g) + (g.seite === 'r' ? ' · rechts' : g.seite === 'l' ? ' · links' : ''));
       if (g.fn) B.append(el('p', 'ana-text', g.fn));
       if (g.s) B.append(el('p', 'ana-fein', 'Schematisch dargestellt, Lage und Form vereinfacht.'));
-      const r = el('div', 'ana-aktionen'), m = this.marken.get(id);
-      const ak = (t, cls, an, fn) => { const b = knopf('ana-akt ' + cls + (an ? ' an' : ''), t, null, fn); r.append(b); };
-      ak('Beschwerden', 'rot', m === 'p', () => { this.markiere(id, m === 'p' ? null : 'p'); this.zeigeStruktur(id); });
-      ak('Daran arbeiten wir', 'blau', m === 'b', () => { this.markiere(id, m === 'b' ? null : 'b'); this.zeigeStruktur(id); });
-      ak(this.allein === id ? 'Wieder alle' : 'Allein zeigen', '', this.allein === id, () => { this.allein = this.allein === id ? null : id; this.markiereKopf(); this.aktualisiere(); this.zeigeStruktur(id); });
-      ak('Ausblenden', '', false, () => { this.aus.add(id); this.wahl = null; this.markiereKopf(); this.aktualisiere(); this.szene ? this.zeigeSzeneBlatt() : this.blattZu(); });
+      const r = el('div', 'ana-wzk'), m = this.marken.get(id);
+      const ak = (t, ic, cls, an, fn) => { const b = knopf('ana-akt ' + cls + (an ? ' an' : ''), (ic ? ICON[ic] : '') + `<span>${t}</span>`, null, fn); r.append(b); };
+      ak('Beschwerden', '', 'rot', m === 'p', () => { this.markiere(id, m === 'p' ? null : 'p'); this.zeigeStruktur(id); });
+      ak('Daran arbeiten wir', '', 'blau', m === 'b', () => { this.markiere(id, m === 'b' ? null : 'b'); this.zeigeStruktur(id); });
+      ak(this.allein === id ? 'Wieder alle' : 'Allein zeigen', 'allein', '', this.allein === id, () => { this.allein = this.allein === id ? null : id; this.roentgen = null; this.markiereKopf(); this.aktualisiere(); this.zeigeStruktur(id); });
+      ak('Ausblenden', 'aus', '', false, () => { this.aus.add(id); this.wahl = null; if (this.roentgen === id) this.roentgen = null; this.markiereKopf(); this.aktualisiere(); this.szene ? this.zeigeSzeneBlatt() : this.blattZu(); });
+      ak('Durchsichtig', 'durch', '', this.durch.has(id), () => { if (this.durch.has(id)) this.durch.delete(id); else this.durch.add(id); this.aktualisiere(); this.zeigeStruktur(id); });
+      ak('Rest durchsichtig', 'roent', '', this.roentgen === id, () => { this.roentgen = this.roentgen === id ? null : id; this.allein = null; this.durch.delete(id); this.aktualisiere(); this.zeigeStruktur(id); });
       B.append(r);
     });
   }
@@ -886,13 +908,15 @@ class Viewer {
     return n.map((x, i) => ({i, x, p: ges ? x / ges : 0})).filter((o) => o.p >= 0.08).sort((a, b) => b.x - a.x);
   }
   hatAuswahl() {
-    return !!(this.wahl || this.marken.size || this.szene || this.allein || this.aus.size || this.dermWahl != null || this.haut?.mal.some((x) => x > 0) || this.punkte.length || this.pinGruppe?.children.length || this.bew || this.zustand.gesund || this.zustand.modus !== 'drehen');
+    return !!(this.wahl || this.roentgen || this.durch.size || this.tour || this.marken.size || this.szene || this.allein || this.aus.size || this.dermWahl != null || this.haut?.mal.some((x) => x > 0) || this.punkte.length || this.pinGruppe?.children.length || this.bew || this.zustand.gesund || this.zustand.modus !== 'drehen');
   }
   resetStatus() { if (this.resetKnopf) this.resetKnopf.disabled = !this.hatAuswahl(); }
   auswahlZuruecksetzen() {
     if (!this.m) return;
+    this.tourEnde(true);
     this.bewegungAus();
     this.szeneAus();
+    this.roentgen = null; this.durch.clear();
     this.wahl = null; this.wahlLabel = null; this.allein = null; this.aus.clear(); this.marken.clear();
     this.dermWahl = null; if (this.haut) this.haut.mal.fill(0);
     if (this.punkte.length || this.pinGruppe.children.length) this.zeichnungLoeschen();
@@ -972,6 +996,7 @@ class Viewer {
 
   // ----- Zeichnen und Punkte -----
   setzeModus(m) {
+    if (this.modusPille) for (const b of this.modusPille.children) b.classList.toggle('an', b.dataset.m === (m === 'sezieren' ? 'sezieren' : 'drehen'));
     queueMicrotask(() => this.resetStatus());
     this.zustand.modus = m; this.canvas.classList.toggle('stift', m === 'stift'); this.canvas.classList.toggle('punkt', m === 'punkt'); this.canvas.classList.toggle('hautmal', m === 'hautmal');
   }
@@ -1053,7 +1078,7 @@ class Viewer {
       if (this.szene || this.marken.size) B.append(knopf('ana-akt', 'Markierungen entfernen', null, () => { this.szeneAus(); this.blattZu(); }));
     });
   }
-  szeneAus() { this.szene = null; this.patient = null; this.marken.clear(); this.labels = this.labels.filter((x) => x.pin); this.extrasAus(); this.arthroseAus(); this.zustand.gesund = false; this.aktualisiere(); }
+  szeneAus() { if (this.tour && !this.tour.intern) this.tourEnde(true); this.szene = null; this.patient = null; this.marken.clear(); this.labels = this.labels.filter((x) => x.pin); this.extrasAus(); this.arthroseAus(); this.zustand.gesund = false; this.aktualisiere(); }
   starteSzene(s, opt = {}) {
     if (!this.bereit) { this.wartend = () => this.starteSzene(s, opt); return; }
     this.szeneAus(); this.bewegungAus();
@@ -1064,6 +1089,7 @@ class Viewer {
     const ids = (k) => { if (sd !== 'm') { for (const c of [k + '|' + sd, k + '|m']) if (this.m.gruppen.has(c)) return [c]; return []; } return [k + '|m', k + '|r', k + '|l'].filter((c) => this.m.gruppen.has(c)); };
     let disk = s.prolaps;
     if (opt.segment && s.k === 'bandscheibe') disk = opt.segment;
+    this.szeneDisk = disk;
     for (const k of s.aus || []) for (const i of ids(k)) this.aus.add(i);
     for (const k of s.b) for (const i of ids(k)) this.marken.set(i, 'b');
     for (const k of opt.beh || []) for (const i of ids(k)) this.marken.set(i, 'b');
@@ -1096,12 +1122,86 @@ class Viewer {
       }
       if (chips.children.length) B.append(chips);
       if (this.patient?.beh?.length) B.append(el('p', 'ana-fein', 'Laut Doku behandelt: ' + this.patient.beh.join(', ')));
+      B.append(knopf('ana-akt ana-tourstart', ICON.tour + '<span>Als Tour zeigen</span>', null, () => this.tourStart()));
       const zeile = el('div', 'ana-aktionen');
       if (s.bew) zeile.append(knopf('ana-akt', 'Bewegung zeigen', null, () => this.zeigeBewegung(s.bew)));
       zeile.append(knopf('ana-akt', 'Andere Diagnose', null, () => this.zeigeSzenen()));
       B.append(zeile, el('p', 'ana-fein', 'Erklärtexte: Entwurf, fachlich prüfen.'));
     });
     if ((klein || warKlein) && this.root.clientWidth < 700) this.blattKlein(true);
+  }
+
+  // ----- Erklär-Tour -----
+  tourSchritte(s) {
+    const L = [];
+    const problem = () => [...this.marken].find(([id, a]) => a === 'p')?.[0] || null;
+    L.push({t: 'So sieht es gesund aus', text: 'Erst einmal der gesunde Aufbau dieser Region.', an: () => { this.zustand.gesund = true; this.tour.ohneLabel = true; this.tour.neutral = true; }});
+    L.push({t: 'Hier liegt das Problem', text: s.was, an: () => { this.roentgen = s.prolaps ? null : problem(); }});
+    if (s.prolaps) {
+      const disk = this.szeneDisk || s.prolaps, wurzel = {'L3/L4': 'L4', 'L4/L5': 'L5', 'L5/S1': 'S1', 'C4/C5': 'C5', 'C5/C6': 'C6', 'C6/C7': 'C7'}[disk] || 'L5';
+      L.push({t: 'Die Nervenwurzel wird gereizt', text: 'Das ausgetretene Gewebe drückt auf die Nervenwurzel daneben. Deshalb kann der Schmerz ins Bein ziehen.', an: () => { this.zustand.schicht = 'knochen'; }});
+      L.push({t: 'Hier spürt man es', text: `Die Wurzel ${wurzel} versorgt diesen Hautstreifen. Kribbeln, Taubheit oder Schmerz zeigen sich oft genau dort.`, kamera: true, an: () => { this.zustand.schicht = 'dermatom'; this.dermWahl = DERM.findIndex((d) => d.k === wurzel); this.tour.ohneLabel = true; this.tourBeinKamera(wurzel); }});
+    } else if (s.nerv === 'medianus') {
+      L.push({t: 'Der Mittelnerv wird eingeengt', text: 'Unter dem Band an der Handwurzel ist wenig Platz. Wird es eng, meldet sich der Nerv mit Kribbeln in Daumen bis Mittelfinger.', an: () => { this.zustand.schicht = 'tief'; }});
+    }
+    if (s.bew) {
+      const bogen = s.bogen ? ` Zwischen ${s.bogen[0]} und ${s.bogen[1]} Grad wird es typischerweise eng.` : '';
+      L.push({t: s.bogen ? 'Wann es weh tut' : 'So bewegt sich das Gelenk', text: (BEWEGUNGEN[s.bew]?.t || 'Bewegung') + '.' + bogen, kamera: true, an: () => { this.bewegungAn(s.bew); this.kameraBewegung(s.bew); this.anim = {t0: performance.now(), per: 5}; this.anstossen(); }});
+    }
+    L.push({t: 'Daran arbeiten wir', text: s.wir, an: () => {}});
+    return L;
+  }
+  tourStart() {
+    const s = this.szene; if (!s) return;
+    this.tour = {s, i: 0, schritte: null, intern: false};
+    this.blattZu();
+    this.tour.schritte = this.tourSchritte(s);
+    this.tourGehe(0);
+  }
+  tourGehe(i) {
+    const T = this.tour; if (!T) return;
+    T.i = Math.max(0, Math.min(T.schritte.length - 1, i)); T.ohneLabel = false; T.neutral = false;
+    const s = T.s;
+    this.anim = null; if (this.bew) this.bewegungAus();
+    this.zustand.region = s.r; this.zustand.gesund = false; this.zustand.schicht = s.schicht || 'alle';
+    this.roentgen = null; this.dermWahl = null; this.allein = null; this.wahl = null;
+    const st = T.schritte[T.i]; st.an();
+    this.markiereKopf(); this.extrasSichtbar(); this.hautFaerben(); this.aktualisiere();
+    if (!st.kamera) this.ansichtZurueck();
+    this.tourLeisteZeigen();
+  }
+  tourBeinKamera(wurzel) {
+    const s = this.zustand.seite, P = this.pivots(s), sx = s === 'r' ? -1 : 1;
+    const ziel = P.knie.clone().add(new V3(sx * -40, -40, 0)), hinten = /^S/.test(wurzel);
+    const az = hinten ? Math.PI + sx * 0.55 : sx * 1.15;
+    this.fliege(ziel, 2300, az, 1.5);
+  }
+  tourLeisteZeigen() {
+    const T = this.tour, L = this.tourLeiste;
+    L.hidden = !T; this.root.classList.toggle('tour-an', !!T);
+    if (!T) return;
+    const st = T.schritte[T.i], n = T.schritte.length;
+    L.innerHTML = '';
+    const zur = knopf('ana-tour-pf', '‹', 'Vorheriger Schritt', () => this.tourGehe(T.i - 1)); zur.disabled = T.i === 0;
+    const vor = knopf('ana-tour-pf vor', T.i === n - 1 ? '✓' : '›', T.i === n - 1 ? 'Tour beenden' : 'Nächster Schritt', () => T.i === n - 1 ? this.tourEnde() : this.tourGehe(T.i + 1));
+    const mitte = el('div', 'ana-tour-mitte');
+    mitte.append(el('small', '', `Tour ${T.s.t} · Schritt ${T.i + 1} von ${n}`), el('b', '', st.t));
+    const dots = el('div', 'ana-tour-dots');
+    for (let k = 0; k < n; k++) { const d = knopf(k <= T.i ? 'an' : '', '', `Schritt ${k + 1}`, () => this.tourGehe(k)); dots.append(d); }
+    mitte.append(dots, el('p', '', st.text));
+    const zu = knopf('ana-x ana-tour-zu', ICON.zu, 'Tour schließen', () => this.tourEnde());
+    L.append(zur, mitte, vor, zu);
+    this.versatzNeu();
+  }
+  tourEnde(still) {
+    if (!this.tour) return;
+    this.tour = null; this.anim = null; if (this.bew) this.bewegungAus();
+    this.tourLeiste.hidden = true; this.root.classList.remove('tour-an');
+    if (still) return;
+    this.zustand.gesund = false; this.roentgen = null; this.dermWahl = null;
+    if (this.szene) { this.zustand.schicht = this.szene.schicht || 'alle'; this.zustand.region = this.szene.r; }
+    this.markiereKopf(); this.extrasSichtbar(); this.hautFaerben(); this.aktualisiere(); this.ansichtZurueck();
+    if (this.szene) this.zeigeSzeneBlatt();
   }
 
   // ----- Zusatzdarstellungen: Vorfall, Nerv, Arthrose -----
