@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v69 | 28.10.2026 | 7b12fb6 | Mehr-Seite neu gestaltet: jeder Bereich als Karte mit farbigem rundem Symbol, Titel und Untertitel (z. B. Textstil, Zahl der Tagespläne, „Noch nie gesichert“), weiche Schatten statt Rahmen, auch im Dunkelmodus |
 | v68 | 28.10.2026 | 3488ce4 | Mehr-Seite: Testdatenbank als schlichte Zeile ohne Erklärtext, Gelernte Vorschläge zugeklappt wie Verlaufsdoku und Dienstpläne, alle Kacheln gleich hoch und kompakter |
 | v67 | 28.10.2026 | ee2d83e | Reiter „Mehr“ mit Zahnrad-Symbol. Mehr-Seite neu sortiert: Testdatenbank oben, Sicherung ganz unten; Verlaufsdoku und Dienstpläne zugeklappt, erst beim Antippen mit Auswahl bzw. Liste |
 | v66 | 28.10.2026 | d4578a6 | Patientenkartei ordnen: Umschalter A–Z, Krankheitsbild, Region. Krankheitsbild aus der Wissensbasis (bestätigt oder aus der Diagnose erkannt), gruppiert nach Bereich; Patienten mit mehreren Diagnosen stehen in jeder passenden Gruppe mit der jeweiligen Diagnose; ohne Treffer „Ohne passendes Krankheitsbild“ bzw. „Diagnose noch offen“. Gewählte Ansicht wird gemerkt |
