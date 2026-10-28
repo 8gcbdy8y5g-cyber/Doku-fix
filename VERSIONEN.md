@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v63 | 28.10.2026 | ecbab7f | Reiter Patienten ist jetzt eine Patientenkartei mit allen Patienten (auch Schnell-Doku), alphabetisch, mit Suche nach Name oder Diagnose, Filtern (Alle, Heute, Erstbefund, Schnell-Doku, Abgeschlossen) und Anlegen über +. Antippen öffnet ein Menü mit Verlauf, Erstbefund, Patientenhistorie, Neubefundung, Weitere Diagnose und Löschen; bei mehreren Diagnosen steckt der Verlauf im Menü der jeweiligen Diagnose. Dienstplan: gleiches Menü, Bearbeiten als Werkzeugsymbol oben rechts, darunter immer „Aus vorhandener Doku übernehmen“. Zurück-Knopf oben links zurück zu Patienten oder Dienstplan. Reiter Schnell-Doku entfernt |
 | v62 | 28.10.2026 | 4a2df3c | Dienstplan: neuer Knopf „Patientenhistorie“ (Diagnosen, Erstbefunde, Verlaufsdokumentation, eingeklappt) und „Neubefundung“ (neuer Befund mit übernommener Diagnose und Anamnese, bisheriger Befund und Verlauf werden abgeschlossen und bleiben in der Historie) |
 | v61 | 27.10.2026 | 5f49d42 | Reiterleiste unten neu gestaltet (klassisch): vier gleich breite Reiter, aktiver Reiter mit hellblauer Fläche und blauem Strich oben, kürzere Namen „Patienten“ und „Schnell-Doku“ |
 | v60 | 27.10.2026 | 1adfae8 | Weicher Übergang beim Wischen: alte und neue Seite gleiten zusammen, Tempo vom Finger, Überschrift blendet mit |
