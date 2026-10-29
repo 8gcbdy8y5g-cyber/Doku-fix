@@ -46,23 +46,23 @@ export const WEICH = [
   [/flexor pollicis longus/, 'fpl', 'Langer Daumenbeuger', 'M. flexor pollicis longus', 'Beugt das Daumenendglied.', 0],
   [/(abductor|flexor) pollicis brevis|opponens pollicis|adductor pollicis/, 'thenar', 'Daumenballenmuskeln', 'Mm. thenares', 'Bewegen und stabilisieren den Daumen beim Greifen.', 1],
   [/digiti minimi(?: brevis)? of hand|opponens digiti minimi of hand/, 'hypothenar', 'Kleinfingerballenmuskeln', 'Mm. hypothenares', 'Bewegen den kleinen Finger.', 1],
-  [/lumbricals of hand|interossei of hand/, 'handklein', 'Kleine Handmuskeln', 'Mm. lumbricales et interossei', 'Feinsteuerung der Finger.', 0],
+  [/lumbricals? of hand|interossei of hand|palmar interossei/, 'handklein', 'Kleine Handmuskeln', 'Mm. lumbricales et interossei', 'Feinsteuerung der Finger.', 0],
   [/flexor retinaculum of wrist/, 'retinac', 'Dach des Karpaltunnels', 'Retinaculum musculorum flexorum', 'Festes Band über der Handwurzel. Darunter liegt der Karpaltunnel.', 1, 'band'],
   [/interosseous membrane of forearm/, 'membua', 'Zwischenknochenmembran (Unterarm)', 'Membrana interossea antebrachii', 'Verbindet Elle und Speiche.', 0, 'band'],
   [/sternocleidomastoid/, 'scm', 'Kopfwender', 'M. sternocleidomastoideus', 'Dreht und neigt den Kopf.', 1],
   [/scalenus/, 'scaleni', 'Treppenmuskeln', 'Mm. scaleni', 'Neigen den Hals zur Seite und heben beim Atmen die oberen Rippen.', 0],
   [/splenius/, 'splenius', 'Riemenmuskel', 'M. splenius capitis et cervicis', 'Streckt und dreht Kopf und Hals.', 0],
-  [/semispinalis (capitis|cervicis)/, 'semisphals', 'Halbdornmuskel (Hals)', 'M. semispinalis capitis et cervicis', 'Streckt den Kopf.', 0],
+  [/semispinalis (capitis|cervicis|colli)/, 'semisphals', 'Halbdornmuskel (Hals)', 'M. semispinalis capitis et cervicis', 'Streckt den Kopf.', 0],
   [/semispinalis thoracis/, 'semispbr', 'Halbdornmuskel (Brust)', 'M. semispinalis thoracis', 'Streckt und dreht die Brustwirbelsäule.', 0],
-  [/longissimus (capitis|cervicis)/, 'longhals', 'Langer Kopf- und Halsmuskel', 'M. longissimus capitis et cervicis', 'Streckt und neigt Kopf und Hals.', 0],
-  [/rectus capitis posterior|obliquus capitis/, 'subocc', 'Kurze Nackenmuskeln', 'Mm. suboccipitales', 'Steuern feine Kopfbewegungen. Häufig beteiligt, wenn Kopfschmerz vom Nacken ausgeht.', 0],
-  [/longus colli|longus capitis|rectus capitis (anterior|lateralis)/, 'tiefhalsb', 'Tiefe Halsbeuger', 'M. longus colli et capitis', 'Stabilisieren die Halswirbelsäule von vorn.', 0],
-  [/cervical intertransversarii|interspinales cervicis|cervical rotator/, 'halsklein', 'Kleine Halswirbelmuskeln', 'Mm. intertransversarii, interspinales, rotatores cervicis', 'Halten die Halswirbel Segment für Segment.', 0],
+  [/longissimus (capitis|cervicis|colli)/, 'longhals', 'Langer Kopf- und Halsmuskel', 'M. longissimus capitis et cervicis', 'Streckt und neigt Kopf und Hals.', 0],
+  [/rectus capitis posterior|rectus posterior (major|minor) capitis|obliquus (inferior |superior )?capitis/, 'subocc', 'Kurze Nackenmuskeln', 'Mm. suboccipitales', 'Steuern feine Kopfbewegungen. Häufig beteiligt, wenn Kopfschmerz vom Nacken ausgeht.', 0],
+  [/longus colli|longus capitis|rectus capitis (anterior|lateralis)|rectus (anterior|lateralis) capitis/, 'tiefhalsb', 'Tiefe Halsbeuger', 'M. longus colli et capitis', 'Stabilisieren die Halswirbelsäule von vorn.', 0],
+  [/cervical intertransversarii|interspinales (cervicis|colli)|cervical rotator/, 'halsklein', 'Kleine Halswirbelmuskeln', 'Mm. intertransversarii, interspinales, rotatores cervicis', 'Halten die Halswirbel Segment für Segment.', 0],
   [/iliocostalis/, 'iliocost', 'Darmbein-Rippen-Muskel', 'M. iliocostalis', 'Teil des Rückenstreckers: richtet den Rumpf auf.', 0],
   [/longissimus thoracis/, 'longthor', 'Langer Rückenmuskel', 'M. longissimus thoracis', 'Teil des Rückenstreckers: richtet den Rumpf auf.', 0],
-  [/spinalis (cervicis|thoracis)/, 'spinalis', 'Dornmuskel', 'M. spinalis', 'Teil des Rückenstreckers.', 0],
+  [/spinalis (cervicis|thoracis|colli|capitis)/, 'spinalis', 'Dornmuskel', 'M. spinalis', 'Teil des Rückenstreckers.', 0],
   [/multifidus/, 'multifidus', 'Vielgespaltener Muskel', 'M. multifidus', 'Kleine, tiefe Stabilisatoren direkt an den Wirbeln.', 0],
-  [/thoracic rotator|lumbar rotator|interspinales (lumborum|thoracis)|lumbar intertransversarius|levatores costarum/, 'wirbelklein', 'Kleine Wirbelmuskeln', 'Mm. rotatores, interspinales, intertransversarii', 'Halten die Wirbel Segment für Segment.', 0],
+  [/thoracic rotator|lumbar rotator|^rotatores|interspinales (lumborum|thoracis)|lumbar intertransversarius|intertransversarii lumborum|levatores costarum|levatores (longi|breves) costarum/, 'wirbelklein', 'Kleine Wirbelmuskeln', 'Mm. rotatores, interspinales, intertransversarii', 'Halten die Wirbel Segment für Segment.', 0],
   [/quadratus lumborum/, 'qlumb', 'Quadratischer Lendenmuskel', 'M. quadratus lumborum', 'Neigt den Rumpf zur Seite und stabilisiert Becken und Lendenwirbelsäule.', 0],
   [/serratus posterior/, 'serrpost', 'Hinterer Sägemuskel', 'M. serratus posterior', 'Unterstützt die Atmung.', 0],
   [/intercostal|transversus thoracis/, 'intercost', 'Zwischenrippenmuskeln', 'Mm. intercostales', 'Bewegen die Rippen beim Atmen.', 0],
@@ -104,7 +104,7 @@ export const WEICH = [
   [/fibularis brevis/, 'fibbrev', 'Kurzer Wadenbeinmuskel', 'M. fibularis brevis', 'Stabilisiert das Sprunggelenk gegen Umknicken.', 0],
   [/flexor digitorum longus/, 'fdl', 'Langer Zehenbeuger', 'M. flexor digitorum longus', 'Beugt die Zehen.', 0],
   [/flexor hallucis longus/, 'fhl', 'Langer Großzehenbeuger', 'M. flexor hallucis longus', 'Beugt die Großzehe und stützt das Gewölbe.', 0],
-  [/extensor (digitorum|hallucis) brevis|hallucis|flexor accessorius|flexor digitorum brevis|digiti minimi(?: brevis)? of foot|lumbrical of foot|interosse.* of foot/, 'fussklein', 'Kurze Fußmuskeln', 'Mm. pedis', 'Halten das Fußgewölbe und bewegen die Zehen.', 1],
+  [/extensor (digitorum|hallucis) brevis|hallucis|flexor accessorius|quadratus plantae|plantar interossei|flexor digitorum brevis|digiti minimi(?: brevis)? of foot|lumbrical of foot|interosse.* of foot/, 'fussklein', 'Kurze Fußmuskeln', 'Mm. pedis', 'Halten das Fußgewölbe und bewegen die Zehen.', 1],
   [/long plantar ligament/, 'langplant', 'Langes Sohlenband', 'Lig. plantare longum', 'Stützt das Längsgewölbe.', 0, 'band'],
   [/interosseous membrane of leg/, 'membub', 'Zwischenknochenmembran (Unterschenkel)', 'Membrana interossea cruris', 'Verbindet Schienbein und Wadenbein.', 0, 'band'],
   [/masseter/, 'masseter', 'Kaumuskel', 'M. masseter', 'Schließt den Kiefer beim Kauen. Spannt sich oft beim Zähnepressen an.', 1],
@@ -131,7 +131,7 @@ const EINZEL = {
   sacrum:['Kreuzbein','Os sacrum'], 'hip bone':['Beckenknochen','Os coxae'], femur:['Oberschenkelknochen','Femur'], patella:['Kniescheibe','Patella'],
   tibia:['Schienbein','Tibia'], fibula:['Wadenbein','Fibula'], talus:['Sprungbein','Talus'], calcaneus:['Fersenbein','Calcaneus'],
   'navicular bone of foot':['Kahnbein (Fuß)','Os naviculare'], 'cuboid bone':['Würfelbein','Os cuboideum'], 'medial cuneiform bone':['Inneres Keilbein','Os cuneiforme mediale'],
-  'intermediate cuneiform bone':['Mittleres Keilbein','Os cuneiforme intermedium'], 'lateral cuneiform bone':['Äußeres Keilbein','Os cuneiforme laterale'], 'sesamoid bone of foot':['Sesambein','Ossa sesamoidea pedis'],
+  'intermediate cuneiform bone':['Mittleres Keilbein','Os cuneiforme intermedium'], 'lateral cuneiform bone':['Äußeres Keilbein','Os cuneiforme laterale'], 'sesamoid bone of foot':['Sesambein','Ossa sesamoidea pedis'], coccyx:['Steißbein','Os coccygis'], 'inferior nasal concha':['Untere Nasenmuschel','Concha nasalis inferior'],
   humerus:['Oberarmknochen','Humerus'], scapula:['Schulterblatt','Scapula'], clavicle:['Schlüsselbein','Clavicula'], radius:['Speiche','Radius'], ulna:['Elle','Ulna'],
   scaphoid:['Kahnbein (Hand)','Os scaphoideum'], lunate:['Mondbein','Os lunatum'], triquetral:['Dreiecksbein','Os triquetrum'], pisiform:['Erbsenbein','Os pisiforme'],
   trapezium:['Großes Vieleckbein','Os trapezium'], trapezoid:['Kleines Vieleckbein','Os trapezoideum'], capitate:['Kopfbein','Os capitatum'], hamate:['Hakenbein','Os hamatum'],
@@ -143,7 +143,8 @@ const SCHAEDEL = /frontal bone|parietal bone|sphenoid|ethmoid|nasal bone|lacrima
 
 // Liefert {key, de, lat, fn, sup, cls}
 const ZAHN = {'central secondary incisor':[1,'mittlerer Schneidezahn','Dens incisivus medialis'],'lateral secondary incisor':[2,'seitlicher Schneidezahn','Dens incisivus lateralis'],'secondary canine':[3,'Eckzahn','Dens caninus'],'first secondary premolar':[4,'erster kleiner Backenzahn','Dens premolaris primus'],'second secondary premolar':[5,'zweiter kleiner Backenzahn','Dens premolaris secundus'],'first secondary molar':[6,'erster Backenzahn','Dens molaris primus'],'second secondary molar':[7,'zweiter Backenzahn','Dens molaris secundus']};
-export function benenne(base, seite) {
+const DE_BAND = {"lateral temporomandibular ligament": "Seitliches Kiefergelenkband", "articular disc of temporomandibular joint": "Diskus des Kiefergelenks", "supraspinous ligament": "Überdornband", "interspinous ligaments": "Zwischendornbänder", "anterior longitudinal ligament": "Vorderes Längsband", "posterior longitudinal ligament": "Hinteres Längsband", "nuchal ligament": "Nackenband", "ligamenta flava": "Gelbe Bänder", "coraco-acromial ligament": "Schulterdachband", "trapezoid ligament": "Trapezband", "conoid ligament": "Kegelband", "acromioclavicular ligament": "Schultereckgelenkband", "anterior sternoclavicular ligament": "Vorderes Brustbein-Schlüsselbein-Band", "costoclavicular ligament": "Rippen-Schlüsselbein-Band", "posterior sternoclavicular ligament": "Hinteres Brustbein-Schlüsselbein-Band", "superior glenohumeral ligament": "Oberes glenohumerales Band", "middle glenohumeral ligament": "Mittleres glenohumerales Band", "inferior glenohumeral ligament": "Unteres glenohumerales Band", "glenoid labrum": "Pfannenlippe (Schulter)", "coracohumeral ligament": "Rabenschnabel-Oberarm-Band", "radial collateral ligament": "Speichenseitiges Seitenband (Ellenbogen)", "ulnar collateral ligament": "Ellenseitiges Seitenband (Ellenbogen)", "annular ligament of radius": "Ringband der Speiche", "scapholunate interosseous ligament": "Skapholunäres Band", "articular capsule of radiocarpal joint": "Kapsel des Handgelenks", "dorsal radiocarpal ligament": "Dorsales Speichen-Handwurzel-Band", "ulnar collateral ligament of wrist joint": "Ellenseitiges Seitenband (Handgelenk)", "radial collateral ligament of wrist joint": "Speichenseitiges Seitenband (Handgelenk)", "dorsal ulnocarpal ligament": "Dorsales Ellen-Handwurzel-Band", "sacrotuberous ligament": "Kreuzbein-Sitzbeinhöcker-Band", "sacrospinous ligament": "Kreuzbein-Sitzbeinstachel-Band", "iliolumbar ligament": "Darmbein-Lenden-Band", "pubic symphysis": "Schambeinfuge", "interpubic disc": "Faserknorpelscheibe der Schambeinfuge", "anterior sacro-iliac ligament": "Vorderes Iliosakralband", "posterior sacro-iliac ligament": "Hinteres Iliosakralband", "interosseous sacro-iliac ligament": "Zwischenknöchernes Iliosakralband", "anterior tibiofibular ligament": "Vorderes Syndesmosenband", "posterior tibiofibular ligament": "Hinteres Syndesmosenband", "transverse tibiofibular ligament": "Querband der Syndesmose", "transverse part of iliofemoral ligament": "Darmbein-Oberschenkel-Band, querer Teil", "descending part of iliofemoral ligament": "Darmbein-Oberschenkel-Band, absteigender Teil", "acetabular labrum": "Pfannenlippe (Hüfte)", "pubofemoral ligament": "Schambein-Oberschenkel-Band", "ischiofemoral ligament": "Sitzbein-Oberschenkel-Band", "anterior meniscotibial ligament medial meniscus": "Vorderes Meniskus-Schienbein-Band (innen)", "posterior meniscotibial ligament medial meniscus": "Hinteres Meniskus-Schienbein-Band (innen)", "anterior meniscotibial ligament lateral meniscus": "Vorderes Meniskus-Schienbein-Band (außen)", "posterior meniscotibial ligament lateral meniscus": "Hinteres Meniskus-Schienbein-Band (außen)", "transverse ligament of knee": "Querband des Knies", "oblique popliteal ligament": "Schräges Kniekehlenband", "arcuate popliteal ligament": "Bogenförmiges Kniekehlenband", "posterior tibiotalar ligament": "Hinterer Teil des Innenbands (OSG)", "tibiocalcaneal ligament": "Schienbein-Fersenbein-Teil des Innenbands", "tibionavicular ligament": "Schienbein-Kahnbein-Teil des Innenbands", "posterior talofibular ligament": "Hinteres Außenband (PTFL)", "plantar calcaneonavicular ligament": "Pfannenband", "extensor retinaculum of wrist": "Strecksehnenhalteband", "palmar aponeurosis": "Palmaraponeurose"};
+export function benenne(base, seite, hint = {}) {
   let z;
   if ((z = base.match(/^(upper|lower) (.+) tooth$/))) {
     const t = ZAHN[z[2]] || [0, 'Zahn', 'Dens'], oben = z[1] === 'upper', q = oben ? (seite === 'r' ? 1 : 2) : (seite === 'r' ? 4 : 3), fdi = `${q}${t[0]}`;
@@ -173,7 +174,9 @@ export function benenne(base, seite) {
   if (SCHAEDEL.test(base)) return {key:'schaedel', de:'Schädel', lat:'Cranium', fn:'', sup:0, cls:'knochen'};
   const e = EINZEL[base];
   if (e) return {key:e[1], de:e[0], lat:e[1], fn:'', sup:0, cls:'knochen'};
-  return {key:base, de:base, lat:base, fn:'', sup:0, cls:'knochen'};
+  const en = hint.en ? hint.en.replace(/\.(r|l)$/, '') : base, lat = hint.la || en;
+  const cls = hint.art === 'muskel' ? (hint.f === 'band' ? 'band' : 'muskel') : hint.art === 'gelenk' ? (/labrum|articular disc|interpubic disc/i.test(base) ? 'menisk' : 'band') : 'knochen';
+  return {key:base, de:DE_BAND[base] || en, lat, fn:'', sup:0, cls};
 }
 function segName([reg, n]) {
   if (reg === 'cervical') return n === 7 ? 'C7/Th1' : `C${n}/C${n + 1}`;
@@ -258,11 +261,11 @@ export const SZENEN = [
     p:['innenmen'], b:['rectfem','vastmed','vastlat','vastint','glutmed'], arthrose:'knie', bew:'knie_flex',
     was:'Der Knorpel an den Gelenkflächen ist dünner geworden, meist auf der Innenseite. Das gehört oft zum Älterwerden dazu. Wie stark es schmerzt, hängt viel davon ab, wie kräftig die Muskeln sind und wie das Knie belastet wird.',
     wir:'Wir kräftigen Oberschenkel und Hüfte, verbessern die Beweglichkeit und dosieren die Belastung. Bewegung ernährt den Knorpel.'},
-  {k:'vkb', aus:['Patella','patsehne'], schicht:'knochen', blick:[-0.45, 0.1, 1], t:'Vorderes Kreuzband', fach:'VKB-Ruptur / Z. n. VKB-Plastik', r:'knie', such:/vkb|kreuzband|acl/,
+  {k:'vkb', aus:['Patella','patsehne'], durch:['Femur'], schicht:'knochen', blick:[-0.45, 0.1, 1], t:'Vorderes Kreuzband', fach:'VKB-Ruptur / Z. n. VKB-Plastik', r:'knie', such:/vkb|kreuzband|acl/,
     p:['vkb'], b:['rectfem','vastmed','vastlat','bicfem','semiten','semimem'], bew:'knie_flex',
     was:'Das vordere Kreuzband sichert das Knie bei Drehungen und Stopps. Nach einer Plastik wächst das Ersatzband ein und wird über Monate belastbar.',
     wir:'Wir bauen Kraft im Oberschenkel und im Gesäß auf, trainieren Gleichgewicht und Sprünge in Stufen und prüfen vor der Rückkehr in den Sport, ob das Knie bereit ist.'},
-  {k:'meniskus', aus:['Patella','patsehne'], schicht:'knochen', blick:[-0.4, 0.75, 0.8], t:'Meniskus', fach:'Meniskusläsion', r:'knie', such:/menisk/,
+  {k:'meniskus', aus:['Patella','patsehne'], durch:['Femur'], schicht:'knochen', blick:[-0.4, 0.75, 0.8], t:'Meniskus', fach:'Meniskusläsion', r:'knie', such:/menisk/,
     p:['innenmen'], b:['rectfem','vastmed','vastlat'], bew:'knie_flex',
     was:'Die Menisken sind Stoßdämpfer zwischen Ober- und Unterschenkel. Ein Einriss kann bei tiefem Beugen und Drehen Schmerzen machen.',
     wir:'Wir kräftigen die Beinmuskulatur, verbessern die Kontrolle des Knies und steigern die Beugung und das Drehen dosiert.'},
@@ -308,6 +311,15 @@ export const BEWEGUNGEN = {
   knie_flex: {t:'Knie beugen', fach:'Flexion Knie', min:0, max:140, norm:[120, 150], r:'knie'},
   kiefer: {t:'Mund öffnen', fach:'Mundöffnung', min:0, max:30, norm:null, mm:true, r:'kiefer'},
   osg: {t:'Fuß heben und senken', fach:'Dorsalextension / Plantarflexion OSG', min:-45, max:20, norm:[-50, 20], r:'fuss', neg:'Fuß senken', pos:'Fuß heben'},
+};
+// Welche Muskeln arbeiten bei der Bewegung (Agonisten) und welche werden gedehnt (Antagonisten). Vereinfacht.
+export const MUSKELARBEIT = {
+  knie_flex: {ago:['bicfem','semiten','semimem','gastro','gracilis','sartorius','popliteus'], ant:['rectfem','vastlat','vastmed','vastint']},
+  ellenbogen_flex: {ago:['biceps','brachialis','brachiorad'], ant:['triceps','anconeus']},
+  huefte_flex: {ago:['iliacus','psoas','rectfem','sartorius','tfl'], ant:['glutmax','bicfem','semiten','semimem']},
+  schulter_abd: {ago:['deltoid','supraspinatus','serrant','trapdesc','trapasc'], ant:['latdorsi','pecmaj','teresmajor']},
+  osg: {ago:['tibant','edl','ehl'], ant:['gastro','soleus'], neg:{ago:['gastro','soleus','fiblong','fibbrev','tibpost','fhl','fdl'], ant:['tibant','edl','ehl']}},
+  kiefer: {ago:['pterygoid'], ant:['masseter','temporalis']},
 };
 export const BEW_JE_REGION = {kiefer:['kiefer'], schulter:['schulter_abd'], ellenbogen:['ellenbogen_flex'], huefte:['huefte_flex'], knie:['knie_flex'], fuss:['osg']};
 export {BEIN_K, ARM_K};

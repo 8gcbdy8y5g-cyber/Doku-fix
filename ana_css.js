@@ -174,4 +174,6 @@ html.ana-voll body{overflow:hidden}
 .ana-tour-zu{position:absolute;top:-12px;right:-6px;width:30px!important;height:30px!important;box-shadow:0 1px 6px rgba(0,0,0,.18);background:var(--flaeche,#fff)!important}
 .ana.tour-an .ana-legende{bottom:auto;top:10px}
 @media (max-width:699px){.ana-tour{left:6px;right:86px;bottom:6px;padding:10px;gap:8px}.ana-tour-pf{width:40px;height:40px}.ana-tour-mitte b{font-size:15px}.ana-tour-mitte p{font-size:12.5px;max-height:4.2em}}
+.ana-funktion{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:10px;border-color:#E8261A;color:#B3150B}
+.ana-funktion svg{width:16px;height:16px}
 `;

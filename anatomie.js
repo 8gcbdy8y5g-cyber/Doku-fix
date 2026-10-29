@@ -1,12 +1,14 @@
 // Doku-Fix · Reiter Anatomie
-// 3D-Modell: BodyParts3D, © The Database Center for Life Science, CC BY-SA 2.1 JP (reduziert, umgerechnet).
+// 3D-Modell: Z-Anatomy (CC BY-SA 4.0, Kervyn & Zielinski) auf Basis von BodyParts3D (© The Database Center for Life Science, CC BY-SA 2.1 JP), reduziert und umgerechnet.
 // Schematische Zusatzstrukturen (Menisken, Kreuzbänder, Außenbänder, Plantarfaszie, Nerven) selbst modelliert.
 import * as THREE from './three.module.min.js';
 import {CSS} from './ana_css.js';
-import {benenne, REGIONEN, SZENEN, BEWEGUNGEN, BEW_JE_REGION, BEH_MAP, DERM} from './ana_daten.js';
+import {benenne, REGIONEN, SZENEN, BEWEGUNGEN, BEW_JE_REGION, BEH_MAP, DERM, MUSKELARBEIT} from './ana_daten.js';
 
 const V3 = THREE.Vector3;
-const FARBE = {zahn:'#F6F3EA', knochen:'#E9E1CF', knorpel:'#CBDCE3', disk:'#A7C6DA', muskel:'#BD5E52', band:'#E6EAEE', menisk:'#D3E5EE'};
+const FARBE = {zahn:'#F6F3EA', knochen:'#E9E1CF', knorpel:'#CBDCE3', disk:'#A7C6DA', muskel:'#B4483F', band:'#E2E4DF', menisk:'#D3E5EE'};
+const TEIL_FARBE = {sehne:'#E8E1CC', knorpel:'#D2E2EA', wurzel:'#E6D9BA', kern:'#EBD9A0'};
+const AKTIV = new THREE.Color('#E8261A'), GEDEHNT = new THREE.Color('#E9C3B6');
 const PROBLEM = '#FF3B30', BEH = '#2E8FD9', WAHL = '#FFD23F', NERV = '#F5C431';
 const GRAU = new THREE.Color('#B9A9A4');
 
@@ -73,9 +75,9 @@ function baue(d) {
     let seite = 'm', base = p.n;
     const m = p.n.match(/\b(right|left)\b/);
     if (m) { seite = m[1] === 'right' ? 'r' : 'l'; base = p.n.replace(/ ?\b(right|left)\b ?/, ' ').trim(); }
-    const info = benenne(base, seite);
+    const info = benenne(base, seite, p);
     if (info.key === 'schaedel' || info.key === 'Sternum' || info.cls === 'zahn') seite = 'm';
-    return {i, n: p.n, base, seite, vs: p.vs, v: p.v, ts: p.ts, t: p.t, s: !!p.s, info};
+    return {i, n: p.n, base, seite, vs: p.vs, v: p.v, ts: p.ts, t: p.t, s: !!p.s, flag: p.f || '', info};
   });
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
@@ -92,8 +94,21 @@ function baue(d) {
     if (!g) { g = {id, key: t.info.key, seite: t.seite, ...t.info, teile: [], s: t.s}; gruppen.set(id, g); }
     g.teile.push(t.i); t.g = g;
   }
-  for (const t of teile) kugel(t, pos);
+  for (const t of teile) { kugel(t, pos); achse(t, pos); }
   return {meta, geo, pos, idx, teile, gruppen, nrm: geo.attributes.normal.array, over};
+}
+function achse(t, pos) {
+  // Hauptachse der Punktwolke (Faserrichtung grob), per Potenzverfahren
+  let cx = 0, cy = 0, cz = 0; const n = t.v;
+  for (let v = t.vs; v < t.vs + n; v++) { cx += pos[v * 3]; cy += pos[v * 3 + 1]; cz += pos[v * 3 + 2]; }
+  cx /= n; cy /= n; cz /= n;
+  let xx = 0, xy = 0, xz = 0, yy = 0, yz = 0, zz = 0;
+  for (let v = t.vs; v < t.vs + n; v++) { const x = pos[v * 3] - cx, y = pos[v * 3 + 1] - cy, z = pos[v * 3 + 2] - cz; xx += x * x; xy += x * y; xz += x * z; yy += y * y; yz += y * z; zz += z * z; }
+  let a = [0.3, 1, 0.2];
+  for (let k = 0; k < 24; k++) { const b = [xx * a[0] + xy * a[1] + xz * a[2], xy * a[0] + yy * a[1] + yz * a[2], xz * a[0] + yz * a[1] + zz * a[2]]; const l = Math.hypot(...b) || 1; a = b.map((x) => x / l); }
+  t.ax = new V3(...a); t.mitte = new V3(cx, cy, cz);
+  let lo = 1e9, hi = -1e9; for (let v = t.vs; v < t.vs + n; v++) { const d = (pos[v * 3] - cx) * a[0] + (pos[v * 3 + 1] - cy) * a[1] + (pos[v * 3 + 2] - cz) * a[2]; if (d < lo) lo = d; if (d > hi) hi = d; }
+  t.lo = lo; t.hi = hi;
 }
 function kugel(t, pos) {
   let a = [1e9, 1e9, 1e9], b = [-1e9, -1e9, -1e9];
@@ -108,9 +123,9 @@ function material(statTex, pass) {
   m.userData.u = {uState: {value: statTex}, uPass: {value: pass}, uTime: {value: 0}};
   m.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, m.userData.u);
-    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute float pid; attribute vec4 aOver; varying float vPid; varying vec4 vOver;')
-      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvPid = pid; vOver = aOver;');
-    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nuniform sampler2D uState; uniform float uPass; uniform float uTime; varying float vPid; varying vec4 vOver;')
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute float pid; attribute vec4 aOver; varying float vPid; varying vec4 vOver; varying vec3 vWP;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvPid = pid; vOver = aOver; vWP = position;');
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nuniform sampler2D uState; uniform float uPass; uniform float uTime; varying float vPid; varying vec4 vOver; varying vec3 vWP;')
       .replace('vec4 diffuseColor = vec4( diffuse, opacity );', `
         int tpx = int(vPid + 0.5);
         vec4 st = texelFetch(uState, ivec2(tpx, 0), 0);
@@ -119,10 +134,28 @@ function material(statTex, pass) {
         if (al < 0.01) discard;
         if (uPass < 0.5) { if (al < 0.99) discard; } else { if (al >= 0.99) discard; }
         vec3 col = mix(st.rgb, vOver.rgb, vOver.a);
+        vec4 ax = texelFetch(uState, ivec2(tpx, 2), 0);
+        if (ax.a > 0.75) {
+          // Muskelfasern: feine Linien entlang der Faserrichtung, beim Herauszoomen ausgeblendet
+          vec3 a = normalize(ax.rgb * 2.0 - 1.0);
+          vec3 b1 = normalize(cross(a, abs(a.y) < 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0)));
+          vec3 b2 = cross(a, b1);
+          vec3 nG = normalize(cross(dFdx(vWP), dFdy(vWP)));
+          float w1 = 1.0 - abs(dot(nG, b1)), w2 = 1.0 - abs(dot(nG, b2));
+          float k = 6.2832 / 1.5, z = dot(vWP, a);
+          float u1 = dot(vWP, b1) * k + 1.6 * sin(z * 0.21 + float(tpx)), u2 = dot(vWP, b2) * k + 1.3 * sin(z * 0.17 + float(tpx) * 1.7);
+          float s1 = sin(u1) * (1.0 - smoothstep(0.9, 2.4, fwidth(u1)));
+          float s2 = sin(u2) * (1.0 - smoothstep(0.9, 2.4, fwidth(u2)));
+          float g1 = sin(u1 * 0.23 + 0.7) * (1.0 - smoothstep(0.6, 1.6, fwidth(u1 * 0.23)));
+          float g2 = sin(u2 * 0.23 + 1.3) * (1.0 - smoothstep(0.6, 1.6, fwidth(u2 * 0.23)));
+          float faser = (s1 * w1 + s2 * w2) / (w1 + w2 + 0.001), buendel = (g1 * w1 + g2 * w2) / (w1 + w2 + 0.001);
+          col *= 1.0 + 0.085 * faser + 0.06 * buendel;
+        }
         vec4 diffuseColor = vec4(col, al);`)
+      .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\n        if (ax.a > 0.75) roughnessFactor = 0.5; else if (ax.a > 0.25) roughnessFactor = 0.34;')
       .replace('vec3 totalEmissiveRadiance = emissive;', 'vec3 totalEmissiveRadiance = emissive + col * fl.g * (0.22 + 0.22 * sin(uTime * 3.2)) + vec3(1.0, 0.85, 0.3) * fl.b * 0.16 + vOver.rgb * vOver.a * 0.12;');
   };
-  m.customProgramCacheKey = () => 'ana' + pass;
+  m.customProgramCacheKey = () => 'anaz' + pass;
   return m;
 }
 
@@ -235,9 +268,17 @@ class Viewer {
     const hemi = new THREE.HemisphereLight(0xffffff, 0x7d8594, 1.15); this.szeneObj.add(hemi);
     this.kopfLicht = new THREE.DirectionalLight(0xffffff, 1.55); this.szeneObj.add(this.kopfLicht); this.szeneObj.add(this.kopfLicht.target);
     const fuell = new THREE.DirectionalLight(0xffffff, 0.45); fuell.position.set(-1, 2, -1.5); this.szeneObj.add(fuell);
+    const kante = new THREE.DirectionalLight(0xfff1e6, 0.35); kante.position.set(1.2, 0.6, -2); this.szeneObj.add(kante);
     const n = this.m.teile.length;
-    this.stat = new Uint8Array(n * 4 * 2);
-    this.statTex = new THREE.DataTexture(this.stat, n, 2, THREE.RGBAFormat, THREE.UnsignedByteType);
+    this.stat = new Uint8Array(n * 4 * 3);
+    for (const t of this.m.teile) {
+      const j = (2 * n + t.i) * 4, a = t.ax;
+      this.stat[j] = (a.x * 0.5 + 0.5) * 255; this.stat[j + 1] = (a.y * 0.5 + 0.5) * 255; this.stat[j + 2] = (a.z * 0.5 + 0.5) * 255;
+      this.stat[j + 3] = t.g.cls === 'muskel' && !t.flag ? 255 : (t.flag === 'sehne' || t.g.cls === 'band' || t.g.cls === 'menisk' || t.flag === 'knorpel') ? 128 : 0;
+      // leichte Farbabweichung je Muskel, damit benachbarte Muskeln unterscheidbar sind
+      let h = 0; for (const ch of t.g.id) h = (h * 31 + ch.charCodeAt(0)) >>> 0; t.jitter = ((h % 1000) / 1000 - 0.5);
+    }
+    this.statTex = new THREE.DataTexture(this.stat, n, 3, THREE.RGBAFormat, THREE.UnsignedByteType);
     this.statTex.magFilter = this.statTex.minFilter = THREE.NearestFilter; this.statTex.needsUpdate = true;
     this.matA = material(this.statTex, 0); this.matB = material(this.statTex, 1);
     this.meshA = new THREE.Mesh(this.m.geo, this.matA); this.meshB = new THREE.Mesh(this.m.geo, this.matB);
@@ -387,7 +428,8 @@ class Viewer {
     for (const t of this.m.teile) {
       const g = t.g, cls = g.cls, imFokus = fokus.has(g.id); let mark = this.marken.get(g.id);
       let al = 1, puls = 0, hell = 0;
-      c.set(FARBE[cls] || FARBE.knochen);
+      c.set(TEIL_FARBE[t.flag] || FARBE[cls] || FARBE.knochen);
+      if (cls === 'muskel' && !t.flag) c.offsetHSL(t.jitter * 0.018, t.jitter * 0.08, t.jitter * 0.05);
       const weich = cls === 'muskel' || cls === 'band' || cls === 'menisk';
       if (szeneAn && cls === 'muskel' && !mark) c.lerp(GRAU, 0.45);
       if (!imFokus) {
@@ -407,7 +449,13 @@ class Viewer {
       if (this.tour?.neutral) mark = null;
       if (mark && !(Z.gesund && mark === 'p')) {
         c.set(mark === 'p' ? PROBLEM : BEH);
+        if (t.flag === 'sehne' || t.flag === 'knorpel') c.lerp(new THREE.Color('#ffffff'), 0.42);
         if (mark === 'p') { puls = 1; this.pulsiert = true; }
+      }
+      const akt = this.aktivitaet;
+      if (akt && akt.a > 0.01 && !mark && al > 0) {
+        if (akt.ago.has(g.id)) { c.lerp(AKTIV, (t.flag ? 0.25 : 0.55) * akt.a); hell = Math.max(hell, 0.5 * akt.a); }
+        else if (akt.ant.has(g.id)) c.lerp(GEDEHNT, 0.6 * akt.a);
       }
       if (this.wahl === g.id) { c.lerp(new THREE.Color(WAHL), 0.35); hell = 1; }
       const i = t.i * 4, j = (n + t.i) * 4;
@@ -415,6 +463,7 @@ class Viewer {
       st[j] = Math.round(al * 255); st[j + 1] = puls ? 160 : 0; st[j + 2] = hell * 255; st[j + 3] = 255;
     }
     this.statTex.needsUpdate = true;
+    if (this._nurTextur) { this.anstossen(); return; }
     const derm = Z.schicht === 'dermatom';
     if (derm && !this.haut) this.hautLaden();
     if (this.haut) { this.haut.mesh.visible = derm; }
@@ -628,6 +677,7 @@ class Viewer {
     if (arth && !this.zustand.gesund) h += `<span><i style="background:${this.arthroseFarbe}"></i>${this.szene?.k === 'tep' ? 'Ersetztes Gelenk' : 'Gelenkfläche'}</span>`;
     if (hatB) h += '<span><i style="background:' + BEH + '"></i>Daran arbeiten wir</span>';
     if (nerv) h += '<span><i style="background:' + NERV + '"></i>Nerv (schematisch)</span>';
+    if (this.aktivitaet && !neutral) h += '<span><i style="background:#E8261A"></i>Spannt an</span><span><i style="background:#E9C3B6"></i>Wird gedehnt</span>';
     this.legende.innerHTML = h; this.legende.hidden = !h;
   }
   hinweisZeigen(t) {
@@ -722,6 +772,12 @@ class Viewer {
       ak('Durchsichtig', 'durch', '', this.durch.has(id), () => { if (this.durch.has(id)) this.durch.delete(id); else this.durch.add(id); this.aktualisiere(); this.zeigeStruktur(id); });
       ak('Rest durchsichtig', 'roent', '', this.roentgen === id, () => { this.roentgen = this.roentgen === id ? null : id; this.allein = null; this.durch.delete(id); this.aktualisiere(); this.zeigeStruktur(id); });
       B.append(r);
+      const fk = g.cls === 'muskel' && Object.entries(MUSKELARBEIT).find(([, a]) => a.ago.includes(g.key) || a.neg?.ago.includes(g.key));
+      if (fk) {
+        const [bk, a] = fk, neg = !a.ago.includes(g.key);
+        const b = knopf('ana-akt ana-funktion', ICON.play + `<span>Funktion zeigen: ${BEWEGUNGEN[bk].t}</span>`, null, () => this.funktionZeigen(bk, g, neg));
+        B.append(b);
+      }
     });
   }
   nm(g) { return this.zustand.sprache === 'lat' ? g.lat : g.de; }
@@ -741,7 +797,7 @@ class Viewer {
       seg('Was ist zu sehen', 'schicht', [['alle', 'Alle Muskeln'], ['tief', 'Tiefe Muskeln'], ['knochen', 'Knochen und Bänder'], ['dermatom', 'Dermatome']]);
       seg('Rest des Körpers', 'umgebung', [['blass', 'Blass zeigen'], ['aus', 'Ausblenden']]);
       seg('Begriffe', 'sprache', [['lat', 'Latein'], ['de', 'Deutsch']]);
-      B.append(el('p', 'ana-fein', '3D-Modell: BodyParts3D, © The Database Center for Life Science, CC BY-SA 2.1 JP, für Doku-Fix verkleinert. Menisken, Kreuz- und Außenbänder, Plantarfaszie und Nerven sind schematisch ergänzt.'));
+      B.append(el('p', 'ana-fein', '3D-Modell: Z-Anatomy, The libre 3D atlas of anatomy (G. Kervyn, M. Zielinski), CC BY-SA 4.0, auf Basis von BodyParts3D, © The Database Center for Life Science, CC BY-SA 2.1 JP. Für Doku-Fix verkleinert. Patellasehne, Nerven und Vorfall sind schematisch ergänzt.'));
     });
   }
 
@@ -1087,6 +1143,7 @@ class Viewer {
     this.zustand.region = s.r; this.allein = null; this.wahl = null; this.aus.clear(); this.zustand.schicht = s.schicht || 'alle';
     const sd = REGIONEN.find((r) => r.k === s.r).seite ? this.zustand.seite : 'm';
     const ids = (k) => { if (sd !== 'm') { for (const c of [k + '|' + sd, k + '|m']) if (this.m.gruppen.has(c)) return [c]; return []; } return [k + '|m', k + '|r', k + '|l'].filter((c) => this.m.gruppen.has(c)); };
+    this.durch.clear(); for (const k of s.durch || []) for (const id of ids(k)) this.durch.add(id);
     let disk = s.prolaps;
     if (opt.segment && s.k === 'bandscheibe') disk = opt.segment;
     this.szeneDisk = disk;
@@ -1307,6 +1364,7 @@ class Viewer {
       B.append(leg);
       if (k === 'kiefer') B.append(el('p', 'ana-fein', 'Der Unterkiefer dreht sich und gleitet gleichzeitig etwas nach vorn.'));
       if (k === 'schulter_abd') B.append(el('p', 'ana-fein', 'Das Schulterblatt dreht mit: etwa 2 Teile Oberarm, 1 Teil Schulterblatt.'));
+      if (MUSKELARBEIT[k]) B.append(el('p', 'ana-fein', 'Kräftiges Rot: diese Muskeln ziehen und werden dicker. Blasses Rosa: die Gegenspieler werden gedehnt.'));
       B.append(el('p', 'ana-fein', 'Muskeln werden bei der Bewegung vereinfacht mitgebogen. Normwerte nach der Neutral-Null-Methode: Richtwerte, fachlich prüfen.'));
       setze(this.bew.wert);
     });
@@ -1325,6 +1383,15 @@ class Viewer {
     const d = Math.hypot(o.y - u.y, o.z - u.z) * (u.y < o.y ? 1 : -1);
     if (this._mm0 == null && this.bew?.wert === 0) this._mm0 = d;
     return Math.max(0, Math.round(d - (this._mm0 ?? 0)));
+  }
+  funktionZeigen(k, g, neg) {
+    if (g.seite === 'r' || g.seite === 'l') { if (this.zustand.seite !== g.seite) this.setzeSeite(g.seite); }
+    this.zeigeBewegung(k);
+    const def = BEWEGUNGEN[k];
+    // eine Bewegung in die Richtung, in die der Muskel zieht
+    this.anim = {t0: performance.now(), per: 3.2, zyklen: 2, richtung: neg ? -1 : 1};
+    if (def.min < 0) this.anim.nurSeite = neg ? 'neg' : 'pos';
+    this.anstossen();
   }
   kieferZeigen() {
     if (!this.bereit) return;
@@ -1349,9 +1416,9 @@ class Viewer {
     const lat = new V3(s === 'r' ? -1 : 1, 0, 0), ab = new V3(0, -1, 0), X = new V3(1, 0, 0), Z3 = new V3(0, 0, 1);
     const gs = (re) => [...m.gruppen.values()].filter((g) => (g.seite === s || g.seite === 'm') && re.test(g.key));
     const gk = (keys) => keys.map((k) => m.gruppen.get(k + '|' + s)).filter(Boolean);
-    const BEIN = /^(Tibia|Fibula|Talus|Calcaneus|Os naviculare|Os cuboideum|Os cuneiforme.*|metatarsal\d+|phal:.*(toe)|Os sesamoideum)$/;
+    const BEIN = /^(Tibia|Fibula|Talus|Calcaneus|Os naviculare|Os cuboideum|Os cuneiforme.*|metatarsal\d+|phal:.*(toe)|Os sesamoideum|Ossa sesamoidea pedis)$/;
     const UNTERSCH = ['soleus','tibant','tibpost','edl','ehl','fiblong','fibbrev','fdl','fhl','fussklein','langplant','membub','atfl','cfl','plantfasz','achilles','innenmen','aussenmen'];
-    const FUSS = /^(Calcaneus|Talus|Os naviculare|Os cuboideum|Os cuneiforme.*|metatarsal\d+|phal:.*(toe)|Os sesamoideum)$/;
+    const FUSS = /^(Calcaneus|Talus|Os naviculare|Os cuboideum|Os cuneiforme.*|metatarsal\d+|phal:.*(toe)|Os sesamoideum|Ossa sesamoidea pedis)$/;
     const HAND = /^(Radius|Ulna|Os (scaphoideum|lunatum|triquetrum|pisiforme|trapezium|trapezoideum|capitatum|hamatum)|metacarpal\d+|phal:.*(thumb|finger))$/;
     const st = (pivot, achse, faktor, starr, weich) => ({pivot, achse, faktor, starr, weich});
     let stufen = [];
@@ -1362,7 +1429,7 @@ class Viewer {
     } else if (k === 'ellenbogen_flex') {
       stufen = [st(P.ell, X, -1, [...gs(HAND), ...gk(['pronquad','thenar','hypothenar','handklein','retinac','membua','extpol','extind','apl','fpl','fdp'])], W(gk(['biceps','brachialis','triceps','anconeus','brachiorad','prontere','supinator','ecrl','ecrb','extdig','extdm','ecu','fcr','palmaris','fcu','fds']), ab, -32, 26))];
     } else if (k === 'huefte_flex') {
-      stufen = [st(P.huefte, X, -1, [...gs(BEIN), ...gs(/^(Femur|Patella)$/), ...gk(UNTERSCH), ...gk(['gastro','plantaris','popliteus','vastlat','vastmed','vastint','vkb','hkb','innenband','aussenbandk','patsehne'])], W(gk(['glutmax','glutmed','glutmin','piriformis','aussenrot','iliacus','psoas','tfl','sartorius','rectfem','adduktor','gracilis','bicfem','semiten','semimem','itb']), ab, -40, 65))];
+      stufen = [st(P.huefte, X, -1, [...gs(BEIN), ...gs(/^(Femur|Patella)$/), ...gk(UNTERSCH), ...gk(['gastro','plantaris','popliteus','vastlat','vastmed','vastint','vkb','hkb','innenband','aussenbandk','patsehne'])], [...W(gk(['glutmed','glutmin','piriformis','aussenrot','iliacus','psoas','tfl','sartorius','rectfem','adduktor','gracilis','bicfem','semiten','semimem','itb']), ab, -40, 65), ...W(gk(['glutmax']), ab, 60, 150)])];
     } else if (k === 'osg') {
       stufen = [st(P.osg, X, -1, [...gs(FUSS), ...gk(['fussklein','langplant','plantfasz'])], W(gk(['achilles','soleus','gastro','plantaris','tibant','tibpost','edl','ehl','fiblong','fibbrev','fdl','fhl','atfl','cfl']), ab, -26, 14))];
     } else if (k === 'schulter_abd') {
@@ -1377,6 +1444,8 @@ class Viewer {
       const kst = st(KP, X, 1, alle(/^(Mandibula|zahn:[34]\d)$/), [...W(alle(/^masseter$/), ab, 2, 30), ...W(alle(/^temporalis$/), ab, -14, 16), ...W(alle(/^pterygoid$/), ab, -8, 26)]);
       kst.trans = new V3(0, -3, 9); stufen = [kst];
     }
+    // Nicht zugeordnete Weichteile (Bänder, Menisken, kleine Muskeln) mitnehmen, damit nichts reißt
+    if (k !== 'kiefer') this.weichteileErgaenzen(stufen, s, k);
     // Gewichte je Vertex berechnen
     const idxSet = new Map(); // vi -> Float32 Gewichte je Stufe
     stufen.forEach((S, si) => {
@@ -1385,19 +1454,41 @@ class Viewer {
       for (const t of S.teil || []) for (const vi of this.verts(t.g.id)) put(vi, t.w);
       for (const w of S.weich) { const pv = w.piv || S.pivot, um = w.um || pv; for (const vi of this.verts(w.g.id)) { const bx = m.basis[vi * 3], by = m.basis[vi * 3 + 1], bz = m.basis[vi * 3 + 2]; const d = (bx - pv.x) * w.dir.x + (by - pv.y) * w.dir.y + (bz - pv.z) * w.dir.z; let gw = ss(w.a, w.b, d); if (w.nah) gw *= 1 - ss(w.nah[0], w.nah[1], Math.hypot(bx - um.x, by - um.y, bz - um.z)); put(vi, gw); } }
     });
+    // Muskelarbeit: Agonisten verdicken sich, Antagonisten werden etwas schlanker
+    const MA = MUSKELARBEIT[k], rolle = (liste) => new Set((liste || []).map((x) => (k === 'kiefer' ? [...m.gruppen.values()].filter((g) => g.key === x) : [m.gruppen.get(x + '|' + s)]).filter(Boolean).map((g) => g.id)).flat());
+    const arbeit = MA ? {pos: {ago: rolle(MA.ago), ant: rolle(MA.ant)}, neg: MA.neg ? {ago: rolle(MA.neg.ago), ant: rolle(MA.neg.ant)} : null} : null;
+    if (arbeit) for (const r of [arbeit.pos, arbeit.neg]) if (r) for (const id of [...r.ago, ...r.ant]) for (const vi of this.verts(id)) if (!idxSet.has(vi)) idxSet.set(vi, new Float32Array(stufen.length));
     const vis = Uint32Array.from(idxSet.keys()), gw = new Float32Array(vis.length * stufen.length);
     vis.forEach((vi, j) => gw.set(idxSet.get(vi), j * stufen.length));
     const teile = new Set(); for (const vi of vis) teile.add(m.teile[m.geo.attributes.pid.array[vi]]);
-    this.bew = {k, wert: 0, stufen, vis, gw, teile: [...teile]};
+    let bul = null, rP = null, rN = null;
+    if (arbeit) {
+      bul = new Float32Array(vis.length * 3); rP = new Int8Array(vis.length); rN = new Int8Array(vis.length);
+      const pidA = m.geo.attributes.pid.array, bs = m.basis;
+      vis.forEach((vi, j) => {
+        const t = m.teile[pidA[vi]], id = t.g.id;
+        rP[j] = arbeit.pos.ago.has(id) ? 1 : arbeit.pos.ant.has(id) ? -1 : 0;
+        rN[j] = arbeit.neg ? (arbeit.neg.ago.has(id) ? 1 : arbeit.neg.ant.has(id) ? -1 : 0) : rP[j];
+        if (!rP[j] && !rN[j]) return;
+        if (t.flag || !t.ax) return; // Sehnen verdicken sich nicht
+        const dx = bs[vi * 3] - t.mitte.x, dy = bs[vi * 3 + 1] - t.mitte.y, dz = bs[vi * 3 + 2] - t.mitte.z, a = t.ax;
+        const d = dx * a.x + dy * a.y + dz * a.z, u = Math.min(1, Math.max(0, (d - t.lo) / (t.hi - t.lo || 1)));
+        const prof = Math.pow(Math.sin(Math.PI * u), 1.4);
+        bul[j * 3] = (dx - d * a.x) * prof; bul[j * 3 + 1] = (dy - d * a.y) * prof; bul[j * 3 + 2] = (dz - d * a.z) * prof;
+      });
+    }
+    this.bew = {k, wert: 0, stufen, vis, gw, teile: [...teile], arbeit, bul, rP, rN};
     // Für Bewegung: Muskeln hinter der Bewegung nicht ausgegraut lassen
   }
   bewegungWert(v) {
     const B = this.bew; if (!B) return; B.wert = v;
     const m = this.m, pos = m.pos, nr = m.nrm, bs = m.basis, bn = m.basisN, S = B.stufen, ns = S.length;
-    const rad = THREE.MathUtils.degToRad(v);
+    const rad = THREE.MathUtils.degToRad(v), def = BEWEGUNGEN[B.k];
+    const negativ = v < 0, akt = Math.min(1, Math.abs(v) / Math.abs(negativ ? def.min : def.max) * 1.25), rolle = negativ ? B.rN : B.rP;
     for (let j = 0; j < B.vis.length; j++) {
       const vi = B.vis[j];
       let x = bs[vi * 3], y = bs[vi * 3 + 1], z = bs[vi * 3 + 2], nx = bn[vi * 3], ny = bn[vi * 3 + 1], nz = bn[vi * 3 + 2];
+      if (B.bul) { const r = rolle[j]; if (r) { const f = r > 0 ? 0.2 * akt : -0.06 * akt; x += B.bul[j * 3] * f; y += B.bul[j * 3 + 1] * f; z += B.bul[j * 3 + 2] * f; } }
       for (let s = 0; s < ns; s++) {
         const w = B.gw[j * ns + s]; if (w <= 0) continue;
         const st = S[s], a = rad * st.faktor * w, c = Math.cos(a), sn = Math.sin(a), p = st.pivot;
@@ -1411,7 +1502,34 @@ class Viewer {
     for (const t of B.teile) t.dirty = true;
     if (B.k === 'kiefer') this.kieferMM = this.schneidekante();
     if (this.punkte.length) this.punkteNeu(); this.pinsNeu();
+    this.arbeitFaerben(B, negativ, akt);
     this.anstossen();
+  }
+  arbeitFaerben(B, negativ, akt) {
+    // Muskelarbeit einfärben: nur die Textur, kein Neuaufbau der Bedienelemente
+    const r = B?.arbeit ? (negativ && B.arbeit.neg ? B.arbeit.neg : B.arbeit.pos) : null;
+    const a = r ? Math.round(akt * 20) / 20 : 0, sig = r ? a + (negativ ? 'n' : 'p') : '';
+    if (sig === this._akSig) return; this._akSig = sig;
+    const vorher = !!this.aktivitaet;
+    this.aktivitaet = r && a > 0 ? {a, ago: r.ago, ant: r.ant} : null;
+    this._nurTextur = true; try { this.aktualisiere(); } finally { this._nurTextur = false; }
+    if (vorher !== !!this.aktivitaet) this.legendeSetzen();
+  }
+  weichteileErgaenzen(stufen, s, k) {
+    const m = this.m, belegt = new Set();
+    for (const S of stufen) { for (const g of S.starr) belegt.add(g.id); for (const w of S.weich) belegt.add(w.g.id); for (const t of S.teil || []) belegt.add(t.g.id); }
+    const mitte = (g) => { const c = new V3(); let n = 0; for (const ti of g.teile) { const t = m.teile[ti]; c.addScaledVector(t.mitte, t.v); n += t.v; } return c.multiplyScalar(1 / (n || 1)); };
+    const S = stufen[0];
+    const mc = new V3(); let n = 0; for (const g of S.starr) { if (g.cls !== 'knochen') continue; mc.add(mitte(g)); n++; }
+    if (!n) return;
+    const dir = mc.multiplyScalar(1 / n).sub(S.pivot).normalize();
+    for (const g of m.gruppen.values()) {
+      if (belegt.has(g.id) || g.seite !== s) continue;
+      if (!(g.cls === 'band' || g.cls === 'menisk' || (g.cls === 'muskel' && k !== 'schulter_abd'))) continue;
+      const v = mitte(g).sub(S.pivot), d = v.dot(dir), q = v.clone().addScaledVector(dir, -d).length();
+      if (d > 70 && q < 170) { S.starr.push(g); belegt.add(g.id); }
+      else if (Math.abs(d) <= 70 && v.length() < 170) { S.weich.push({g, dir, a: -30, b: 30}); belegt.add(g.id); }
+    }
   }
   animSchritt() {
     const B = this.bew; if (!B || !this.anim) { this.anim = null; return false; }
@@ -1419,13 +1537,14 @@ class Viewer {
     if (this.anim.zyklen && t >= per * this.anim.zyklen) { this.anim = null; this.bewegungWert(0); if (this.blattArt === 'bewegung') this._reglerSetze?.(0); return false; }
     const lo = Math.max(def.min, def.k === 'osg' ? def.min : 0), hi = def.max;
     const ph = (t % per) / per, e = 0.5 - 0.5 * Math.cos(ph * 2 * Math.PI);
-    const v = def.min < 0 ? def.min + (def.max - def.min) * e : lo + (hi - lo) * e;
+    let v = def.min < 0 ? def.min + (def.max - def.min) * e : lo + (hi - lo) * e;
+    if (this.anim.nurSeite) v = (this.anim.nurSeite === 'neg' ? def.min : def.max) * e;
     this.bewegungWert(v); if (this.blattArt === 'bewegung') this._reglerSetze?.(v);
     return true;
   }
   bewegungAus() {
     this.anim = null;
-    if (this.bew) { this.bewegungWert(0); this.bew = null; }
+    if (this.bew) { this.bewegungWert(0); this.bew = null; this.arbeitFaerben(null, false, 0); }
   }
 
   // ----- Vollbild, Bild sichern -----
