@@ -126,6 +126,11 @@ textarea.in{resize:vertical;min-height:70px;line-height:1.4}
 .sw[aria-pressed="true"]{background:var(--red)}
 .sw[aria-pressed="true"]::after{transform:translateX(18px);background:var(--on-acc)}
 
+/* Fließtext */
+.ft-haken{justify-self:start;width:auto;margin:2px 0 4px;cursor:pointer}
+.ft-box{background:var(--surface2);border-radius:14px;padding:10px 14px;border-left:3px solid var(--red)}
+.ft-box small{display:block;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.ft-box p{margin:4px 0 0;font-size:15px;line-height:1.45}
 /* Vorschau */
 .pv{background:var(--surface);border-radius:var(--r);padding:14px;display:grid;gap:12px}
 .pvhead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
@@ -241,7 +246,7 @@ const BASIS={
 const HEILMITTEL=["KG","KG-ZNS","MT","KGG","MLD"];
 
 /* ---------- Zustand ---------- */
-const leer=()=>({patient:"",geburt:"",verordnung:"",zvon:"",zbis:"",
+const leer=()=>({fliess:{ziele:false,massnahmen:false,empfehlungen:false,begruendung:false},patient:"",geburt:"",verordnung:"",zvon:"",zbis:"",
   diagnosen:[],diagText:"",diagEigen:false,
   ziele:[],massnahmen:[],mListe:true,einheiten:"",heilmittel:"",
   empfehlungen:"",verord:"",arten:[],sonstiges:"",begruendung:"",
@@ -318,17 +323,152 @@ for(const d of S.diagnosen){if(!d.code&&d.title){d.code=kodeZuName(d.title);d.al
 /* ---------- Text für das Formular ---------- */
 const dmy=(iso,k)=>{if(!iso)return"";const [y,m,d]=iso.split("-");return d+"."+m+"."+(k?y.slice(2):y)};
 function diagAuto(){return S.diagnosen.map(d=>{const z=[d.code,d.code?(d.sich||""):"",d.code?(d.seite||""):""].filter(Boolean).join(" ");return (z?z+" ":"")+d.title}).join("; ")}
+/* ---------- Fließtext aus Textbausteinen ----------
+   Regeln: Aufzählungen immer "A, B und C"; steckt in einem Baustein schon ein "und", schließt die Liste mit "sowie".
+   Genus wird aus der Wortendung bestimmt, unbekannte Wörter bekommen keinen Artikel. */
+const FT={
+  ohneKl(t){return t.replace(/\([^)]*\)/g,"")},
+  hatUnd(t){return / und /.test(FT.ohneKl(t))},
+  adj(t){const w=t.split(" ");return w.length>1&&/^[A-ZÄÖÜ][a-zäöüß]+(isch|lich|ig|ell|al|iv|ar|ant|ent|tär|är)(e|es|er|en)$/.test(w[0])&&/^[A-ZÄÖÜ]/.test(w[1])?t.charAt(0).toLowerCase()+t.slice(1):t},
+  liste(a){a=a.filter(Boolean).map(x=>FT.adj(x));if(a.length<2)return a[0]||"";const und=a.some(FT.hatUnd)?"sowie":"und";return a.slice(0,-1).join(", ")+" "+und+" "+a[a.length-1]},
+  gross(t){return t?t.charAt(0).toUpperCase()+t.slice(1):t},
+  punkt(t){t=t.trim().replace(/[\s,;:]+$/,"");return /[.!?]$/.test(t)?t:t+"."},
+  /* Genus: f, m, n, p (Plural) oder "" */
+  genus(n){const w=(n||"").split(/\s+/)[0]||"";
+    if(!/^[A-ZÄÖÜ]/.test(w))return "";
+    if(/^(Schmerzen|Beschwerden|Einschränkungen|Defizite|Probleme|Bewegungseinschränkungen|Parästhesien|Missempfindungen|Verspannungen|Blockaden)$/.test(w))return "p";
+    if(/^(Erhalt|Schmerz|Bewegungsumfang|Tonus|Muskeltonus|Gang|Stand|Einbeinstand|Abbau|Aufbau|Wiedereinstieg|Umfang|Erguss|Gelenkerguss|Transfer|Alltag)$/.test(w)||/(schmerz|umfang|erguss|tonus|ismus|transfer)$/.test(w))return "m";
+    if(/^(Kraft|Ausdauer|Muskulatur|Koordination|Haltung)$/.test(w)||/(ung|ion|heit|keit|tät|ik|ur|schaft|enz|anz|ie|kraft|e)$/.test(w))return "f";
+    if(/(training|programm|verfahren|zeichen|gefühl|defizit|ödem|hinken|gleichgewicht)$/i.test(w)||/^[A-ZÄÖÜ][a-zäöüß]+en$/.test(w))return "n";
+    return ""},
+  der(n,akk){const g=FT.genus(n);if(/^[a-zäöü]/.test(n))return n;return g==="f"?"die "+n:g==="n"?"das "+n:g==="p"?"die "+n:g==="m"?(akk?"den ":"der ")+n:n},
+  ein(adj,n){const g=FT.genus(n);return g==="f"?"eine "+adj+"e "+n:g==="m"?"ein "+adj+"er "+n:g==="n"?"ein "+adj+"es "+n:adj+"e "+n},
+  einN(n){const g=FT.genus(n);return g==="f"?"eine "+n:g==="m"||g==="n"?"ein "+n:n},
+  /* Verben und zu-Infinitiv */
+  FUNK:/^(Wieder|Ohne|Schmerzfrei|Beschwerdefrei|Selbstständig|Selbständig|Sicher|Im|In|Beim|Mit|Auf|Über|Unter|Bis|Länger|Längere|Ganz|Frei|Eine?n?|Alltägliche|Normal|Problemlos|Mehr|Weniger)$/,
+  klein(t){const w=t.split(" ")[0];return FT.FUNK.test(w)||/(lich|ig|isch)$/.test(w)?t.charAt(0).toLowerCase()+t.slice(1):t},
+  NOMEN:/^[A-ZÄÖÜ][a-zäöüß-]*(ung|ion|tät|heit|keit|schaft|erhalt|training|prophylaxe|kontrolle|toleranz|kraft|ausdauer|programm)$/,
+  VERB:/^(verbessern|steigern|reduzieren|senken|zurückbilden|erreichen|erhalten|halten|greifen|gehen|laufen|schlafen|sitzen|stehen|heben|tragen|bewältigen|ausführen|durchführen|aufnehmen|wiederherstellen|ermöglichen|vermeiden|bewegen|steigen|fahren|arbeiten|spielen|machen|können|sein|werden|bekommen|lösen|abbauen|aufbauen|kräftigen|stabilisieren|mobilisieren|normalisieren|verringern|vergrößern|erweitern|lernen|üben|kommen|bücken|knien|drehen|beugen|strecken|anziehen|ausziehen|duschen|joggen|radeln|wandern|schwimmen)$/,
+  TRENN:/^(zurück|wieder|ab|an|auf|aus|ein|mit|vor|weg|zu|nach|her|hin|los|fest|frei|hoch|runter|durch|um)(?=[a-zäöü]{3,})/,
+  zuInf(v){const m=FT.TRENN.exec(v);return m?m[1]+"zu"+v.slice(m[1].length):"zu "+v},
+  istVerb(w){return FT.VERB.test(w)||(/^[a-zäöü]+(en|ern|eln)$/.test(w)&&!/^(ohne|einen|keinen|den|wieder|unten|oben|hinten|vorn|rechten|linken|beiden|langen|kurzen|längeren|kleinen|großen|schweren|leichten|anderen|eigenen|kleinen|ganzen)$/.test(w))},
+  verbZiel(t){const teile=t.split(/(\s+(?:und|oder)\s+|,\s*)/);
+    if(!FT.istVerb(teile[teile.length-1].trim().split(/\s+/).pop()))return null;
+    return teile.map((p,i)=>{if(i%2)return p;const w=p.trim().split(/\s+/),l=w[w.length-1];if(FT.istVerb(l))w[w.length-1]=FT.zuInf(l);return w.join(" ")}).join("")},
+  saeubern(a){return a.map(s=>String(s).trim().replace(/[.;]+$/,"")).filter(Boolean)},
+
+  /* Therapieziele */
+  ziele(items){
+    const nom=[],vb=[];
+    for(const t of FT.saeubern(items)){
+      const v=FT.verbZiel(t);
+      if(v&&t.split(/\s+/).length>1){vb.push(FT.klein(FT.der(v,true)));continue}
+      if(/\bvon\b.+\bauf\b/.test(t)){const z=/schwellung/i.test(t)?"zurückzubilden":/höchstens|schmerzfrei|keine/.test(t)?"zu senken":/mindestens/.test(t)?"zu steigern":"zu verbessern";vb.push(FT.der(t,true)+" "+z);continue}
+      nom.push(FT.der(t))}
+    const s=[];
+    if(nom.length)s.push((nom.length>1?"Ziele der Behandlung sind ":"Ziel der Behandlung ist ")+FT.liste(nom)+".");
+    if(vb.length)s.push((nom.length?"Konkret soll es gelingen, ":"Ziel der Behandlung ist es, ")+FT.liste(vb)+".");
+    return s.join(" ");
+  },
+
+  /* Maßnahmen */
+  HM:{"KG":"Krankengymnastik","MT":"Manuelle Therapie","KG-ZNS":"KG-ZNS","KGG":"gerätegestützte Krankengymnastik","MLD":"Manuelle Lymphdrainage"},
+  muskeln(t){const m=/^(\S+)\s+((?:Mm?\.\s)[^(]*?)(\s*\(.*\))?$/.exec(t);if(!m||!/,/.test(m[2]))return t;
+    const L=m[2].split(/\s*,\s*/).filter(Boolean);return m[1]+" von "+L.slice(0,-1).join(", ")+" und "+L[L.length-1]+(m[3]||"")},
+  massnahmen(items,ein,hm){
+    let hue=false;const rest=[];
+    for(const t of FT.saeubern(items)){if(/^(anleitung (zum|eines|zu einem) )?heimübungsprogramm/i.test(t))hue=true;else rest.push(FT.muskeln(t))}
+    const name=FT.HM[hm]||hm||"",n=parseInt(ein,10)||0;
+    const umfang=n&&name?n+(n===1?" Einheit ":" Einheiten ")+name:n?n+(n===1?" Einheit":" Einheiten"):"";
+    const a=rest.slice(0,5),b=rest.slice(5),s=[];
+    if(a.length){
+      if(umfang)s.push("Die Behandlung umfasste "+umfang+(a.length>1?" mit den Schwerpunkten ":" mit dem Schwerpunkt ")+FT.liste(a)+".");
+      else if(name)s.push("Die Behandlung ("+name+") umfasste "+FT.liste(a)+".");
+      else s.push("Die Behandlung umfasste "+FT.liste(a)+".");
+    }else if(umfang)s.push("Es erfolgten "+umfang+".");
+    if(b.length)s.push(b.length>1?"Weitere Inhalte waren "+FT.liste(b)+".":"Ein weiterer Inhalt war "+FT.adj(b[0])+".");
+    if(hue)s.push(s.length?"Ergänzend wurde ein Heimübungsprogramm angeleitet.":"Es wurde ein Heimübungsprogramm angeleitet.");
+    return s.join(" ");
+  },
+
+  /* Freitext mit Komma-Bausteinen zerlegen; Klammern bleiben ganz, bekannte Bausteine mit Komma auch */
+  teile(t,dict){
+    const out=[];let d=0,cur="";
+    for(const c of String(t||"")){if(c==="(")d++;if(c===")")d=Math.max(0,d-1);
+      if((c===","||c==="\n"||c===";")&&!d){out.push(cur);cur=""}else cur+=c}
+    out.push(cur);const p=out.map(s=>s.trim()).filter(Boolean),r=[];
+    for(let i=0;i<p.length;i++){const z=p[i]+", "+(p[i+1]||"");if(p[i+1]&&dict[z.toLowerCase().replace(/\.$/,"")]){r.push(z);i++}else r.push(p[i])}
+    return r.map(s=>s.replace(/\.$/,""));
+  },
+
+  /* Empfehlungen */
+  EMPF:{"therapieziele erreicht, beendigung der therapie":{s:"Die Therapieziele wurden erreicht, die Behandlung kann abgeschlossen werden"},
+    "therapieziele weitgehend erreicht":{s:"Die Therapieziele wurden weitgehend erreicht"},
+    "therapieziele erreicht":{s:"Die Therapieziele wurden erreicht"},
+    "ärztliche rücksprache empfohlen":{n:"eine ärztliche Rücksprache"},
+    "weiterführung des heimübungsprogramms":{n:"die Weiterführung des Heimübungsprogramms"},
+    "fortführung der physiotherapie empfohlen":{n:"die Fortführung der Physiotherapie"}},
+  empfehlungen(t){
+    const sz=[],nn=[];
+    for(const p of FT.teile(t,FT.EMPF)){const e=FT.EMPF[p.toLowerCase()];
+      if(e&&e.s){sz.push(e.s);continue}if(e&&e.n){nn.push(e.n);continue}
+      const m=/^(.*?)\s+(empfohlen|sinnvoll|angeraten|indiziert)$/i.exec(p);
+      if(m){nn.push(FT.der(m[1]));continue}
+      if(FT.NOMEN.test(p.split(" ")[0])){nn.push(FT.der(p));continue}
+      sz.push(FT.gross(p))}
+    const s=sz.map(FT.punkt);
+    if(nn.length)s.push("Wir empfehlen "+FT.liste(nn)+".");
+    return s.join(" ");
+  },
+
+  /* Begründung: Zielstand + fortbestehende Befunde in einem Satz */
+  BEGR:{"therapieziele noch nicht vollständig erreicht":{z:"Die Therapieziele sind noch nicht vollständig erreicht"},
+    "therapieziele noch nicht erreicht":{z:"Die Therapieziele sind noch nicht erreicht"},
+    "beweglichkeit weiterhin eingeschränkt":{b:"eine eingeschränkte Beweglichkeit"},
+    "gangunsicherheit besteht weiterhin":{b:"eine Gangunsicherheit"},
+    "kraft weiterhin vermindert":{b:"eine verminderte Kraft"}},
+  ADJ:{eingeschränkt:"eingeschränkt",vermindert:"vermindert",reduziert:"reduziert",erhöht:"erhöht",instabil:"instabil",schmerzhaft:"schmerzhaft",verkürzt:"verkürzt",geschwollen:"geschwollen"},
+  begruendung(t){
+    let ziel="";const bef=[],frei=[];
+    for(const p of FT.teile(t,FT.BEGR)){const e=FT.BEGR[p.toLowerCase()];
+      if(e&&e.z){ziel=e.z;continue}if(e&&e.b){bef.push(e.b);continue}
+      let m=/^(?:es\s+)?(?:bestehen|besteht)?\s*weiterhin\s+(.+)$/i.exec(p);
+      if(m){bef.push(m[1]);continue}
+      m=/^(.+?)\s+(?:ist\s+|sind\s+)?(?:weiterhin|noch)\s+(eingeschränkt|vermindert|reduziert|erhöht|instabil|schmerzhaft|verkürzt|geschwollen)$/i.exec(p);
+      if(m){bef.push(FT.ein(FT.ADJ[m[2].toLowerCase()],m[1]));continue}
+      m=/^(.+?)\s+(?:besteht|bestehen)\s+(?:weiterhin|noch)$/i.exec(p);
+      if(m){bef.push(FT.einN(m[1]));continue}
+      frei.push(FT.gross(p))}
+    const s=[];
+    const pl=bef.length>1||FT.genus(bef[0]||"")==="p";
+    if(ziel&&bef.length)s.push(ziel+", da weiterhin "+FT.liste(bef)+(pl?" bestehen.":" besteht."));
+    else{if(ziel)s.push(ziel+".");if(bef.length)s.push("Weiterhin "+(pl?"bestehen ":"besteht ")+FT.liste(bef)+".")}
+    for(const f of frei)s.push(FT.punkt(f));
+    return s.join(" ");
+  }
+};
+
+const FTX={ziele:()=>FT.ziele(S.ziele),massnahmen:()=>FT.massnahmen(S.massnahmen,S.einheiten,S.heilmittel),empfehlungen:()=>FT.empfehlungen(S.empfehlungen),begruendung:()=>FT.begruendung(S.begruendung)};
+const flAn=f=>!!(S.fliess&&S.fliess[f]);
+function ftAktuell(){document.querySelectorAll(".ft-text").forEach(e=>{const t=FTX[e.dataset.f]();e.textContent=t||"Noch nichts ausgewählt."})}
+function fliessSchalter(f){
+  const an=flAn(f);
+  const out=[h("button",{class:"ck ft-haken","aria-pressed":an?"true":"false",on:{click:()=>upd(()=>{S.fliess={...(S.fliess||{}),[f]:!an}},true)}},h("i"),"Fließtext generieren")];
+  if(an){const t=FTX[f]();out.push(h("div",{class:"ft-box"},h("small",{text:"So steht es im Bericht"}),h("p",{class:"ft-text","data-f":f,text:t||"Noch nichts ausgewählt."})))}
+  return out;
+}
 function felderText(){
   const mz=S.massnahmen.filter(t=>t.trim());
   let m=mz.map(t=>(S.mListe?"– ":"")+t.trim());
   m=S.mListe?m.join("\n"):m.join(", ");
   const ein=[S.einheiten?S.einheiten+" ×":"",S.heilmittel].filter(Boolean).join(" ");
   if(ein)m=ein+(m?"\n"+m:"");
+  if(flAn("massnahmen"))m=FTX.massnahmen();
   const zr=S.zvon||S.zbis?dmy(S.zvon,1)+" – "+dmy(S.zbis,1):"";
   const kreuze=[];if(S.verord==="ja")kreuze.push("ja");if(S.verord==="nein")kreuze.push("nein");if(S.verord==="ja")kreuze.push(...S.arten);
   return {patient:S.patient,geburt:S.geburt,verordnung:dmy(S.verordnung,1),zeitraum:zr,
-    diagnosen:S.diagEigen?S.diagText:diagAuto(),ziele:S.ziele.filter(t=>t.trim()).join("\n"),massnahmen:m,
-    empfehlungen:S.empfehlungen,begruendung:S.begruendung,sonstiges:S.verord==="ja"&&S.arten.includes("sonstiges")?S.sonstiges:"",
+    diagnosen:S.diagEigen?S.diagText:diagAuto(),ziele:flAn("ziele")?FTX.ziele():S.ziele.filter(t=>t.trim()).join("\n"),massnahmen:m,
+    empfehlungen:flAn("empfehlungen")?FTX.empfehlungen():S.empfehlungen,begruendung:flAn("begruendung")?FTX.begruendung():S.begruendung,sonstiges:S.verord==="ja"&&S.arten.includes("sonstiges")?S.sonstiges:"",
     ortdatum:S.ortAn?[S.ort,dmy(S.datum)].filter(Boolean).join(", "):"",kreuze};
 }
 
@@ -408,7 +548,7 @@ function renderTiles(){
     t.append(head);if(open){const b=h("div",{class:"body"});k.body(b);t.append(b)}box.append(t)});
   if(fokus&&$(fokus)){const e=$(fokus);e.focus();if(e.setSelectionRange&&e.value!=null&&e.type!=="date"){const n=e.value.length;try{e.setSelectionRange(n,n)}catch(_){}}}
 }
-function upd(fn,rerender){fn();neuZeichnen();if(rerender)renderTiles();else{const da=$("diag-auf");if(da)da.textContent=diagAuto()||"noch nichts";KACHELN.forEach(k=>{const t=$("t-"+k.id);if(!t)return;t.classList.toggle("done",k.fertig());t.querySelector(".badge").textContent=k.fertig()?"✓":String(KACHELN.indexOf(k)+1);t.querySelector("small").textContent=k.sum()})}}
+function upd(fn,rerender){fn();neuZeichnen();if(!rerender)ftAktuell();if(rerender)renderTiles();else{const da=$("diag-auf");if(da)da.textContent=diagAuto()||"noch nichts";KACHELN.forEach(k=>{const t=$("t-"+k.id);if(!t)return;t.classList.toggle("done",k.fertig());t.querySelector(".badge").textContent=k.fertig()?"✓":String(KACHELN.indexOf(k)+1);t.querySelector("small").textContent=k.sum()})}}
 const feld=(lab,el)=>h("div",{class:"field"},h("label",{class:"l",for:el.id,text:lab}),el);
 const inp=(id,val,on,attrs={})=>h("input",{class:"in",id,value:val,...attrs,on:{input:e=>upd(()=>on(e.target.value))}});
 
@@ -464,19 +604,19 @@ function listeBody(f,ph,b){
   const plus=h("button",{class:"btn ghost",on:{click:()=>{if(neu.value.trim()){S[f].push(neu.value.trim());neu.value="";upd(()=>{},true)}}}},"Dazu");
   return [items,h("div",{class:"add"},neu,plus),vorschlagChips(f,t=>{S[f].push(t);upd(()=>{},true)},S[f]),h("p",{class:"note",text:"Tippe einen Vorschlag an und ergänze ihn danach direkt im Feld, z. B. „in der unteren Extremität“."})];
 }
-KACHELN[2].body=b=>b.append(...listeBody("ziele","Ziel ergänzen"));
+KACHELN[2].body=b=>b.append(...fliessSchalter("ziele"),...listeBody("ziele","Ziel ergänzen"));
 function massBody(b){
   const hm=h("div",{class:"chips"},HEILMITTEL.map(x=>h("button",{class:"chip","aria-pressed":S.heilmittel===x?"true":"false",style:S.heilmittel===x?"background:var(--fg);color:#000;border-color:var(--fg)":"",on:{click:()=>upd(()=>S.heilmittel=S.heilmittel===x?"":x,true)}},x)));
   b.append(h("div",{class:"row2"},feld("Anzahl Einheiten",inp("f-ein",S.einheiten,v=>S.einheiten=v.replace(/[^0-9]/g,""),{inputmode:"numeric",placeholder:"z. B. 6"})),h("div",{class:"field"},h("span",{class:"l",text:"Heilmittel"}),hm)));
   const sw=h("button",{class:"sw","aria-pressed":S.mListe?"true":"false","aria-label":"Als Liste untereinander",on:{click:()=>upd(()=>S.mListe=!S.mListe,true)}});
-  b.append(h("div",{class:"toggle"},sw,h("span",{text:"Als Liste untereinander"})),...listeBody("massnahmen","Maßnahme ergänzen"));
+  b.append(...fliessSchalter("massnahmen"));if(!flAn("massnahmen"))b.append(h("div",{class:"toggle"},sw,h("span",{text:"Als Liste untereinander"})));b.append(...listeBody("massnahmen","Maßnahme ergänzen"));
 }
 function textBody(f,rows,b){
   b=b||arguments[2];
   const ta=h("textarea",{class:"in",id:"f-"+f,rows,on:{input:e=>upd(()=>S[f]=e.target.value)}},S[f]);
   return [ta,vorschlagChips(f,t=>{S[f]=S[f].trim()?S[f].trim().replace(/[.,;]?$/,"")+", "+t.charAt(0).toLowerCase()+t.slice(1):t;upd(()=>{},true)},[S[f]])];
 }
-KACHELN[4].body=b=>b.append(...textBody("empfehlungen",3));
+KACHELN[4].body=b=>b.append(...fliessSchalter("empfehlungen"),...textBody("empfehlungen",3));
 function verordBody(b){
   const seg=h("div",{class:"seg",role:"group","aria-label":"Weitere Verordnungen"},["ja","nein"].map(v=>h("button",{"aria-pressed":S.verord===v?"true":"false",on:{click:()=>upd(()=>{S.verord=S.verord===v?"":v;if(S.verord==="ja"&&!S.arten.length)S.arten=["physio"]},true)}},v==="ja"?"Ja":"Nein")));
   b.append(seg);
@@ -486,7 +626,7 @@ function verordBody(b){
     b.append(h("div",{class:"checks"},ARTEN.map(([id,n])=>h("button",{class:"ck","aria-pressed":S.arten.includes(id)?"true":"false",on:{click:()=>upd(()=>{S.arten=S.arten.includes(id)?S.arten.filter(a=>a!==id):[...S.arten,id]},true)}},h("i"),n))));
     if(S.arten.includes("sonstiges"))b.append(feld("Sonstiges, was genau?",inp("f-sonst",S.sonstiges,v=>S.sonstiges=v,{placeholder:"z. B. Hilfsmittelversorgung"})));
   }
-  if(S.verord){b.append(h("label",{class:"l",for:"f-begruendung",text:"Begründung"}),...textBody("begruendung",3))}
+  if(S.verord){b.append(h("label",{class:"l",for:"f-begruendung",text:"Begründung"}),...fliessSchalter("begruendung"),...textBody("begruendung",3))}
 }
 function ortBody(b){
   const sw=h("button",{class:"sw","aria-pressed":S.ortAn?"true":"false","aria-label":"Ort und Datum eintragen",on:{click:()=>upd(()=>S.ortAn=!S.ortAn,true)}});
