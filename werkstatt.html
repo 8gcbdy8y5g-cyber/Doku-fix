@@ -533,7 +533,7 @@ formImg.onload=()=>zeichne();
 function vorlageAnwenden(){
   $("vorl").hidden=!!(VORL&&VORL.form&&VORL.font);$("m-hand").disabled=!(VORL&&VORL.font);
   if(VORL&&VORL.form&&formImg.src!==VORL.form)formImg.src=VORL.form;
-  if(VORL&&VORL.font&&!document.fonts.check("40px Brunos")){try{const f=new FontFace("Brunos","url("+VORL.font+")");f.load().then(ff=>{document.fonts.add(ff);zeichne()},()=>{})}catch(e){}}
+  if(VORL&&VORL.font&&!window.__brunosGeladen){try{const b64=VORL.font.slice(VORL.font.indexOf(",")+1),bin=atob(b64),buf=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)buf[i]=bin.charCodeAt(i);const f=new FontFace("Brunos",buf.buffer);document.fonts.add(f);f.load().then(()=>{window.__brunosGeladen=true;zeichne()},()=>{toast("Die Handschrift ließ sich nicht laden.")})}catch(e){}}
   if(!(VORL&&VORL.font)&&modus==="hand")setModus("klar")}
 $("vorl-datei").onchange=async e=>{const d=e.target.files&&e.target.files[0];e.target.value="";if(!d)return;
   try{const j=JSON.parse(await d.text());if(j.typ!=="doku-fix-ww-vorlage"||!/^data:image\//.test(j.form||"")||!/^data:font\//.test(j.font||""))throw 0;
