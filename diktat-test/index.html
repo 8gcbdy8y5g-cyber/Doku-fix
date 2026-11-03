@@ -429,6 +429,12 @@ details.gruppe[open] .g-inhalt{animation:auf .22s ease-out}
     ['Epicondylitis humeri radialis', /tennisarm|epicondylitis/, 'ELLENBOGEN'],
     ['Karpaltunnelsyndrom', /karpaltunnel/, 'HANDGELENK'],
     ['Distale Radiusfraktur', /radiusfraktur|speiche gebrochen|handgelenk gebrochen/, 'HANDGELENK'],
+    ['Humerusfraktur', /humerus(kopf)?fraktur|oberarm(kopf)?(bruch|fraktur)|oberarm gebrochen/, 'SCHULTER'],
+    ['Klavikulafraktur', /clavicula\w*fraktur|klavikula\w*fraktur|schlUsselbein(bruch|fraktur| gebrochen)/, 'SCHULTER'],
+    ['Schenkelhalsfraktur', /schenkelhals\w*|oberschenkelhals/, 'HUEFTE'],
+    ['Tibiakopffraktur', /tibiakopf\w*/, 'KNIE'], ['Patellafraktur', /patellafraktur|kniescheibe gebrochen/, 'KNIE'],
+    ['Sprunggelenksfraktur', /sprunggelenk\w*fraktur|weber[- ]?[abc]|knOchel(bruch|fraktur)/, 'OSG'],
+    ['Wirbelkörperfraktur', /wirbelkOrper\w*fraktur|wirbelbruch/, null],
     ['Coxarthrose', /coxarthrose|hUftarthrose|arthrose (in|an) der hUfte/, 'HUEFTE'],
     ['Gonarthrose', /gonarthrose|kniearthrose|arthrose (im|am) knie/, 'KNIE'],
     ['VKB-Ruptur', /kreuzband\w*\s*(riss|ruptur|gerissen|ab)|vkb[- ]?(ruptur|riss|plastik)|kreuzbandplastik|kreuzband.{0,20}operiert|kreuzband.{0,15}gerissen/, 'KNIE'],
@@ -532,7 +538,7 @@ details.gruppe[open] .g-inhalt{animation:auf .22s ease-out}
 
   var SPORT = [
     ['Laufen', /\b(laufen gehe?|gehe? laufen|joggen|jogge|laufe? (eigentlich |sehr |recht )?(viel|regelmASig|gern|gerne)|lAufer\w*|lauftraining|halbmarathon|marathon|\d+ ?km laufen|kilometer laufen)/],
-    ['Radfahren', /\b(radfahren|fahrrad fahre|rennrad|mountainbike|radeln|fahre rad|rad fahre)/],
+    ['Radfahren', /\b(radfahren|fahrrad fahre|fAhrt (fahrrad|rad|e-bike)|fahrrad|rennrad|mountainbike|radeln|fahre rad|rad fahre)/],
     ['Schwimmen', /\b(schwimmen|schwimme)/],
     ['Krafttraining', /\b(fitnessstudio|fitness\b|gym|krafttraining|kraftsport|pumpen|hanteln|crossfit)/],
     ['Wandern', /\b(wandern|wandere|nordic walking|spazieren gehe)/],
@@ -697,7 +703,9 @@ details.gruppe[open] .g-inhalt{animation:auf .22s ease-out}
       // „Diagnose ist …“ / „Auf dem Rezept steht …“ ohne bekannte Liste
       var frei = s.tu.match(/\b(?:Diagnose|Verordnung|Rezept)\b[^.?!]{0,40}?\b(?:ist|lautet|steht|war|wegen)\b:?\s*(?:drauf\s*)?:?\s*([^.?!,]{4,60})/i);
       if (frei && (!kandidat || kandidat.gewicht < 3)) {
-        kandidat = { text: grp(s.text, frei, 1).replace(/^(ein|eine|einen|das|der|die)\s+/i, '').replace(/\s+drauf$/i, '').trim(), region: null, seite: seiteIn(s.lc), belege: [s.i], gewicht: 3, sicher: true };
+        var ft = grp(s.text, frei, 1).replace(/^(ein|eine|einen|das|der|die)\s+/i, '').replace(/\s+drauf$/i, '').trim();
+        ft = ft.replace(/\s+(der|die|das|nun|patient\w*|seit|vor|und dann|danach|beschwerde\w*)\b[\s\S]*$/i, '').trim();
+        kandidat = { text: ft, region: null, seite: seiteIn(s.lc), belege: [s.i], gewicht: 3, sicher: true };
       }
     });
     if (kandidat && /Bandscheibenvorfall/.test(kandidat.text) && kandidat.seite && kandidat.seite !== 'beidseits') kandidat.textMitSeite = kandidat.text + ' ' + kandidat.seite;
@@ -768,6 +776,25 @@ details.gruppe[open] .g-inhalt{animation:auf .22s ease-out}
       if (/\bseit (gestern|vorgestern)\b/.test(lc)) funde.push({ tage: /vorgestern/.test(lc) ? 2 : 1, text: lc.match(/seit (gestern|vorgestern)/)[0], satz: s.i, punkte: 3 });
       if (/\bseit letztem jahr|seit letzten jahr/.test(lc)) funde.push({ tage: 365, text: 'seit letztem Jahr', satz: s.i, punkte: 2 });
     });
+    // Beginn relativ zur OP: „vor sechs Wochen operiert, einen Tag vorher passiert“
+    var opRe = new RegExp('\\bvor\\s+(?:(?:etwa|ca\\.?|knapp|gut)\\s+)?' + ZAHL_RE + '\\s+(tag\\w*|woche\\w*|monat\\w*|jahr\\w*)\\s+(?:\\w+\\s+){0,3}(?:operiert|op\\b|operation)');
+    var op = null;
+    saetze.forEach(function (s) { var m = !op && s.lc.match(opRe); if (m) { var n = zahl(m[1]); op = { n: n, e: m[2], tage: Math.round(/^tag/.test(m[2]) ? n : /^woche/.test(m[2]) ? n * 7 : /^monat/.test(m[2]) ? n * 30.4 : n * 365), satz: s.i }; } });
+    if (op) {
+      var gefunden = false;
+      saetze.forEach(function (s) {
+        if (gefunden || s.i < op.satz || s.i > op.satz + 1) return;
+        var d = s.lc.match(new RegExp(ZAHL_RE + '\\s+(tag\\w*|woche\\w*)\\s+(?:\\w+\\s+)?(vorher|davor|zuvor)'));
+        var kurz = /\bkurz (vorher|davor|zuvor)\b/.test(s.lc);
+        if (d || kurz) {
+          gefunden = true;
+          var plus = d ? (/^tag/.test(d[2]) ? zahl(d[1]) : zahl(d[1]) * 7) : 0;
+          funde.push({ tage: op.tage + plus, text: zeitText(op.n, op.e, plus > 0), satz: s.i, punkte: 4 });
+        }
+      });
+      var trauma = saetze.some(function (s) { return /\b(fraktur\w*|gebrochen\w*|bruch|sturz|gestUrzt|unfall|verletzt|umgeknickt|gerissen)\b/.test(s.lc); });
+      if (!gefunden && trauma && !funde.some(function (x) { return x.punkte >= 0; })) funde.push({ tage: op.tage, text: zeitText(op.n, op.e, true), satz: op.satz, punkte: 1 });
+    }
     funde.sort(function (a, b) { return b.punkte - a.punkte || a.satz - b.satz; });
     var f = funde[0] && funde[0].punkte >= 0 ? funde[0] : null;
     var r = f ? inSlider(f.tage) : { jahre: null, monate: null, tage: null };
@@ -799,12 +826,18 @@ details.gruppe[open] .g-inhalt{animation:auf .22s ease-out}
       }
     });
     r.belege = uniq(r.belege);
+    // Wie hat es angefangen?
+    saetze.forEach(function (s) {
+      if (s.frage || r.wie) return;
+      var w = s.tu.match(/\b(?:beschwerde\s?begi?nn?|beginn der beschwerden|angefangen hat (?:es|das)|fing (?:es|das) an|los ging es)\s*(?:war|ist)?\s*((?:nach|durch|bei|beim|mit|im|wAhrend|seit)\s+[^.!?]+)/i);
+      if (w) { r.wie = { text: grp(s.text, w, 1).replace(/[,;\s]+$/, '').trim(), belege: [s.i] }; r.belege.push(s.i); }
+    });
     saetze.forEach(function (s) {
       if (s.frage || r.verschlechtert) return;
       var v = s.lc.match(/\b(?:seit|ab)\s+(dem\s+|diesem\s+|letztem\s+|anfang\s+|mitte\s+|ende\s+)?(sommer|frUhjahr|herbst|winter|januar|februar|mArz|april|mai|juni|juli|august|september|oktober|november|dezember|\w+ (?:wochen|monaten|tagen))\b[^.]{0,40}\b(schlimmer|verschlechter\w*|zugenommen|stArker)/);
       if (v) { r.verschlechtert = { text: 'Verschlechterung seit ' + ((v[1] || '').trim() ? UI(v[1].trim()) + ' ' : '') + UI(v[2]).replace(/^\w/, function (c) { return /sommer|frUhjahr|herbst|winter|januar|februar|mArz|april|mai|juni|juli|august|september|oktober|november|dezember/.test(UI(v[2])) ? c.toUpperCase() : c; }), belege: [s.i] }; r.belege.push(s.i); }
     });
-    if (!f && r.erstmals == null) return null;
+    if (!f && r.erstmals == null && !r.wie) return null;
     return r;
   }
   function zeitRest(lc) {
@@ -938,7 +971,7 @@ details.gruppe[open] .g-inhalt{animation:auf .22s ease-out}
     }
     r.familienstand = erst(/\bverwitwet|witwe\w*|(mein|meine) (mann|frau) (ist )?(\w+ )?(gestorben|verstorben)/, 'verwitwet')
       || erst(/\bgeschieden|getrennt lebend|scheidung/, 'geschieden')
-      || erst(/\bverheiratet|(meine|seine) (ehe)?frau\b|(mein|ihr) (ehe)?mann\b|ehemann|ehefrau/, 'verheiratet')
+      || erst(/\bverheiratet|(meine|seine|seiner|meiner) (ehe)?frau\b|(mein|ihr|ihrem|meinem) (ehe)?mann\b|ehemann|ehefrau/, 'verheiratet')
       || erst(/\b(freundin|freund|partnerin|partner|lebensgefAhrt\w*)\b/, 'in Partnerschaft')
       || erst(/\b(alleinstehend|single)\b/, 'alleinstehend');
     r.lebt = erst(/\b(pflegeheim|altenheim|seniorenheim|pflegeeinrichtung)/, 'lebt in einer Pflegeeinrichtung')
@@ -1275,6 +1308,16 @@ details.gruppe[open] .g-inhalt{animation:auf .22s ease-out}
       var letzteBew = null;
       teile(lc).forEach(function (tl) {
         var t = tl.t;
+        var vorAdj = t.match(/\b(reduziert\w*|eingeschrAnkt\w*|vermindert\w*|schmerzhaft\w*|freie?)\s+((?:[a-zAOUS]+(?:\s+(?:und\s+)?)?){1,3})/);
+        if (vorAdj && !KAT.mobi.test(t) && !KAT.uebung.test(t)) {
+          var q0 = /^frei/.test(vorAdj[1]) ? 'frei' : /^schmerz/.test(vorAdj[1]) ? 'schmerzhaft' : 'eingeschränkt';
+          BEWEGUNGEN.forEach(function (bw) {
+            var mm = vorAdj[2].match(bw[1]);
+            if (!mm || (bw[0] === 'Rotation' && /(auSen|innen)rotation/.test(vorAdj[2])) || (/^(Flexion|Extension)$/.test(bw[0]) && /(dorsal|plantar|lateral)(flexion|extension)/.test(vorAdj[2]))) return;
+            var zl = (nachher || NACHHER.test(t)) ? befund.romNachher : befund.rom;
+            if (!zl.some(function (x) { return x.name === bw[0]; })) zl.push({ name: bw[0], wert: q0, text: bw[0] + ' ' + q0, belege: [s.i] });
+          });
+        }
         var nurSeite = t.match(/^\s*(links|rechts)\s+(?:jetzt\s+)?(\d{1,3})\s*(grad|°)?\s*\.?\s*$/);
         if (nurSeite && letzteBew) {
           var nm = letzteBew + ' ' + nurSeite[1], zl = (nachher || NACHHER.test(t)) ? befund.romNachher : befund.rom;
@@ -1456,7 +1499,9 @@ details.gruppe[open] .g-inhalt{animation:auf .22s ease-out}
       if (sz.length) z.push('Schmerz heute ' + sz.join(', ') + '.');
       if (S.schwellung) z.push('Schwellung weiterhin vorhanden.');
       var bt = befundText(e, true); if (bt) z.push(bt);
-      if (e.red.length) z.push('Besonderheit: ' + e.red.map(function (r) { return r.wert; }).join('; ') + '.');
+      var sturz = e.ausloeser.filter(function (a) { return /^(Sturz|Unfall|Umknicken)$/.test(a.wert); })[0];
+      if (sturz) z.push('Besonderheit: ' + sturz.wert + (sturz.detail ? ' ' + sturz.detail : '') + ' seit der letzten Behandlung.');
+      if (e.red.length) z.push('Red Flags: ' + e.red.map(function (r) { return r.wert; }).join('; ') + '. Ärztlich abklären.');
     }
     var beh = behandlungText(e); if (beh) z.push(beh);
     if (v.reaktion) z.push('Reaktion auf die Behandlung: ' + v.reaktion.wert + (v.reaktionWas ? ', ' + v.reaktionWas : '') + (e.befund.romNachher.length && !/\d+\s*°|\d+ grad/i.test(v.reaktionWas) ? ' (' + e.befund.romNachher.map(function (r) { return r.text; }).join(', ') + ')' : '') + '.');
@@ -1477,9 +1522,12 @@ details.gruppe[open] .g-inhalt{animation:auf .22s ease-out}
     var reg = e.region.haupt;
     if (reg) b.push(ab(reg.name + (reg.seite ? ' ' + reg.seite : '')));
     if (e.beginn && e.beginn.text) b.push(e.beginn.text.replace(/^seit /, 'seit ').replace(/ Jahren$/, ' J.').replace(/ Jahr$/, ' J.').replace(/ Monaten$/, ' Mon.').replace(/ Wochen$/, ' Wo.').replace(/ Tagen$/, ' Tg.'));
+    if (e.beginn && e.beginn.wie) b.push('Beginn ' + e.beginn.wie.text);
     if (e.beginn && e.beginn.erstmals === true) b.push('erstmalig');
     if (e.beginn && e.beginn.erstmals === false) b.push('rezidiv.' + (e.beginn.frueher ? ' (' + e.beginn.frueher + ')' : ''));
-    if (e.ausloeser.length) b.push(e.ausloeser.map(function (a) { return a.wert === 'Ohne erkennbaren Auslöser' ? 'kein Auslöser' : a.wert; }).join(', '));
+    var wieK = e.beginn && e.beginn.wie ? e.beginn.wie.text.toLowerCase() : '';
+    var auslK = e.ausloeser.filter(function (x) { return !(wieK && wieK.indexOf(x.wert.toLowerCase()) >= 0); });
+    if (auslK.length) b.push(auslK.map(function (a) { return a.wert === 'Ohne erkennbaren Auslöser' ? 'kein Auslöser' : a.wert; }).join(', '));
     if (e.op) b.push(e.op.text.replace('Operation', 'OP'));
     if (b.length) z.push('Anamnese: ' + b.join(', '));
     var sz = [];
@@ -1493,7 +1541,7 @@ details.gruppe[open] .g-inhalt{animation:auf .22s ease-out}
     if (aus.length) z.push('Ausstr.: ' + aus.join(', '));
     if (S.morgensteif) z.push('Morgensteifigkeit' + (S.morgensteif.text ? ' ' + S.morgensteif.text : ''));
     if (S.schwellung) z.push('Schwellung');
-    var v = e.massnahmen.map(function (m) {
+    var v = e.massnahmen.filter(function (m) { return !(m.wert === 'Operation' && e.op); }).map(function (m) {
       if (m.wert === 'Ärztliche Vorstellung') return e.bildgebung.length ? e.bildgebung.map(function (bg) { return bg.art + (bg.befund ? ' (' + bg.befund + ')' : ''); }).join(', ') : 'Arzt';
       if (m.wert === 'Schmerzmedikation') { var md = e.medikamente.filter(function (x) { return /Ibuprofen|Diclofenac|Metamizol|Tilidin|Tramadol|Paracetamol|Etoricoxib|Pregabalin/.test(x.wert); }); return md.length ? md.map(function (x) { return x.wert; }).join(', ') : 'Analgetika'; }
       return ({ 'Injektion oder Infiltration': 'Injektion', 'Orthese oder Bandage': 'Orthese', 'Physiotherapie': 'PT', 'Manuelle Therapie': 'MT', 'Rehabilitation': 'Reha', 'Operation': 'OP' })[m.wert] || m.wert;
@@ -1509,6 +1557,7 @@ details.gruppe[open] .g-inhalt{animation:auf .22s ease-out}
     if (so.arbeit) soz.push(so.arbeit.wert === 'überwiegend sitzend' ? 'sitzend' : 'körperl. belastend');
     if (so.au) soz.push('AU');
     if (so.sport.length) soz.push(so.sport.map(function (x) { return x.wert.replace(' oder ', '/') + (x.haeufig ? ' ' + ({ '1- bis 2-mal pro Woche': '1–2×/Wo.', '3- bis 4-mal pro Woche': '3–4×/Wo.', '5-mal pro Woche oder öfter': '≥5×/Wo.', 'gelegentlich': 'gelegentl.' }[x.haeufig] || x.haeufig) : ''); }).join(', '));
+    if (so.haustiere) soz.push(so.haustiere.wert);
     if (so.hilfsmittel.length) soz.push(so.hilfsmittel.map(function (h) { return h.wert === 'Unterarmgehstützen' ? 'UAGS' : h.wert; }).join(', '));
     if (soz.length) z.push('Sozial: ' + soz.join(', '));
     if (e.red.length) z.push('RF: ' + e.red.map(function (r) { return r.wert; }).join(', ') + ', ärztl. abklären');
@@ -1618,6 +1667,17 @@ details.gruppe[open] .g-inhalt{animation:auf .22s ease-out}
       }
     });
     e.red = red.ja; e.redVerneint = red.nein;
+    // Klar benannter Sturz oder Unfall ist der Auslöser, keine Red Flag (Bruno, 03.11.2026); mit OP oder Fraktur-Diagnose ohnehin nicht
+    var traumaAlsAusloeser = e.ausloeser.some(function (a) { return /^(Sturz|Unfall|Umknicken|Sportverletzung)$/.test(a.wert); });
+    if (traumaAlsAusloeser || e.op || (e.diagnose && /fraktur|Z\. n\./i.test(e.diagnose.text))) e.red = e.red.filter(function (r) { return r.wert !== 'Trauma oder Sturz'; });
+    e.ausloeser.forEach(function (a) {
+      if (a.wert !== 'Sturz' && a.wert !== 'Unfall') return;
+      a.belege.forEach(function (bi) {
+        if (a.detail) return;
+        var m = S[bi].tu.match(/\b(?:sturz|gestUrzt|hingefallen|ausgerutscht|unfall)\w*\s+((?:auf|von|vom|beim|Uber|aus|in|im|mit|bei)\s+[^.,;!?]{3,40})/i);
+        if (m) a.detail = grp(S[bi].text, m, 1).replace(/\s+(und|der|die|das|dann)\b.*$/i, '').trim();
+      });
+    });
     e.yellow = finde(S, YELLOW, { nurVor: true }).ja;
     e.schmerz = schmerz(S);
     e.sozial = sozial(S);
@@ -1674,11 +1734,14 @@ details.gruppe[open] .g-inhalt{animation:auf .22s ease-out}
     if (e.beginn && e.beginn.erstmals === true) b += (b ? ', ' : '') + 'erstmals aufgetreten';
     if (e.beginn && e.beginn.erstmals === false) b += (b ? ', ' : '') + 'rezidivierend' + (e.beginn.frueher ? ' (frühere Episode ' + e.beginn.frueher.replace(/\bjahr\b/, 'Jahr') + ')' : '');
     if (e.beginn && e.beginn.verschlechtert) b += (b ? ', ' : '') + e.beginn.verschlechtert.text;
+    if (e.beginn && e.beginn.wie) b += (b ? ', ' : '') + 'Beginn ' + e.beginn.wie.text;
     if (b) z.push(gross(b) + '.');
-    if (e.ausloeser.length) {
-      var a = e.ausloeser.map(function (x) { return x.wert; }).filter(function (x) { return !(x === 'Nach Operation' && (e.op || e.ausloeser.length > 1)); });
+    var wieT = e.beginn && e.beginn.wie ? e.beginn.wie.text.toLowerCase() : '';
+    var ausl = e.ausloeser.filter(function (x) { return !(wieT && wieT.indexOf(x.wert.toLowerCase()) >= 0); });
+    if (ausl.length) {
+      var a = ausl.map(function (x) { return x.wert; }).filter(function (x) { return !(x === 'Nach Operation' && (e.op || e.ausloeser.length > 1)); });
       if (a.length === 1 && a[0] === 'Ohne erkennbaren Auslöser') z.push('Schleichender Beginn ohne erkennbaren Auslöser.');
-      else z.push('Auslöser: ' + liste(a.map(function (x, i) { return i ? mitte(x) : x; })) + '.');
+      else z.push('Auslöser: ' + liste(a.map(function (x, i) { var d = (e.ausloeser.filter(function (y) { return y.wert === x; })[0] || {}).detail; return (i ? mitte(x) : x) + (d ? ' ' + d : ''); })) + '.');
     }
     if (e.op) z.push(e.op.text + '.');
     var s = e.schmerz, sz = [];
@@ -1700,6 +1763,7 @@ details.gruppe[open] .g-inhalt{animation:auf .22s ease-out}
     var hist = [];
     e.massnahmen.forEach(function (m) {
       var w = m.wert;
+      if (w === 'Operation' && e.op) return;
       if (w === 'Ärztliche Vorstellung' && e.bildgebung.length) w += ', ' + e.bildgebung.map(function (bg) { return bg.art + (bg.befund ? ': ' + bg.befund : ''); }).join('; ');
       if (w === 'Schmerzmedikation' && e.medikamente.length) {
         var schm = e.medikamente.filter(function (x) { return /Ibuprofen|Diclofenac|Metamizol|Tilidin|Tramadol|Paracetamol|Etoricoxib|Pregabalin/.test(x.wert); });
@@ -1714,7 +1778,11 @@ details.gruppe[open] .g-inhalt{animation:auf .22s ease-out}
     var so = e.sozial, st = [];
     var partnerDoppelt = so.familienstand && so.familienstand.wert === 'in Partnerschaft' && so.lebt && /Partner/.test(so.lebt.wert);
     if (so.familienstand && !partnerDoppelt) st.push(so.familienstand.wert);
-    if (so.lebt) st.push(so.lebt.wert);
+    if (so.lebt) {
+      var lw = so.lebt.wert;
+      if (/Partner/.test(lw) && so.familienstand && so.familienstand.wert === 'verheiratet') { var lsatz = (e.saetze[so.lebt.belege[0]] || {}).lc || ''; lw = /frau\b/.test(lsatz) ? 'lebt mit Ehefrau' : /mann\b/.test(lsatz) ? 'lebt mit Ehemann' : lw; }
+      st.push(lw);
+    }
     if (so.wohnform) st.push(so.wohnform.wert + (so.wohnDetails.length ? ' (' + so.wohnDetails.map(function (d) { return d.wert; }).join(', ') + ')' : ''));
     if (so.kinder) st.push(so.kinder.wert === 'keine' ? 'keine Kinder' : so.kinder.wert === '1' ? '1 Kind' : so.kinder.wert + ' Kinder');
     if (so.haustiere) st.push(so.haustiere.wert);
@@ -1749,6 +1817,15 @@ details.gruppe[open] .g-inhalt{animation:auf .22s ease-out}
    die Regeln fertig waren, und beim Bauen nicht benutzt. */
 (function (root) {
   var PROBEN = [
+    {
+      id: 'echt-1', titel: 'Dein Live-Diktat 03.11.', art: 'Erstbefund', echt: true, untertitel: 'Echte Apple-Erkennung, ohne Satzzeichen am Ende',
+      text: 'Patient kommt Mit einer gebrochenen Schulter Rechts . Vor sechs Wochen operiert Einen Tag vorher passiert. Nun reduzierte Abduktion Elevation der Schulter ohne Schmerz. Diabetes als neben Diagnose und Bluthochdruck Medikamentös eingestellt . Patient ist sportlich fährt Fahrrad arbeitet viel im Garten hat ein Hund geht also viel spazieren und lebt mit seiner Frau in einem Haus . Diagnose ist eine Humerusfraktur Der beschwerde begin war nach Sturz auf nassem Untergrund',
+      soll: {
+        modus: 'erstbefund', diagnose: /^Humerusfraktur$/, region: 'SCHULTER', seite: 'rechts', beginnTage: [40, 46], ausloeser: ['Sturz'],
+        nebendiagnosen: ['Diabetes mellitus', 'Arterielle Hypertonie'], red: [], familienstand: 'verheiratet', wohnform: 'Haus', haustier: 'Hund', sport: ['Radfahren'],
+        rom: ['Abduktion eingeschränkt', 'Elevation eingeschränkt']
+      }
+    },
     {
       id: 'eb-schulter', titel: 'Schulter rechts', art: 'Erstbefund', untertitel: 'Mit gesprochenem „Komma“ und „Punkt“',
       text: 'Erstbefund Anna M. Punkt Schulter rechts Komma Impingement laut Verordnung Punkt Beschwerden seit ungefähr sechs Wochen Komma angefangen nach dem Renovieren Komma sie hat tagelang die Decke gestrichen Punkt Zum ersten Mal Punkt NAS in Ruhe drei Komma bei Belastung sieben Komma vor allem nachts und beim Arm über Kopf Punkt Liegen auf der rechten Seite geht nicht Punkt War beim Orthopäden Komma das MRT zeigt eine Bursitis subacromialis Punkt Nimmt bei Bedarf Ibuprofen Punkt Bluthochdruck Komma sonst gesund Punkt Fieber und Gewichtsverlust verneint Punkt Verheiratet Komma zwei Kinder Komma arbeitet als Steuerfachangestellte im Büro Punkt Spielt Volleyball zweimal pro Woche Komma Ziel wieder Volleyball spielen Punkt Befund Doppelpunkt Flexion 140 Grad Komma Abduktion 110 Grad mit Painful Arc Komma Außenrotation endgradig schmerzhaft Punkt Hawkins und Neer positiv Komma Jobe negativ Punkt Hartspann Trapezius pars descendens und Levator scapulae Punkt Heute Detonisierung Trapezius und Levator mit Triggerpunkttechnik Komma Mobilisation Glenohumeralgelenk nach kaudal Stufe drei Punkt Außenrotation mit Theraband 3 mal 10 als Heimübung mitgegeben Punkt Danach Flexion 155 Grad und weniger Schmerz Punkt',
@@ -1827,7 +1904,7 @@ details.gruppe[open] .g-inhalt{animation:auf .22s ease-out}
       id: 'vl-huefte', titel: 'Hüfte, Hausbesuch nach Sturz', art: 'Verlauf', untertitel: 'Verschlechterung mit Red Flag',
       text: 'Hausbesuch Frau K., Coxarthrose rechts. Deutlich schlechter seit dem Wochenende, sie ist im Flur gestürzt, laut Hausarzt nichts gebrochen. NRS acht beim Gehen. Heute nur Detonisierung Adduktoren und Iliopsoas, Traktion Hüftgelenk, Gangschule mit Rollator. Sturzprophylaxe besprochen, Teppich im Flur soll weg. Heute keine Heimübungen. Danach etwas lockerer.',
       soll: {
-        modus: 'verlauf', patient: 'Frau K.', befinden: 'deutlich schlechter', bewegung: 8, red: ['Trauma oder Sturz'],
+        modus: 'verlauf', patient: 'Frau K.', befinden: 'deutlich schlechter', bewegung: 8, red: [], ausloeser: ['Sturz'],
         deton: ['Adduktoren', 'M. iliopsoas'], mobi: ['Hüftgelenk'], richtung: ['Traktion'], uebungen: ['Gangschule'], hilfsmittel: ['Rollator'],
         heim: 'keine', reaktion: 'besser', beratung: ['Alltag und Ergonomie beraten']
       }
@@ -2037,6 +2114,7 @@ details.gruppe[open] .g-inhalt{animation:auf .22s ease-out}
     [/\btal[ae]t? ?(t?ilt|hilt|hält|tild)\b/gi, 'Talar Tilt'],
     [/\bta(pp|ip)e\b/gi, 'Tape'], [/\bfaktur\b/gi, 'Fraktur'],
     [/\b(nerven) (mobilisation)\b/gi, 'Nervenmobilisation'],
+    [/\bbeschwerde ?begi?nn?\b/gi, 'Beschwerdebeginn'], [/\bneben ?diagnose\b/gi, 'Nebendiagnose'],
     [/\bL\s?(\d)\s*[\/ ]\s*([LS])\s?(\d)\b/g, 'L$1/$2$3'],
     [/\b(thera|terra|tera)[ -]?band\w*/gi, 'Theraband'],
     [/\b(schien ?tr?o[ck]k?|schien ?tu[ck]k?|tschin ?ta[ck]k?|chin ?ta[ck]k|chin ?tuk)\b/gi, 'Chin Tuck'],
@@ -2609,7 +2687,7 @@ details.gruppe[open] .g-inhalt{animation:auf .22s ease-out}
     $('proben').querySelectorAll('.probe').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.id === p.id); });
     auswerten();
   }
-  $('proben').innerHTML = DIKTAT_PROBEN.map(function (p) {
+  $('proben').innerHTML = DIKTAT_PROBEN.filter(function (p) { return !p.echt; }).map(function (p) {
     return '<button type="button" class="probe" data-id="' + p.id + '" aria-pressed="false">' + esc(p.titel) + '<small>' + (p.gegenprobe ? 'Gegenprobe · ' : '') + p.art + '</small></button>';
   }).join('');
   $('proben').addEventListener('click', function (ev) {
@@ -2670,7 +2748,7 @@ details.gruppe[open] .g-inhalt{animation:auf .22s ease-out}
   $('tab-lauf').addEventListener('click', function () { zeige('lauf'); });
 
   window.DF = { auswerten: auswerten, aktuelleProbe: function () { return aktuelleProbe; }, zaehle: zaehle };
-  probeLaden(DIKTAT_PROBEN[0]);
+  probeLaden(DIKTAT_PROBEN.filter(function (p) { return !p.echt; })[0]);
   testlauf();
 })();
 </script>
