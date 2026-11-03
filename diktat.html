@@ -2803,6 +2803,8 @@ html.ww ::selection{background:#ddf6a2;color:#1a1a1a}
   if (start) { $('eingabe').value = start; window.DF.zaehle(); }
   window.DF.auswerten();
   $('eingabe').addEventListener('input', function () { clearTimeout(window.DF_t); window.DF_t = setTimeout(window.DF.auswerten, 700); });
+  // fertig aufgebaut: Doku-Fix blendet die Seite ein
+  requestAnimationFrame(function () { requestAnimationFrame(function () { senden({ typ: 'dx-bereit' }); }); });
   function senden(m) { try { window.parent.postMessage(m, location.origin === 'null' ? '*' : location.origin); } catch (e) { window.parent.postMessage(m, '*'); } }
   $('app-ab').addEventListener('click', function () { try { window.DF_auf && window.DF_auf.stopp(); } catch (e) { } senden({ typ: 'dx-abbrechen' }); });
   $('app-ok').addEventListener('click', function () {
