@@ -65,7 +65,7 @@ details.kachel>summary::-webkit-details-marker{display:none}
 .k-titel{font:600 16px var(--schrift-f);display:block}
 .k-wert{display:block;font-size:13px;color:var(--schrift2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pfeil{width:9px;height:9px;border-right:2px solid var(--linie);border-bottom:2px solid var(--linie);transform:rotate(-45deg);transition:transform .2s}
-details[open] .pfeil{transform:rotate(45deg)}
+details[open]>summary .pfeil{transform:rotate(45deg)}
 .k-inhalt{padding:0 14px 14px 50px;display:flex;flex-direction:column;gap:10px}
 details[open] .k-inhalt{animation:auf .22s ease-out}
 @keyframes auf{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
@@ -111,6 +111,18 @@ td.s.j{color:var(--gruen)} td.s.n{color:var(--warn)}
 .segment.ziel small{font:400 11px var(--schrift-f);color:var(--schrift2)}
 .segment.ziel button[aria-pressed="true"]{color:var(--tape)}
 .erkannt .hinweis{padding-top:8px}
+details.gruppe{background:var(--flaeche);border-radius:16px;box-shadow:var(--schatten);overflow:hidden}
+details.gruppe>summary{list-style:none;display:grid;grid-template-columns:minmax(0,1fr) auto 16px;gap:12px;align-items:center;padding:18px 16px;cursor:pointer}
+details.gruppe>summary::-webkit-details-marker{display:none}
+.g-text{display:flex;flex-direction:column;gap:2px;min-width:0}
+.g-titel{font:700 24px/1.15 var(--schrift-r);letter-spacing:-.01em}
+.g-unter{font-size:13px;color:var(--schrift2)}
+.g-zahl{display:flex;flex-direction:column;align-items:flex-end;gap:4px;text-align:right}
+.pfeil.gross{width:11px;height:11px}
+details.gruppe[open]>summary .pfeil{transform:rotate(45deg)}
+.g-inhalt{display:flex;flex-direction:column;gap:10px;padding:0 12px 12px}
+details.gruppe[open] .g-inhalt{animation:auf .22s ease-out}
+.g-inhalt details.kachel{background:var(--grund);box-shadow:none}
 .abschnitt{font:700 22px/1.2 var(--schrift-r);margin:10px 2px 0;letter-spacing:-.01em}
 .abschnitt small{display:block;font:400 13px var(--schrift-f);color:var(--schrift2);letter-spacing:0}
 .mikro{display:flex;gap:14px;align-items:center;padding:4px 14px 12px}
@@ -2544,12 +2556,20 @@ td.s.j{color:var(--gruen)} td.s.n{color:var(--warn)}
     gruppen.forEach(function (g) { g.A.forEach(function (a) { gesamt++; if (a.eintraege.length) gefuellt++; a.eintraege.forEach(function (x) { anzahl++; (x.belege || []).forEach(function (bi) { if (!(bi in zuord)) zuord[bi] = a.titel; }); }); }); });
     $('bilanz').innerHTML = '<span class="pille">' + anzahl + ' Angaben einsortiert</span><span class="pille grau">' + gefuellt + ' von ' + gesamt + ' Schritten</span>' + (erg.offen.length ? '<span class="pille warn">' + erg.offen.length + ' nicht zugeordnet</span>' : '');
 
-    var offenAlt = {};
-    kacheln.querySelectorAll('details[open]').forEach(function (d) { offenAlt[d.dataset.ab] = 1; });
-    var html = gruppen.map(function (g) { return '<h2 class="abschnitt">' + g.titel + '<small>' + esc(g.unter) + '</small></h2>' + g.A.map(kachelHtml).join(''); }).join('');
+    var offenAlt = {}, gruppeOffen = {};
+    kacheln.querySelectorAll('details.kachel[open]').forEach(function (d) { var g = d.closest('details.gruppe'); offenAlt[(g ? g.dataset.g : '') + ':' + d.dataset.ab] = 1; });
+    kacheln.querySelectorAll('details.gruppe').forEach(function (d) { gruppeOffen[d.dataset.g] = d.open; });
+    var html = gruppen.map(function (g, gi) {
+      var gid = g.titel, n = 0, voll = 0;
+      g.A.forEach(function (a) { n += a.eintraege.length; if (a.eintraege.length) voll++; });
+      return '<details class="gruppe" data-g="' + esc(gid) + '"><summary><span class="g-text"><span class="g-titel">' + g.titel + '</span><span class="g-unter">' + esc(g.unter) + '</span></span>' +
+        '<span class="g-zahl"><span class="pille' + (voll ? '' : ' grau') + '">' + n + ' Angaben</span><span class="klein">' + voll + ' von ' + g.A.length + ' Schritten</span></span><span class="pfeil gross" aria-hidden="true"></span></summary>' +
+        '<div class="g-inhalt">' + g.A.map(kachelHtml).join('') + '</div></details>';
+    }).join('');
     if (erg.offen.length) html += '<div class="offen"><details class="kachel" data-ab="offen"><summary><span class="haken" aria-hidden="true">' + FRAGE + '</span><span style="min-width:0"><span class="k-titel">Nicht zugeordnet</span><span class="k-wert">' + erg.offen.length + ' Sätze, bitte selbst prüfen</span></span><span class="pfeil" aria-hidden="true"></span></summary><div class="k-inhalt"><ul class="belege">' + erg.offen.map(function (bi) { return '<li data-satz="' + bi + '">' + esc(erg.saetze[bi].text) + '</li>'; }).join('') + '</ul></div></details></div>';
     kacheln.innerHTML = html;
-    kacheln.querySelectorAll('details').forEach(function (d) { if (offenAlt[d.dataset.ab]) d.open = true; });
+    kacheln.querySelectorAll('details.gruppe').forEach(function (d) { if (gruppeOffen[d.dataset.g]) d.open = true; });
+    kacheln.querySelectorAll('details.kachel').forEach(function (d) { var g = d.closest('details.gruppe'); if (offenAlt[(g ? g.dataset.g : '') + ':' + d.dataset.ab]) d.open = true; });
 
     // Texte aus den aktiven Einträgen
     var kopie = JSON.parse(JSON.stringify(erg, function (k, v) { return k === 'antwort' ? undefined : v; }));
