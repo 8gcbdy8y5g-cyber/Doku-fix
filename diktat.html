@@ -2804,7 +2804,13 @@ html.ww ::selection{background:#ddf6a2;color:#1a1a1a}
   window.DF.auswerten();
   $('eingabe').addEventListener('input', function () { clearTimeout(window.DF_t); window.DF_t = setTimeout(window.DF.auswerten, 700); });
   // fertig aufgebaut: Doku-Fix blendet die Seite ein
-  requestAnimationFrame(function () { requestAnimationFrame(function () { senden({ typ: 'dx-bereit' }); }); });
+  window.addEventListener('message', function (ev) {
+    if (ev.source !== window.parent || !ev.data || ev.data.typ !== 'dx-text') return;
+    var t = String(ev.data.text || ''); if (!t || $('eingabe').value.trim()) return;
+    $('eingabe').value = t; window.DF.zaehle(); window.DF.auswerten(); datumAusText();
+  });
+  var fertigMelden = function () { requestAnimationFrame(function () { requestAnimationFrame(function () { senden({ typ: 'dx-bereit' }); }); }); };
+  try { (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(fertigMelden, fertigMelden); } catch (e) { fertigMelden(); }
   function senden(m) { try { window.parent.postMessage(m, location.origin === 'null' ? '*' : location.origin); } catch (e) { window.parent.postMessage(m, '*'); } }
   $('app-ab').addEventListener('click', function () { try { window.DF_auf && window.DF_auf.stopp(); } catch (e) { } senden({ typ: 'dx-abbrechen' }); });
   $('app-ok').addEventListener('click', function () {
