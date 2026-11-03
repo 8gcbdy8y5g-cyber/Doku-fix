@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v80 | 03.11.2026 | aa36951 | Dienstplan: Steht ein lesbares Datum auf dem Plan, landet er immer auf diesem Tag. Vorher wurde ein Plan auf morgen geschoben, wenn am Tag schon ein anderer (falsch abgelegter) Plan lag; beim Wechsel der Reiter erschien dann wieder der alte Plan. |
 | v79 | 03.11.2026 | 575ade9 | Dienstplan: Bleibt die App über Nacht offen, springt der Plan beim Öffnen auf heute. Das Druckdatum oben rechts auf dem Papierplan wird nie mehr als Plandatum genommen; ist nur das Druckdatum lesbar und liegt es vor heute, landet der Plan auf heute. Ist ein Plan schon vollständig übernommen, heißt der Knopf „Zum Plan“ statt ausgegraut zu sein. |
 | v78 | 03.11.2026 | 03ab253 | Dienstplan-Foto: Termine gehen nicht mehr verloren, wenn die Uhrzeit schlecht gelesen wird (z. B. Doppeltermin Barbara K. erschien als Lücke). Uhrzeiten ohne Doppelpunkt werden erkannt, Zeilen ohne lesbare Uhrzeit übernimmt die App mit Beginn aus den Nachbarterminen, Zeilen mit unlesbarem Namen bleiben als „(Name unleserlich)“ stehen statt als Lücke. |
 | v77 | 02.11.2026 | d6e95ef | Therapiebericht: Textbausteine stehen als Standard in Stichpunkten; mit dem Haken „Fließtext generieren“ werden Ziele, Maßnahmen, Empfehlungen und Begründung als ein bis zwei Sätze formuliert (Aufzählungen „A, B und C“, bei „und“ im Baustein mit „sowie“), Vorschau direkt im Abschnitt. |
