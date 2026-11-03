@@ -133,6 +133,8 @@ td.s.j{color:var(--gruen)} td.s.n{color:var(--warn)}
 .segment.modell button{display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px 2px;font-size:14px}
 .segment.modell small{font:400 11px var(--schrift-f);color:var(--schrift2)}
 .segment.modell button[aria-pressed="true"]{color:var(--tape)}
+.segment.laenge{margin:0;grid-template-columns:1fr 1fr;width:140px;flex:0 0 auto}
+.segment.laenge button{padding:5px 0;font-size:13px}
 .segment.weg{grid-template-columns:repeat(3,1fr);margin:0 14px 6px;max-width:none}
 .segment.weg button{display:flex;flex-direction:column;align-items:center;gap:1px;padding:7px 2px;font-size:14px}
 .segment.weg small{font:400 11px var(--schrift-f);color:var(--schrift2)}
@@ -236,7 +238,8 @@ td.s.j{color:var(--gruen)} td.s.n{color:var(--warn)}
         <div class="bilanz" id="bilanz"></div>
         <div class="spalte" id="kacheln"></div>
         <div class="karte" id="karte-eb">
-          <div class="karte-kopf"><h2 class="karte-titel">Text Erstbefund</h2></div>
+          <div class="karte-kopf"><h2 class="karte-titel">Text Erstbefund</h2>
+            <div class="segment laenge" role="group" aria-label="Textlänge" id="laenge"><button type="button" data-l="kurz" aria-pressed="false">Kurz</button><button type="button" data-l="lang" aria-pressed="true">Lang</button></div></div>
           <p class="hinweis" style="padding-bottom:10px">Eintrag in einer Kachel antippen, um ihn wegzulassen.</p>
           <p class="text-doku" id="text-eb"></p>
           <div class="knopfreihe"><button type="button" class="knopf haupt" data-kopiere="text-eb">Erstbefund kopieren</button></div>
@@ -404,10 +407,10 @@ td.s.j{color:var(--gruen)} td.s.n{color:var(--warn)}
     ['Impingement-Syndrom der Schulter', /impingement/, 'SCHULTER'],
     ['Adhäsive Kapsulitis (Frozen Shoulder)', /frozen shoulder|schultersteife|kapsulitis/, 'SCHULTER'],
     ['Rotatorenmanschettenruptur', /rotatorenmanschette\w*\s*(riss|ruptur|gerissen)|(riss|ruptur)\w* (der|an der) rotatorenmanschette|supraspinatus\w*(riss|ruptur|sehnenriss)/, 'SCHULTER'],
-    ['Bandscheibenvorfall LWS', /bandscheibenvorfall|prolaps|bsv/, 'LWS'],
+    ['Bandscheibenvorfall', /bandscheibenvorfall|prolaps|bsv/, null],
     ['Lumboischialgie', /lumboischialgie|ischias/, 'LWS'],
     ['Lumbago', /lumbago|hexenschuss/, 'LWS'],
-    ['Spinalkanalstenose', /spinalkanalstenose|stenose/, 'LWS'],
+    ['Spinalkanalstenose', /spinalkanalstenose|stenose/, null],
     ['Zervikobrachialgie', /zervikobrachialgie|cervicobrachialgie/, 'HWS'],
     ['HWS-Syndrom', /hws-syndrom|hws syndrom|zervikalsyndrom|nackenverspannung/, 'HWS'],
     ['Epicondylitis humeri radialis', /tennisarm|epicondylitis/, 'ELLENBOGEN'],
@@ -1006,7 +1009,7 @@ td.s.j{color:var(--gruen)} td.s.n{color:var(--warn)}
       if (t.split(' ').length >= 2) out.push({ wert: t.charAt(0).toLowerCase() + t.slice(1), belege: [s.i, s.antwort.i] });
     });
     saetze.forEach(function (s) {
-      var zm = s.tu.match(/\b(?:ziel|ziele|therapieziel)\b\s*(?:ist|wAre|sind)?\s*[:,]?\s*([^.?!]{4,90})/i);
+      var zm = s.tu.match(/\b(?:ziel|ziele|therapieziel)\b\s*(?:ist|wAre|sind)?\s*[:,]?\s*([^.?!]{4,})/i);
       if (zm && !s.frage) {
         var zt = grp(s.text, zm, 1).replace(/[,;]\s*$/, '').trim();
         if (/^(Wieder|Schmerzfrei|ZurUck|Ohne|Mehr|Besser|SelbststAndig|Allein)\b/.test(zt)) zt = zt.charAt(0).toLowerCase() + zt.slice(1);
@@ -1452,7 +1455,67 @@ td.s.j{color:var(--gruen)} td.s.n{color:var(--warn)}
     return z.join(' ').replace(/\s{2,}/g, ' ').replace(/Grad\b/g, '°').replace(/(\d)\s+°/g, '$1°');
   }
 
-  function texte(e, art) {
+  /* Kurzfassung im Doku-Telegrammstil */
+  function kurzErstbefund(e) {
+    var z = [], S = e.schmerz, so = e.sozial;
+    var ab = function (t) { return String(t).replace(/\brechts\b/g, 're.').replace(/\blinks\b/g, 'li.').replace(/\bbeidseits\b/g, 'bds.'); };
+    if (e.diagnose) z.push('Dx: ' + ab(e.diagnose.textMitSeite || e.diagnose.text));
+    var b = [];
+    var reg = e.region.haupt;
+    if (reg) b.push(ab(reg.name + (reg.seite ? ' ' + reg.seite : '')));
+    if (e.beginn && e.beginn.text) b.push(e.beginn.text.replace(/^seit /, 'seit ').replace(/ Jahren$/, ' J.').replace(/ Jahr$/, ' J.').replace(/ Monaten$/, ' Mon.').replace(/ Wochen$/, ' Wo.').replace(/ Tagen$/, ' Tg.'));
+    if (e.beginn && e.beginn.erstmals === true) b.push('erstmalig');
+    if (e.beginn && e.beginn.erstmals === false) b.push('rezidiv.' + (e.beginn.frueher ? ' (' + e.beginn.frueher + ')' : ''));
+    if (e.ausloeser.length) b.push(e.ausloeser.map(function (a) { return a.wert === 'Ohne erkennbaren Auslöser' ? 'kein Auslöser' : a.wert; }).join(', '));
+    if (e.op) b.push(e.op.text.replace('Operation', 'OP'));
+    if (b.length) z.push('Anamnese: ' + b.join(', '));
+    var sz = [];
+    if (S.ruhe) sz.push('R ' + S.ruhe.text);
+    if (S.bewegung) sz.push((S.allgemeinAlsBewegung ? '' : 'B ') + S.bewegung.text);
+    var s2 = sz.length ? 'NRS ' + sz.join(' / ') + '/10' : '';
+    var zus = [].concat(S.qualitaet.map(function (q) { return q.wert; }), S.tageszeit.map(function (t) { return t.wert; }));
+    if (s2 || zus.length) z.push([s2].concat(zus).filter(Boolean).join(', '));
+    if (S.bei.length) z.push('Prov.: ' + S.bei.map(function (x) { return x.wert.replace(/^bei l\u00e4ngerem (\w+)/, 'längeres $1').replace(/^(beim|bei den|bei) /, '').replace('Liegen auf der betroffenen Seite', 'Seitenlage betroffene Seite'); }).join(', '));
+    var aus = S.ausstrahlung.filter(function (a) { return !(/^ins Bein/.test(a.wert) && S.ausstrahlung.some(function (b2) { return /Wade|FuS|Oberschenkel/.test(b2.wert); })) && !(/^in den Arm/.test(a.wert) && S.ausstrahlung.some(function (b2) { return /Hand/.test(b2.wert); })); }).map(function (a) { return ab(a.wert); }).concat(S.paraesthesien.map(function (p) { return p.wert; }));
+    if (aus.length) z.push('Ausstr.: ' + aus.join(', '));
+    if (S.morgensteif) z.push('Morgensteifigkeit' + (S.morgensteif.text ? ' ' + S.morgensteif.text : ''));
+    if (S.schwellung) z.push('Schwellung');
+    var v = e.massnahmen.map(function (m) {
+      if (m.wert === 'Ärztliche Vorstellung') return e.bildgebung.length ? e.bildgebung.map(function (bg) { return bg.art + (bg.befund ? ' (' + bg.befund + ')' : ''); }).join(', ') : 'Arzt';
+      if (m.wert === 'Schmerzmedikation') { var md = e.medikamente.filter(function (x) { return /Ibuprofen|Diclofenac|Metamizol|Tilidin|Tramadol|Paracetamol|Etoricoxib|Pregabalin/.test(x.wert); }); return md.length ? md.map(function (x) { return x.wert; }).join(', ') : 'Analgetika'; }
+      return ({ 'Injektion oder Infiltration': 'Injektion', 'Orthese oder Bandage': 'Orthese', 'Physiotherapie': 'PT', 'Manuelle Therapie': 'MT', 'Rehabilitation': 'Reha', 'Operation': 'OP' })[m.wert] || m.wert;
+    });
+    if (v.length) z.push('Vorbeh.: ' + v.join(', '));
+    if (e.nebendiagnosen.length) z.push('ND: ' + e.nebendiagnosen.map(function (n) { return ({ 'Arterielle Hypertonie': 'aHT', 'Diabetes mellitus': 'DM' + (n.detail && /Typ 2/.test(n.detail) ? ' II' : ''), 'Gerinnungshemmung': 'Antikoagulation', 'Asthma oder COPD': 'Asthma/COPD', 'Gelenkersatz': 'TEP' })[n.wert] || n.wert; }).concat([]).map(function (x, i) { var n = e.nebendiagnosen[i]; return n.wert === 'Gelenkersatz' && n.detail ? 'TEP ' + ab(n.detail) : x; }).join(', '));
+    var soz = [];
+    if (so.familienstand && !(so.familienstand.wert === 'in Partnerschaft' && so.lebt && /Partner/.test(so.lebt.wert))) soz.push(so.familienstand.wert === 'verheiratet' ? 'verh.' : so.familienstand.wert);
+    if (so.lebt) soz.push(so.lebt.wert.replace('lebt mit Partner oder Partnerin', 'lebt mit Partner').replace('lebt mit der Familie', 'mit Familie'));
+    if (so.wohnform) soz.push(so.wohnform.wert + (so.wohnDetails.length ? ' (' + so.wohnDetails.map(function (d) { return d.wert; }).join(', ') + ')' : ''));
+    if (so.kinder) soz.push(so.kinder.wert === 'keine' ? 'keine Kinder' : so.kinder.wert + (so.kinder.wert === '1' ? ' Kind' : ' Kinder'));
+    if (so.beruf) soz.push(so.beruf.wert);
+    if (so.arbeit) soz.push(so.arbeit.wert === 'überwiegend sitzend' ? 'sitzend' : 'körperl. belastend');
+    if (so.au) soz.push('AU');
+    if (so.sport.length) soz.push(so.sport.map(function (x) { return x.wert.replace(' oder ', '/') + (x.haeufig ? ' ' + ({ '1- bis 2-mal pro Woche': '1–2×/Wo.', '3- bis 4-mal pro Woche': '3–4×/Wo.', '5-mal pro Woche oder öfter': '≥5×/Wo.', 'gelegentlich': 'gelegentl.' }[x.haeufig] || x.haeufig) : ''); }).join(', '));
+    if (so.hilfsmittel.length) soz.push(so.hilfsmittel.map(function (h) { return h.wert === 'Unterarmgehstützen' ? 'UAGS' : h.wert; }).join(', '));
+    if (soz.length) z.push('Sozial: ' + soz.join(', '));
+    if (e.red.length) z.push('RF: ' + e.red.map(function (r) { return r.wert; }).join(', ') + ', ärztl. abklären');
+    else if (e.redVerneint.length) z.push('RF neg.');
+    if (e.yellow.length) z.push('YF: ' + e.yellow.map(function (y) { return y.wert.split(',')[0]; }).join(', '));
+    var f = e.befund, bf = [];
+    f.rom.forEach(function (r) { bf.push(ab(r.text.replace('Außenrotation', 'AR').replace('Innenrotation', 'IR').replace('Abduktion', 'Abd.').replace('Flexion', 'Flex.').replace('Extension', 'Ext.').replace('Lateralflexion', 'Lat.flex.').replace('Dorsalextension', 'DE').replace('Plantarflexion', 'PF').replace(' endgradig schmerzhaft', ' endgr. schmerzh.').replace(' eingeschränkt', ' eingeschr.'))); });
+    f.tests.forEach(function (t) { bf.push(t.wert + ab(t.zusatz) + ' ' + (t.ergebnis === 'positiv' ? '+' : '−')); });
+    f.kraft.forEach(function (k) { bf.push(ab(k.wert.replace(/^Kraft /, 'KG '))); });
+    var hs = f.palpation.filter(function (p) { return p.art === 'Hartspann'; }), dd = f.palpation.filter(function (p) { return p.art !== 'Hartspann'; });
+    if (hs.length) bf.push('Hartspann ' + hs.map(function (p) { return p.wert + (p.seite ? ' ' + ab(p.seite) : ''); }).join(', '));
+    if (dd.length) bf.push('DD ' + dd.map(function (p) { return p.wert + (p.seite ? ' ' + ab(p.seite) : ''); }).join(', '));
+    if (f.gang) bf.push(f.gang.wert);
+    if (bf.length) z.push('Befund: ' + bf.join(', '));
+    if (e.ziele.length) z.push('Ziel: ' + e.ziele.map(function (g) { return g.wert; }).join('; '));
+    return z.map(function (x) { return x.replace(/[.\s]+$/, ''); }).join('. ') + (z.length ? '.' : '');
+  }
+  function texte(e, art, opt) {
+    opt = opt || {};
+    if (opt.kurz && art === 'erstbefund') return { erstbefund: kurzErstbefund(e), verlauf: verlaufText(e, true) };
     var an = anamneseText(e), bf = befundText(e), zi = an.indexOf(' Ziel des Pat.:');
     var eb = zi >= 0 ? an.slice(0, zi) + (bf ? ' ' + bf : '') + an.slice(zi) : [an, bf].filter(Boolean).join(' ');
     return { erstbefund: art === 'erstbefund' ? eb : '', verlauf: verlaufText(e, art === 'erstbefund') };
@@ -1469,6 +1532,10 @@ td.s.j{color:var(--gruen)} td.s.n{color:var(--warn)}
     if (e.diagnose && !e.diagnose.seite && e.region.haupt && e.region.haupt.region === e.diagnose.region && e.region.haupt.seite) {
       e.diagnose.seite = e.region.haupt.seite;
       if (!SEITENLOS[e.diagnose.region] && !/rechts|links|beidseits/.test(e.diagnose.text)) e.diagnose.textMitSeite = e.diagnose.text + ' ' + e.diagnose.seite;
+    }
+    if (e.diagnose && !e.diagnose.region && /^(Spinalkanalstenose|Bandscheibenvorfall)$/.test(e.diagnose.text)) {
+      var hr = e.region.haupt && /^(HWS|BWS|LWS)$/.test(e.region.haupt.region) ? e.region.haupt.region : null;
+      if (hr) { e.diagnose.region = hr; e.diagnose.text += ' ' + hr; }
     }
     e.beginn = beginn(S, heute);
     var aus = finde(S, AUSLOESER, { nurVor: true });
@@ -2325,6 +2392,15 @@ td.s.j{color:var(--gruen)} td.s.n{color:var(--warn)}
   var esc = function (t) { return String(t == null ? '' : t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
   var heute = new Date();
   var erg = null, aus = {}, art = null, aktuelleProbe = null;
+  var laenge = 'lang';
+  try { laenge = localStorage.getItem('doku-fix-diktat-laenge') || 'lang'; } catch (e) { /* ohne Speicher */ }
+  function laengeZeigen() { document.querySelectorAll('#laenge button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.l === laenge); }); }
+  document.getElementById('laenge').addEventListener('click', function (ev) {
+    var b = ev.target.closest('button'); if (!b) return;
+    laenge = b.dataset.l; try { localStorage.setItem('doku-fix-diktat-laenge', laenge); } catch (e) { /* egal */ }
+    laengeZeigen(); if (erg) zeichne();
+  });
+  laengeZeigen();
 
   function meldung(t) { var m = $('meldung'); m.textContent = t; m.classList.add('zeigen'); clearTimeout(meldung.t); meldung.t = setTimeout(function () { m.classList.remove('zeigen'); }, 1800); }
   function E(k, label, belege, pfad, wert, art0, zu) { return { k: k, label: label, belege: belege || [], pfad: pfad, wert: wert, art: art0 || '', zu: zu || '' }; }
@@ -2478,7 +2554,7 @@ td.s.j{color:var(--gruen)} td.s.n{color:var(--warn)}
     // Texte aus den aktiven Einträgen
     var kopie = JSON.parse(JSON.stringify(erg, function (k, v) { return k === 'antwort' ? undefined : v; }));
     gruppen.forEach(function (g) { g.A.forEach(function (a) { a.eintraege.forEach(function (x) { if (aus[x.k]) weglassen(kopie, x); }); }); });
-    var tx = DiktatParser.texte(kopie, a0);
+    var tx = DiktatParser.texte(kopie, a0, { kurz: laenge === 'kurz' });
     $('karte-eb').hidden = !istEB; $('text-eb').textContent = tx.erstbefund || 'Noch nichts einsortiert.';
     $('karte-vl').hidden = false; $('text-vl').textContent = tx.verlauf || 'Keine Behandlung im Diktat gefunden.';
     $('titel-vl').textContent = istEB ? 'Text 1. Behandlung' : 'Text Verlaufseinheit';
