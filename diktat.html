@@ -180,6 +180,20 @@ details.gruppe[open] .g-inhalt{animation:auf .22s ease-out}
 .app-leiste .knopf.haupt{width:auto;padding:0 18px;min-height:40px}
 @media (max-width:600px){.app-leiste{display:grid;grid-template-columns:auto 1fr;gap:8px 10px}.app-leiste .titel{text-align:right}.app-datum{grid-column:1/-1;justify-content:space-between}.app-leiste .knopf.haupt{grid-column:1/-1;width:100%}}
 .app .seite{padding-top:4px}
+@font-face{font-family:"Outfit";font-style:normal;font-display:swap;font-weight:100 900;src:url(fonts/outfit-latin-wght-normal.woff2) format("woff2")}
+html.ww{--schrift-f:var(--ww-font);--schrift-r:var(--ww-font)}
+html.ww body,html.ww button,html.ww input,html.ww textarea{font-family:var(--ww-font)}
+html.ww .knopf{border-radius:999px}
+html.ww .knopf.haupt,html.ww .mic{background:var(--ww-fill);color:var(--ww-on-fill);font-weight:700}
+html.ww .mic[aria-pressed="true"]{background:var(--warn);color:#fff}
+html.ww .knopf.neben{background:var(--chip);color:var(--schrift)}
+html.ww .karte,html.ww details.kachel,html.ww details.gruppe{border-radius:20px;box-shadow:none}
+html.ww .segment button[aria-pressed="true"]{color:var(--schrift)}
+html.ww .app-leiste{background:color-mix(in srgb,var(--grund) 90%,transparent)}
+html.ww .app-leiste .titel{font-weight:800;text-transform:uppercase;letter-spacing:.01em}
+html.ww .g-titel{font-weight:800}
+html.ww textarea,html.ww .app-datum input{background:var(--feld,var(--flaeche));border-color:var(--feld-rand,var(--rahmen))}
+html.ww ::selection{background:#ddf6a2;color:#1a1a1a}
 </style>
 
 <div class="app-leiste" id="app-leiste" hidden>
@@ -2754,6 +2768,17 @@ details.gruppe[open] .g-inhalt{animation:auf .22s ease-out}
   var $ = function (id) { return document.getElementById(id); };
   var q = new URLSearchParams(location.search), neu = q.get('art') === 'neu';
   $('app-leiste').hidden = false;
+  try {
+    var pd = window.parent.document.documentElement, cs = window.parent.getComputedStyle(pd), wr = document.documentElement;
+    if (pd.dataset.theme) wr.dataset.theme = pd.dataset.theme;
+    ['grund', 'flaeche', 'schrift', 'schrift2', 'linie', 'tape', 'tape-auf', 'norm', 'warn', 'chip', 'rahmen', 'seite', 'gruen', 'feld', 'feld-rand', 'ww-fill', 'ww-on-fill', 'ww-font'].forEach(function (k) {
+      var v = cs.getPropertyValue('--' + k).trim(); if (v) wr.style.setProperty('--' + k, v);
+    });
+    var dunkel = cs.getPropertyValue('color-scheme').indexOf('dark') >= 0 || pd.dataset.theme === 'dark';
+    wr.style.colorScheme = dunkel ? 'dark' : 'light';
+    var g = cs.getPropertyValue('--gruen').trim(); if (g) wr.style.setProperty('--gruen-hg', 'color-mix(in srgb,' + g + ' 14%,transparent)');
+    if (cs.getPropertyValue('--ww-fill').trim()) wr.classList.add('ww');
+  } catch (e) { /* ohne Doku-Fix-Farben */ }
   $('app-titel').firstChild.textContent = neu ? 'Neubefundung diktieren' : 'Erstbefund diktieren';
   $('app-name').textContent = q.get('name') || '';
   $('app-datum-t').textContent = neu ? 'Neubefundung vom' : 'Erstbefund vom';
