@@ -184,6 +184,12 @@ html[data-theme="light"] .dk-ta{background:#262626}
 .dk-chips{min-width:0;display:flex;gap:6px;flex-wrap:wrap}
 .dk-chips button{border:1.5px solid #3a3a3a;background:transparent;color:#f3f6ec;border-radius:999px;padding:8px 12px;font-size:13px;font-weight:600;text-align:left}
 .dk-chips button::before{content:"+ ";color:#ddf6a2}
+.dk-wahl button.an{background:#ddf6a2;border-color:#ddf6a2;color:#1a1a1a}
+.dk-wahl button.an::before{content:"✓ ";color:#4f6d10}
+.dk-stand{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;color:#a3a99a;font-weight:700}
+.dk-seg{display:inline-flex;flex-wrap:wrap;background:#1f1f1f;border-radius:999px;padding:3px;gap:2px}
+.dk-seg button{border:0;background:none;color:#a3a99a;font-weight:700;font-size:13px;padding:7px 12px;border-radius:999px}
+.dk-seg button[aria-pressed="true"]{background:#ddf6a2;color:#1a1a1a}
 .dk-f{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .dk-mic{width:58px;height:58px;border-radius:50%;border:0;background:#ddf6a2;color:#1a1a1a;display:grid;place-items:center;flex:none;box-shadow:0 0 0 7px rgba(221,246,162,.18)}
 .dk-mic svg{width:26px;height:26px}
@@ -998,7 +1004,7 @@ function felderText(){
   const zr=S.zvon||S.zbis?dmy(S.zvon,1)+" – "+dmy(S.zbis,1):"";
   const kreuze=[];if(S.verord==="ja")kreuze.push("ja");if(S.verord==="nein")kreuze.push("nein");if(S.verord==="ja")kreuze.push(...S.arten);
   return {patient:S.patient,geburt:S.geburt,verordnung:dmy(S.verordnung,1),zeitraum:zr,
-    diagnosen:S.diagEigen?S.diagText:diagAuto(),ziele:flAn("ziele")?FTX.ziele():S.ziele.filter(t=>t.trim()).join("\n"),massnahmen:m,
+    diagnosen:S.diagEigen?S.diagText:diagAuto(),ziele:flAn("ziele")?FTX.ziele():((z=>z.length>FELDER.ziele.length?z.join("; "):z.join("\n"))(S.ziele.filter(t=>t.trim()))),massnahmen:m,
     empfehlungen:flAn("empfehlungen")?FTX.empfehlungen():S.empfehlungen,begruendung:flAn("begruendung")?FTX.begruendung():S.begruendung,sonstiges:S.verord==="ja"&&S.arten.includes("sonstiges")?S.sonstiges:"",
     ortdatum:S.ortAn?[S.ort,dmy(S.datum)].filter(Boolean).join(", "):"",kreuze};
 }
@@ -1049,11 +1055,11 @@ function schreibeHand(x,text,lines,r,ink,warn,key){
 }
 function schreibeKlar(x,text,lines,ink,warn,key){
   const words=teile(text);
-  const layout=size=>{x.font="500 "+size*SC+'px "IBM Plex Sans", Arial, sans-serif';const sp=x.measureText(" ").width;const out=lines.map(()=>[]);let li=0,cw=0;
-    for(const w of words){if(w==="\n"){if(out[li]&&out[li].length){li++;cw=0}continue}if(li>=lines.length)return null;const ww=x.measureText(w).width,maxW=(lines[li][1]-lines[li][0]-8)*SC;
-      if(out[li].length&&cw+sp+ww>maxW){li++;cw=0;if(li>=lines.length)return null}if(ww>maxW)return null;out[li].push(w);cw+=(out[li].length>1?sp:0)+ww}return out};
+  const layout=(size,cut)=>{x.font="500 "+size*SC+'px "IBM Plex Sans", Arial, sans-serif';const sp=x.measureText(" ").width;const out=lines.map(()=>[]);let li=0,cw=0;
+    for(const w of words){if(w==="\n"){if(out[li]&&out[li].length){li++;cw=0}continue}if(li>=lines.length)return cut?out:null;const ww=x.measureText(w).width,maxW=(lines[li][1]-lines[li][0]-8)*SC;
+      if(out[li].length&&cw+sp+ww>maxW){li++;cw=0;if(li>=lines.length)return cut?out:null}if(ww>maxW&&!cut)return null;out[li].push(w);cw+=(out[li].length>1?sp:0)+ww}return out};
   const S0=23;let size=S0,lay;while(size>=11&&!(lay=layout(size)))size--;
-  if(!lay){warn.push(FELDNAME[key]+": zu lang, wird abgeschnitten");size=11;lay=layout(11)||[]}else if(size<S0-3)warn.push(FELDNAME[key]+": kleiner gesetzt");
+  if(!lay){warn.push(FELDNAME[key]+": zu lang, wird abgeschnitten");size=11;lay=layout(11,true)||[]}else if(size<S0-3)warn.push(FELDNAME[key]+": kleiner gesetzt");
   x.fillStyle=ink;x.textBaseline="alphabetic";lay.forEach((ln,i)=>{const [x0,,y]=lines[i];x.fillText(ln.join(" "),(x0+4)*SC,(y-8)*SC)});
 }
 let tz=0;function neuZeichnen(){clearTimeout(tz);tz=setTimeout(()=>{zeichne();speichernEntwurf()},90)}
@@ -1121,7 +1127,7 @@ function vorschlagChips(f,onPick,schonDa){
   const wrap=h("div",{});const g=gelernt(f);const da=new Set((schonDa||[]).map(t=>t.trim()));
   const learned=g.liste.filter(t=>!da.has(t));
   if(learned.length){wrap.append(h("div",{class:"chiphead"},"Zuletzt bei ",h("b",{text:g.wer})),h("div",{class:"chips"},learned.map(t=>h("button",{class:"chip learn",on:{click:()=>onPick(t)}},t))))}
-  const basis=BASIS[f].filter(t=>!da.has(t)&&!learned.includes(t));
+  const basis=(f==="ziele"&&typeof dkZielVorschlaege==="function"?dkZielVorschlaege():BASIS[f]).filter(t=>!da.has(t)&&!learned.includes(t));
   if(basis.length)wrap.append(h("div",{class:"chiphead",style:"margin-top:10px"},"Vorschläge"),h("div",{class:"chips"},basis.map(t=>h("button",{class:"chip",on:{click:()=>onPick(t)}},t))));
   return wrap;
 }
@@ -1200,12 +1206,49 @@ dlP.then(dl=>{if(!dl){["dl-jpg","dl-pdf","v-save"].forEach(i=>$(i).disabled=true
 
 /* ---------- Bericht diktieren: Leitkarte mit vier Fragen ---------- */
 const DK_MIC='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg>';
+
+/* Therapieziele passend zur Diagnose: Region aus ICD-Kode und Titel, Seite aus der Diagnose */
+const DK_ZIELE={
+  schulter:s=>["Verbesserung der Mobilität im Glenohumeralgelenk"+s,"Schmerzreduktion bei Belastung und Bewegungen über Kopf","Tonusregulation der umliegenden Muskulatur (M. trapezius, Rotatorenmanschette)","Kräftigung der Rotatorenmanschette und der Skapulastabilisatoren","Verbesserung der Skapulakontrolle und Haltung"],
+  knie:s=>["Verbesserung der Mobilität im Kniegelenk"+s+" (Flexion und Extension)","Schmerzreduktion bei Belastung","Kräftigung der Oberschenkelvorderseite (M. quadriceps femoris)","Verbesserung der Stabilität und Propriozeption im Kniegelenk","Verbesserung des Gangbildes und der Belastbarkeit beim Treppensteigen"],
+  huefte:s=>["Verbesserung der Mobilität im Hüftgelenk"+s+" (Flexion, Innenrotation)","Schmerzreduktion bei Belastung und im Gehen","Kräftigung der Hüftabduktoren und -extensoren (M. gluteus medius und maximus)","Verbesserung des Gangbildes","Verbesserung von Gleichgewicht und Gangsicherheit"],
+  lws:s=>["Schmerzreduktion im Bereich der LWS","Tonusregulation der lumbalen Rückenstrecker und des M. quadratus lumborum","Verbesserung der Beweglichkeit der LWS","Kräftigung der Rumpfmuskulatur und segmentale Stabilisation","Haltungs- und Rückenschulung für Alltag und Beruf"],
+  hws:s=>["Schmerzreduktion im Bereich der HWS und des Schultergürtels","Tonusregulation der Nackenmuskulatur (M. trapezius pars descendens, M. levator scapulae)","Verbesserung der Beweglichkeit der HWS (Rotation, Lateralflexion)","Kräftigung der tiefen Halsflexoren und der Skapulastabilisatoren","Haltungsschulung im Alltag und am Arbeitsplatz"],
+  bws:s=>["Verbesserung der Beweglichkeit der BWS (Extension, Rotation)","Schmerzreduktion im Bereich der BWS","Tonusregulation der paravertebralen Muskulatur","Haltungskorrektur und Aufrichtung","Verbesserung der Atemexkursion"],
+  osg:s=>["Verbesserung der Mobilität im oberen Sprunggelenk"+s+" (Dorsalextension)","Reduktion der Schwellung","Verbesserung der Propriozeption und Stabilität im Sprunggelenk","Kräftigung der Unterschenkelmuskulatur (Mm. peronei, M. triceps surae)","Normalisierung des Gangbildes unter Vollbelastung"],
+  fuss:s=>["Schmerzreduktion bei Belastung des Fußes"+s,"Kräftigung der Fußmuskulatur und Aufrichtung des Fußgewölbes","Verbesserung der Dehnfähigkeit von Plantarfaszie und Wadenmuskulatur","Verbesserung des Gangbildes","Steigerung der Belastbarkeit im Alltag"],
+  ellenbogen:s=>["Schmerzreduktion am Ellenbogen"+s+" bei Belastung","Tonusregulation der Unterarmmuskulatur","Exzentrische Kräftigung der Unterarmmuskulatur","Verbesserung der Greifkraft","Verbesserung der Mobilität im Ellenbogengelenk (Extension, Supination)"],
+  hand:s=>["Verbesserung der Mobilität im Handgelenk"+s+" (Dorsal- und Palmarflexion)","Schmerzreduktion bei Belastung","Reduktion der Schwellung","Verbesserung der Greifkraft","Verbesserung der Feinmotorik und Handgeschicklichkeit"],
+  neuro:s=>["Tonusregulation der betroffenen Muskulatur","Verbesserung von Gleichgewicht und Gangsicherheit","Sturzprophylaxe","Kräftigung der Rumpf- und Extremitätenmuskulatur","Erhalt und Verbesserung der Selbstständigkeit im Alltag"]
+};
+const DK_REGIONEN=[
+  ["hand",/^(S52\.[5-9]|S6[0-9]|M18|G56\.0|M65\.[34])/,/handgelenk|hand\b|radius.{0,20}distal|distale.{0,10}radius|karpal|kahnbein|skaphoid|daumen|finger|rhizarthrose|tendovaginitis|karpaltunnel/i],
+  ["ellenbogen",/^(M77\.[01]|S52\.[0-1]|S53|M24\.52)/,/ellenbogen|epicondyl|tennisarm|golferarm|radiuskopf|olekranon|olecranon/i],
+  ["schulter",/^(M75|S4[0-6]|M19\.01|Z96\.61)/,/schulter|rotatorenmanschette|impingement|humerus|glenohumeral|supraspinatus|frozen|capsulitis|kapsulitis|akromio|ac-gelenk|klavikula|clavicula|omarthrose/i],
+  ["neuro",/^(I6[0-9]|G20|G35|G8[1-3]|G61|G62)/,/schlaganfall|apoplex|hemipar|parkinson|multiple sklerose|insult|polyneuropathie/i],
+  ["hws",/^(M54\.[12]|M50|M53\.[01]|S1[0-4]|M47\.[28]2)/,/hws|zervik|cervik|nacken|halswirbel|schleudertrauma|zervikobrachial/i],
+  ["bws",/^(M54\.6|S2[0-3]|M40)/,/bws|thorak|brustwirbel|kyphose|scheuermann/i],
+  ["lws",/^(M54\.[345]|M51|M48|M43|M53\.[23]|S3[0-3]|M47\.[28]6|M47\.[28]7|M41)/,/lws|lumb|ischi|lendenwirbel|kreuz|isg|sakro|skoliose|bandscheibe/i],
+  ["huefte",/^(M16|S7[0-3]|Z96\.64|M25\.55)/,/hüft|coxarthrose|koxarthrose|femurhals|schenkelhals|trochant/i],
+  ["knie",/^(M17|M22|M23|S8[0-3](?!\.[5-9])|Z96\.65|M25\.56)/,/knie|gonarthrose|menisk|kreuzband|patella|tibiakopf/i],
+  ["osg",/^(S82\.[5-8]|S9[0-3]|M25\.57|M76\.6)/,/sprunggelenk|osg|usg|supination|achilles|knöchel|malleol|weber/i],
+  ["fuss",/^(M20|M72\.2|M77\.[345]|S9[2-9])/,/fuß|fuss|ferse|plantar|hallux|fersensporn|metatars/i]
+];
+function dkZielVorschlaege(){
+  const ds=S.diagEigen?[{code:"",title:S.diagText||""}]:S.diagnosen;
+  for(const d of ds){const code=(d.code||"").toUpperCase(),t=(d.title||"")+" "+(S.diagEigen?"":"");
+    for(const [r,rc,rt] of DK_REGIONEN){if((code&&rc.test(code))||rt.test(t)){
+      const se=d.seite==="R"||/\brechts\b/i.test(t)?" rechts":d.seite==="L"||/\blinks\b/i.test(t)?" links":d.seite==="B"||/beidseit/i.test(t)?" beidseits":"";
+      return DK_ZIELE[r](se)}}}
+  return BASIS.ziele.slice(0,5)}
 const DK_KEIN=t=>/^\s*keine besonderheiten\.?\s*$/i.test(t);
 const DK_SCHRITTE=[
-  {k:"ziele",pill:"Ziele",ziel:"Therapieziele",q:"Wie weit sind die Ziele erreicht?",hint:"Zum Beispiel erreicht, überwiegend, teilweise, gern mit Werten",
-    chips:["Ziele erreicht","Ziele überwiegend erreicht","Ziele teilweise erreicht","Ziele noch nicht erreicht"],feld:[80,625,1165,765],kachel:"ziele",
-    lesen:()=>{const z=S.ziele.find(t=>/^Stand: /.test(t));return z?z.slice(7):""},
-    schreiben:t=>{S.ziele=S.ziele.filter(x=>!/^Stand: /.test(x));if(t.trim())S.ziele.push("Stand: "+t.trim())}},
+  {k:"ziele",pill:"Ziele",ziel:"Therapieziele",q:"Welche Therapieziele gehören in den Bericht?",hint:"Passend zur Diagnose. Antippen nimmt ein Ziel auf oder heraus, eigene Ziele sprichst oder schreibst du.",
+    chips:[],feld:[80,625,1165,765],kachel:"ziele",ph:"Eigenes Ziel sprechen oder schreiben, mehrere mit Punkt trennen",
+    lesen:()=>"",
+    schreiben:t=>{const alt=DK.eigen||[];S.ziele=S.ziele.filter(x=>!alt.includes(x));
+      const neu=t.split(/\n|;|\.\s+/).map(x=>x.trim().replace(/[.,;]+$/,"")).filter(Boolean).map(x=>x.charAt(0).toUpperCase()+x.slice(1)).filter(x=>!S.ziele.some(z=>norm(z)===norm(x)));
+      const st=S.ziele.findIndex(x=>/^Stand: /.test(x));if(st>=0)S.ziele.splice(st,0,...neu);else S.ziele.push(...neu);DK.eigen=neu}},
   {k:"empf",pill:"Empfehlung",ziel:"Empfehlungen",q:"Wie geht es weiter, was empfiehlst du?",hint:"Zum Beispiel Fortführung, Schwerpunkt, Heimprogramm, Arztkontakt",
     chips:BASIS.empfehlungen,feld:[80,1140,1165,1232],kachel:"empf",bisher:"empfehlungen",
     lesen:()=>"",schreiben:t=>{S.empfehlungen=t.trim()?t.trim():DK.alt.empfehlungen}},
@@ -1256,27 +1299,30 @@ function dkBisher(){const e=$("dk-bisher");if(!e)return;const sch=DK_SCHRITTE[DK
   const alt=DK.alt[sch.bisher]||"";if(!alt.trim())return;
   if(!DK.antw[DK.i].trim())e.append(h("span",{text:"Jetzt im Bericht: "+alt}),h("button",{type:"button",on:{click:()=>{dkSetze(DK.i,alt);dkRender();const ta=$("dk-ta");if(ta){ta.focus();const n=ta.value.length;ta.setSelectionRange(n,n)}}}},"übernehmen und ergänzen"));
   else e.append(h("span",{text:"Ersetzt den bisherigen Text."}),h("button",{type:"button",on:{click:()=>{dkSetze(DK.i,"");dkRender()}}},"Bisherigen wiederherstellen"))}
-function dkGehe(i,auto){const war=DK.aktiv;if(war)dkStopp();DK.i=Math.max(0,Math.min(3,i));dkRender();
+function dkGehe(i,auto){if(DK.i===0)DK.zieleOk=true;const war=DK.aktiv;if(war)dkStopp();DK.i=Math.max(0,Math.min(3,i));dkRender();
   if(auto&&war&&dkWeg()==="live")setTimeout(dkStart,350)}
 function dkAuf_(){if(DK.an)return;DK.an=true;DK.alt={empfehlungen:S.empfehlungen,begruendung:S.begruendung,verord:S.verord};
-  DK.antw=DK_SCHRITTE.map((s,j)=>DK.antw[j]||s.lesen());DK.i=0;
+  DK.antw=DK_SCHRITTE.map((s,j)=>j===0?"":(DK.antw[j]||s.lesen()));DK.eigen=[];DK.zieleOk=false;DK.i=0;
   const k=$("dk");k.hidden=false;$("dk-start").hidden=true;if(typeof setView==="function"&&document.body.dataset.view==="vorschau")setView("eingabe");
   offen="";renderTiles();dkRender();setTimeout(()=>k.scrollIntoView({block:"start",behavior:"smooth"}),40)}
 function dkZu(fertig){dkStopp();DK.an=false;$("dk").hidden=true;$("dk-start").hidden=false;dkMark();renderTiles();if(fertig)toast("Diktat ist im Bericht. Prüfe die Vorschau und sichere den Bericht.")}
 function dkRender(){
   const k=$("dk");if(!k||!DK.an)return;const sch=DK_SCHRITTE[DK.i],letzte=DK.i===3;k.textContent="";
-  const pills=h("div",{class:"dk-pills",role:"group","aria-label":"Fragen"},DK_SCHRITTE.map((s,j)=>{const ok=j!==DK.i&&!!DK.antw[j].trim();
+  const pills=h("div",{class:"dk-pills",role:"group","aria-label":"Fragen"},DK_SCHRITTE.map((s,j)=>{const ok=j!==DK.i&&(j===0?DK.zieleOk:!!DK.antw[j].trim());
     return h("button",{type:"button",class:j===DK.i?"jetzt":ok?"ok":"","aria-current":j===DK.i?"step":false,on:{click:()=>dkGehe(j)}},(j===DK.i?"● ":ok?"✓ ":"")+s.pill)}));
-  const ta=h("textarea",{class:"dk-ta",id:"dk-ta",rows:3,placeholder:"Tippe auf das Mikrofon und sprich, oder schreib hier.","aria-label":sch.ziel,on:{input:e=>{dkSetze(DK.i,e.target.value);dkBisher()}}},DK.antw[DK.i]);
-  const chips=h("div",{class:"dk-chips"},sch.chips.filter(c=>!DK.antw[DK.i].toLowerCase().includes(c.toLowerCase())).map(c=>h("button",{type:"button",on:{click:()=>{dkAnhaengen(DK.i,c);dkRender()}}},c)));
+  const ta=h("textarea",{class:"dk-ta",id:"dk-ta",rows:3,placeholder:sch.ph||"Tippe auf das Mikrofon und sprich, oder schreib hier.","aria-label":sch.ziel,on:{input:e=>{dkSetze(DK.i,e.target.value);dkBisher()}}},DK.antw[DK.i]);
+  const zv=DK.i===0?dkZielVorschlaege():[];
+  const STAENDE=[["erreicht","Ziele erreicht"],["überwiegend","Ziele überwiegend erreicht"],["teilweise","Ziele teilweise erreicht"],["noch nicht","Ziele noch nicht erreicht"]];
+  const standJetzt=(S.ziele.find(t=>/^Stand: /.test(t))||"").slice(7);
+  const chips=DK.i===0?h("div",{class:"dk-chips dk-wahl"},zv.map(c=>{const an=S.ziele.some(z=>norm(z)===norm(c));return h("button",{type:"button",class:an?"an":"","aria-pressed":an?"true":"false",on:{click:()=>{upd(()=>{if(an)S.ziele=S.ziele.filter(z=>norm(z)!==norm(c));else{const st=S.ziele.findIndex(x=>/^Stand: /.test(x));if(st>=0)S.ziele.splice(st,0,c);else S.ziele.push(c)}});dkRender()}}},c)})):h("div",{class:"dk-chips"},sch.chips.filter(c=>!DK.antw[DK.i].toLowerCase().includes(c.toLowerCase())).map(c=>h("button",{type:"button",on:{click:()=>{dkAnhaengen(DK.i,c);dkRender()}}},c)));
   const mic=h("button",{type:"button",class:"dk-mic"+(DK.aktiv?" an":""),id:"dk-mic",disabled:!!DK.arbeit,"aria-label":DK.aktiv?"Aufnahme beenden":"Aufnahme starten",on:{click:()=>DK.aktiv?dkStopp():dkStart()}});mic.innerHTML=DK_MIC+"<i></i>";
   const wave=h("span",{class:"dk-wave",id:"dk-wave","aria-hidden":"true"},Array.from({length:14},()=>h("i",{})));
   const st=h("span",{class:"dk-st"+(DK.stArt==="fehler"?" fehler":""),id:"dk-st",role:"status"},DK.st||"Landet in „"+sch.ziel+"“");
   const f=h("div",{class:"dk-f"},mic,wave,st,h("button",{type:"button",class:"dk-b g",disabled:DK.i===0,on:{click:()=>dkGehe(DK.i-1)}},"‹ Zurück"),
     h("button",{type:"button",class:"dk-b a",on:{click:()=>{if(letzte)dkZu(true);else dkGehe(DK.i+1,true)}}},letzte?"Fertig":"Weiter ›"));
   k.append(h("div",{class:"dk-k"},h("span",{text:"Bericht diktieren"}),h("span",{style:"display:flex;align-items:center;gap:10px"},h("span",{text:(DK.i+1)+" / 4"}),h("button",{type:"button",class:"dk-x","aria-label":"Diktat schließen",on:{click:()=>dkZu(false)}},"×"))),
-    pills,h("div",{class:"dk-q",text:sch.q}),h("div",{class:"dk-hint",text:sch.hint}),ta,h("div",{class:"dk-zw",id:"dk-zw"},DK.aktiv&&DK.recI===DK.i?DK.zw:""),h("div",{class:"dk-bisher",id:"dk-bisher"}),chips,f);
-  if(DK.i>0){const v=DK.i-1,t=DK.antw[v].trim()||(DK_SCHRITTE[v].bisher?"nicht diktiert, bisheriger Text bleibt":"übersprungen");
+    pills,h("div",{class:"dk-q",text:sch.q}),h("div",{class:"dk-hint",text:sch.hint}),...(DK.i===0?[chips]:[]),ta,h("div",{class:"dk-zw",id:"dk-zw"},DK.aktiv&&DK.recI===DK.i?DK.zw:""),h("div",{class:"dk-bisher",id:"dk-bisher"}),...(DK.i===0?[h("div",{class:"dk-stand"},h("span",{text:"Stand der Ziele"}),h("div",{class:"dk-seg",role:"group","aria-label":"Stand der Ziele"},STAENDE.map(([lab,txt])=>h("button",{type:"button","aria-pressed":standJetzt===txt?"true":"false",on:{click:()=>{upd(()=>{S.ziele=S.ziele.filter(x=>!/^Stand: /.test(x));if(standJetzt!==txt)S.ziele.push("Stand: "+txt)});dkRender()}}},lab))))]:[chips]),f);
+  if(DK.i>0){const v=DK.i-1,zz=S.ziele.filter(x=>!/^Stand: /.test(x)).length,stz=(S.ziele.find(x=>/^Stand: /.test(x))||"").slice(7),t=v===0?(zz+(zz===1?" Ziel":" Ziele")+(stz?" · "+stz:"")):DK.antw[v].trim()||(DK_SCHRITTE[v].bisher?"nicht diktiert, bisheriger Text bleibt":"übersprungen");
     k.append(h("div",{class:"dk-vorher"},h("span",{},h("b",{text:DK_SCHRITTE[v].pill+": "}),t),h("button",{type:"button",on:{click:()=>dkGehe(v)}},"ändern")))}
   dkBisher();dkMark()}
 $("dk-start").onclick=dkAuf_;
