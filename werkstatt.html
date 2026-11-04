@@ -1127,7 +1127,7 @@ function vorschlagChips(f,onPick,schonDa){
   const wrap=h("div",{});const g=gelernt(f);const da=new Set((schonDa||[]).map(t=>t.trim()));
   const learned=g.liste.filter(t=>!da.has(t));
   if(learned.length){wrap.append(h("div",{class:"chiphead"},"Zuletzt bei ",h("b",{text:g.wer})),h("div",{class:"chips"},learned.map(t=>h("button",{class:"chip learn",on:{click:()=>onPick(t)}},t))))}
-  const basis=(f==="ziele"&&typeof dkZielVorschlaege==="function"?dkZielVorschlaege():BASIS[f]).filter(t=>!da.has(t)&&!learned.includes(t));
+  const basis=((f==="ziele"||f==="massnahmen")&&typeof dkVorschlaege==="function"?dkVorschlaege(f):BASIS[f]).filter(t=>!da.has(t)&&!learned.includes(t));
   if(basis.length)wrap.append(h("div",{class:"chiphead",style:"margin-top:10px"},"Vorschläge"),h("div",{class:"chips"},basis.map(t=>h("button",{class:"chip",on:{click:()=>onPick(t)}},t))));
   return wrap;
 }
@@ -1234,21 +1234,39 @@ const DK_REGIONEN=[
   ["osg",/^(S82\.[5-8]|S9[0-3]|M25\.57|M76\.6)/,/sprunggelenk|osg|usg|supination|achilles|knöchel|malleol|weber/i],
   ["fuss",/^(M20|M72\.2|M77\.[345]|S9[2-9])/,/fuß|fuss|ferse|plantar|hallux|fersensporn|metatars/i]
 ];
-function dkZielVorschlaege(){
+const DK_MASS={
+  schulter:s=>["Manuelle Mobilisation des Glenohumeralgelenks"+s,"Weichteiltechniken und Triggerpunktbehandlung (M. trapezius, Rotatorenmanschette)","Kräftigung der Rotatorenmanschette (Außenrotation)","Skapulastabilisation und -kontrolle","Anleitung zum Heimübungsprogramm"],
+  knie:s=>["Manuelle Mobilisation des Kniegelenks"+s,"Weichteiltechniken der Oberschenkelmuskulatur","Kräftigung des M. quadriceps femoris und der ischiocruralen Muskulatur","Propriozeptives Training und Stabilisation","Gangschulung und Anleitung zum Heimübungsprogramm"],
+  huefte:s=>["Manuelle Mobilisation des Hüftgelenks"+s,"Weichteiltechniken der hüftumgebenden Muskulatur","Kräftigung der Hüftabduktoren und -extensoren","Gangschulung","Gleichgewichtstraining"],
+  lws:s=>["Manuelle Therapie der LWS und des ISG","Weichteiltechniken der lumbalen Rückenstrecker","Segmentale Stabilisation und Kräftigung der Rumpfmuskulatur","Mobilisation der LWS","Rückenschule und Anleitung zum Heimübungsprogramm"],
+  hws:s=>["Manuelle Therapie der HWS","Weichteiltechniken und Triggerpunktbehandlung (M. trapezius pars descendens, M. levator scapulae)","Kräftigung der tiefen Halsflexoren","Skapulastabilisation","Haltungsschulung und Anleitung zum Heimübungsprogramm"],
+  bws:s=>["Mobilisation der BWS und der Rippengelenke","Weichteiltechniken der paravertebralen Muskulatur","Aufrichtungs- und Haltungstraining","Atemtherapie","Anleitung zum Heimübungsprogramm"],
+  osg:s=>["Manuelle Mobilisation des oberen Sprunggelenks"+s,"Abschwellende Maßnahmen","Propriozeptives Training","Kräftigung der Mm. peronei und der Wadenmuskulatur","Gangschulung"],
+  fuss:s=>["Weichteiltechniken der Plantarfaszie und Wadenmuskulatur","Mobilisation der Fußgelenke","Kräftigung der Fußmuskulatur","Dehnung der Wadenmuskulatur","Gangschulung und Anleitung zum Heimübungsprogramm"],
+  ellenbogen:s=>["Weichteiltechniken und Querfriktion der Unterarmmuskulatur","Exzentrisches Training der Handgelenksextensoren","Mobilisation des Ellenbogengelenks","Kräftigung der Greifkraft","Ergonomieberatung und Anleitung zum Heimübungsprogramm"],
+  hand:s=>["Manuelle Mobilisation des Handgelenks"+s,"Abschwellende Maßnahmen","Kräftigung der Greifkraft","Feinmotoriktraining","Anleitung zum Heimübungsprogramm"],
+  neuro:s=>["Tonusregulation (Bobath, PNF)","Gleichgewichts- und Koordinationstraining","Gangschulung","Kräftigung der Rumpf- und Extremitätenmuskulatur","Transfertraining und Alltagsaktivitäten"]
+};
+function dkRegion(){
   const ds=S.diagEigen?[{code:"",title:S.diagText||""}]:S.diagnosen;
-  for(const d of ds){const code=(d.code||"").toUpperCase(),t=(d.title||"")+" "+(S.diagEigen?"":"");
+  for(const d of ds){const code=(d.code||"").toUpperCase(),t=d.title||"";
     for(const [r,rc,rt] of DK_REGIONEN){if((code&&rc.test(code))||rt.test(t)){
       const se=d.seite==="R"||/\brechts\b/i.test(t)?" rechts":d.seite==="L"||/\blinks\b/i.test(t)?" links":d.seite==="B"||/beidseit/i.test(t)?" beidseits":"";
-      return DK_ZIELE[r](se)}}}
-  return BASIS.ziele.slice(0,5)}
+      return [r,se]}}}
+  return null}
+function dkVorschlaege(f){const r=dkRegion(),M=f==="massnahmen"?DK_MASS:DK_ZIELE;return r?M[r[0]](r[1]):BASIS[f].slice(0,5)}
+function dkZielVorschlaege(){return dkVorschlaege("ziele")}
+function dkEigene(f,t,j){const alt=DK.eigen[j]||[];S[f]=S[f].filter(x=>!alt.includes(x));
+  const neu=t.split(/\n|;|\.\s+/).map(x=>x.trim().replace(/[.,;]+$/,"")).filter(Boolean).map(x=>x.charAt(0).toUpperCase()+x.slice(1)).filter(x=>!S[f].some(z=>norm(z)===norm(x)));
+  const st=f==="ziele"?S[f].findIndex(x=>/^Stand: /.test(x)):-1;if(st>=0)S[f].splice(st,0,...neu);else S[f].push(...neu);DK.eigen[j]=neu}
 const DK_KEIN=t=>/^\s*keine besonderheiten\.?\s*$/i.test(t);
 const DK_SCHRITTE=[
-  {k:"ziele",pill:"Ziele",ziel:"Therapieziele",q:"Welche Therapieziele gehören in den Bericht?",hint:"Passend zur Diagnose. Antippen nimmt ein Ziel auf oder heraus, eigene Ziele sprichst oder schreibst du.",
+  {k:"ziele",pill:"Ziele",ziel:"Therapieziele",wahl:"ziele",q:"Welche Therapieziele gehören in den Bericht?",hint:"Passend zur Diagnose. Antippen nimmt ein Ziel auf oder heraus, eigene Ziele sprichst oder schreibst du.",
     chips:[],feld:[80,625,1165,765],kachel:"ziele",ph:"Eigenes Ziel sprechen oder schreiben, mehrere mit Punkt trennen",
-    lesen:()=>"",
-    schreiben:t=>{const alt=DK.eigen||[];S.ziele=S.ziele.filter(x=>!alt.includes(x));
-      const neu=t.split(/\n|;|\.\s+/).map(x=>x.trim().replace(/[.,;]+$/,"")).filter(Boolean).map(x=>x.charAt(0).toUpperCase()+x.slice(1)).filter(x=>!S.ziele.some(z=>norm(z)===norm(x)));
-      const st=S.ziele.findIndex(x=>/^Stand: /.test(x));if(st>=0)S.ziele.splice(st,0,...neu);else S.ziele.push(...neu);DK.eigen=neu}},
+    lesen:()=>"",schreiben:t=>dkEigene("ziele",t,0)},
+  {k:"mass",pill:"Maßnahmen",ziel:"Therapeutische Maßnahmen",wahl:"massnahmen",q:"Welche Maßnahmen hast du durchgeführt?",hint:"Passend zur Diagnose. Antippen nimmt eine Maßnahme auf oder heraus, Eigenes sprichst oder schreibst du.",
+    chips:[],feld:[80,775,1165,1112],kachel:"mass",ph:"Eigene Maßnahme sprechen oder schreiben, mehrere mit Punkt trennen",
+    lesen:()=>"",schreiben:t=>dkEigene("massnahmen",t,1)},
   {k:"empf",pill:"Empfehlung",ziel:"Empfehlungen",q:"Wie geht es weiter, was empfiehlst du?",hint:"Zum Beispiel Fortführung, Schwerpunkt, Heimprogramm, Arztkontakt",
     chips:BASIS.empfehlungen,feld:[80,1140,1165,1232],kachel:"empf",bisher:"empfehlungen",
     lesen:()=>"",schreiben:t=>{S.empfehlungen=t.trim()?t.trim():DK.alt.empfehlungen}},
@@ -1260,13 +1278,9 @@ const DK_SCHRITTE=[
       if(/\bkeine (weitere )?verordnung|\bnicht (mehr )?(nötig|notwendig|erforderlich)|^nein\b/.test(l))S.verord="nein";
       else{S.verord="ja";if(!S.arten.length)S.arten=["physio"]}
       const b=x.replace(/^(ja|nein)\b[,.:;\s]*/i,"").replace(/^(weitere verordnung (ist )?(nötig|notwendig|erforderlich)|keine weitere verordnung( (nötig|notwendig|erforderlich))?)[,.:;\s]*/i,"").replace(/^(weil|da)\s+/i,"").trim();
-      S.begruendung=b?b.charAt(0).toUpperCase()+b.slice(1):(S.verord==="ja"?DK.alt.begruendung:"")}},
-  {k:"beso",pill:"Besonderheiten",ziel:"Therapeutische Maßnahmen",q:"Gibt es Besonderheiten?",hint:"Zum Beispiel Mitarbeit, Ausfälle, Belastung im Alltag. Sonst einfach „Fertig“.",
-    chips:["Keine Besonderheiten","Heimprogramm wird gut umgesetzt","Mehrere Termine abgesagt","Belastung im Alltag gesteigert"],feld:[80,775,1165,1112],kachel:"mass",
-    lesen:()=>{const z=S.massnahmen.find(t=>/^Besonderheiten: /.test(t));return z?z.slice(16):""},
-    schreiben:t=>{S.massnahmen=S.massnahmen.filter(x=>!/^Besonderheiten: /.test(x));if(t.trim()&&!DK_KEIN(t))S.massnahmen.push("Besonderheiten: "+t.trim())}}
+      S.begruendung=b?b.charAt(0).toUpperCase()+b.slice(1):(S.verord==="ja"?DK.alt.begruendung:"")}}
 ];
-const DK={arbeit:false,an:false,i:0,antw:["","","",""],alt:{},rec:null,aktiv:false,recI:0,zw:"",st:"",stArt:"",weiterNach:false};
+const DK={eigen:{},ok:{},arbeit:false,an:false,i:0,antw:["","","",""],alt:{},rec:null,aktiv:false,recI:0,zw:"",st:"",stArt:"",weiterNach:false};
 function dkAlsApp(){try{const p=window.parent;if(p&&p!==window&&(p.navigator.standalone===true||p.matchMedia("(display-mode: standalone)").matches))return true}catch(e){}const A=window.DiktatAufnahme;return !!(A&&A.alsApp())}
 function dkWeg(){const A=window.DiktatAufnahme;let w="auto";try{w=localStorage.getItem("doku-fix-diktat-weg")||"auto"}catch(e){}
   if(w==="live"&&A.liveVerfuegbar())return"live";if(w==="geraet")return"geraet";return A.liveVerfuegbar()&&!dkAlsApp()?"live":"geraet"}
@@ -1299,30 +1313,30 @@ function dkBisher(){const e=$("dk-bisher");if(!e)return;const sch=DK_SCHRITTE[DK
   const alt=DK.alt[sch.bisher]||"";if(!alt.trim())return;
   if(!DK.antw[DK.i].trim())e.append(h("span",{text:"Jetzt im Bericht: "+alt}),h("button",{type:"button",on:{click:()=>{dkSetze(DK.i,alt);dkRender();const ta=$("dk-ta");if(ta){ta.focus();const n=ta.value.length;ta.setSelectionRange(n,n)}}}},"übernehmen und ergänzen"));
   else e.append(h("span",{text:"Ersetzt den bisherigen Text."}),h("button",{type:"button",on:{click:()=>{dkSetze(DK.i,"");dkRender()}}},"Bisherigen wiederherstellen"))}
-function dkGehe(i,auto){if(DK.i===0)DK.zieleOk=true;const war=DK.aktiv;if(war)dkStopp();DK.i=Math.max(0,Math.min(3,i));dkRender();
+function dkGehe(i,auto){if(DK_SCHRITTE[DK.i].wahl)DK.ok[DK.i]=true;const war=DK.aktiv;if(war)dkStopp();DK.i=Math.max(0,Math.min(3,i));dkRender();
   if(auto&&war&&dkWeg()==="live")setTimeout(dkStart,350)}
 function dkAuf_(){if(DK.an)return;DK.an=true;DK.alt={empfehlungen:S.empfehlungen,begruendung:S.begruendung,verord:S.verord};
-  DK.antw=DK_SCHRITTE.map((s,j)=>j===0?"":(DK.antw[j]||s.lesen()));DK.eigen=[];DK.zieleOk=false;DK.i=0;
+  DK.antw=DK_SCHRITTE.map((s,j)=>s.wahl?"":(DK.antw[j]||s.lesen()));DK.eigen={};DK.ok={};DK.i=0;
   const k=$("dk");k.hidden=false;$("dk-start").hidden=true;if(typeof setView==="function"&&document.body.dataset.view==="vorschau")setView("eingabe");
   offen="";renderTiles();dkRender();setTimeout(()=>k.scrollIntoView({block:"start",behavior:"smooth"}),40)}
 function dkZu(fertig){dkStopp();DK.an=false;$("dk").hidden=true;$("dk-start").hidden=false;dkMark();renderTiles();if(fertig)toast("Diktat ist im Bericht. Prüfe die Vorschau und sichere den Bericht.")}
 function dkRender(){
   const k=$("dk");if(!k||!DK.an)return;const sch=DK_SCHRITTE[DK.i],letzte=DK.i===3;k.textContent="";
-  const pills=h("div",{class:"dk-pills",role:"group","aria-label":"Fragen"},DK_SCHRITTE.map((s,j)=>{const ok=j!==DK.i&&(j===0?DK.zieleOk:!!DK.antw[j].trim());
+  const pills=h("div",{class:"dk-pills",role:"group","aria-label":"Fragen"},DK_SCHRITTE.map((s,j)=>{const ok=j!==DK.i&&(s.wahl?!!DK.ok[j]:!!DK.antw[j].trim());
     return h("button",{type:"button",class:j===DK.i?"jetzt":ok?"ok":"","aria-current":j===DK.i?"step":false,on:{click:()=>dkGehe(j)}},(j===DK.i?"● ":ok?"✓ ":"")+s.pill)}));
   const ta=h("textarea",{class:"dk-ta",id:"dk-ta",rows:3,placeholder:sch.ph||"Tippe auf das Mikrofon und sprich, oder schreib hier.","aria-label":sch.ziel,on:{input:e=>{dkSetze(DK.i,e.target.value);dkBisher()}}},DK.antw[DK.i]);
-  const zv=DK.i===0?dkZielVorschlaege():[];
+  const zv=sch.wahl?dkVorschlaege(sch.wahl):[],WF=sch.wahl;
   const STAENDE=[["erreicht","Ziele erreicht"],["überwiegend","Ziele überwiegend erreicht"],["teilweise","Ziele teilweise erreicht"],["noch nicht","Ziele noch nicht erreicht"]];
   const standJetzt=(S.ziele.find(t=>/^Stand: /.test(t))||"").slice(7);
-  const chips=DK.i===0?h("div",{class:"dk-chips dk-wahl"},zv.map(c=>{const an=S.ziele.some(z=>norm(z)===norm(c));return h("button",{type:"button",class:an?"an":"","aria-pressed":an?"true":"false",on:{click:()=>{upd(()=>{if(an)S.ziele=S.ziele.filter(z=>norm(z)!==norm(c));else{const st=S.ziele.findIndex(x=>/^Stand: /.test(x));if(st>=0)S.ziele.splice(st,0,c);else S.ziele.push(c)}});dkRender()}}},c)})):h("div",{class:"dk-chips"},sch.chips.filter(c=>!DK.antw[DK.i].toLowerCase().includes(c.toLowerCase())).map(c=>h("button",{type:"button",on:{click:()=>{dkAnhaengen(DK.i,c);dkRender()}}},c)));
+  const chips=WF?h("div",{class:"dk-chips dk-wahl"},zv.map(c=>{const an=S[WF].some(z=>norm(z)===norm(c));return h("button",{type:"button",class:an?"an":"","aria-pressed":an?"true":"false",on:{click:()=>{upd(()=>{if(an)S[WF]=S[WF].filter(z=>norm(z)!==norm(c));else{const st=WF==="ziele"?S[WF].findIndex(x=>/^Stand: /.test(x)):-1;if(st>=0)S[WF].splice(st,0,c);else S[WF].push(c)}});dkRender()}}},c)})):h("div",{class:"dk-chips"},sch.chips.filter(c=>!DK.antw[DK.i].toLowerCase().includes(c.toLowerCase())).map(c=>h("button",{type:"button",on:{click:()=>{dkAnhaengen(DK.i,c);dkRender()}}},c)));
   const mic=h("button",{type:"button",class:"dk-mic"+(DK.aktiv?" an":""),id:"dk-mic",disabled:!!DK.arbeit,"aria-label":DK.aktiv?"Aufnahme beenden":"Aufnahme starten",on:{click:()=>DK.aktiv?dkStopp():dkStart()}});mic.innerHTML=DK_MIC+"<i></i>";
   const wave=h("span",{class:"dk-wave",id:"dk-wave","aria-hidden":"true"},Array.from({length:14},()=>h("i",{})));
   const st=h("span",{class:"dk-st"+(DK.stArt==="fehler"?" fehler":""),id:"dk-st",role:"status"},DK.st||"Landet in „"+sch.ziel+"“");
   const f=h("div",{class:"dk-f"},mic,wave,st,h("button",{type:"button",class:"dk-b g",disabled:DK.i===0,on:{click:()=>dkGehe(DK.i-1)}},"‹ Zurück"),
     h("button",{type:"button",class:"dk-b a",on:{click:()=>{if(letzte)dkZu(true);else dkGehe(DK.i+1,true)}}},letzte?"Fertig":"Weiter ›"));
   k.append(h("div",{class:"dk-k"},h("span",{text:"Bericht diktieren"}),h("span",{style:"display:flex;align-items:center;gap:10px"},h("span",{text:(DK.i+1)+" / 4"}),h("button",{type:"button",class:"dk-x","aria-label":"Diktat schließen",on:{click:()=>dkZu(false)}},"×"))),
-    pills,h("div",{class:"dk-q",text:sch.q}),h("div",{class:"dk-hint",text:sch.hint}),...(DK.i===0?[chips]:[]),ta,h("div",{class:"dk-zw",id:"dk-zw"},DK.aktiv&&DK.recI===DK.i?DK.zw:""),h("div",{class:"dk-bisher",id:"dk-bisher"}),...(DK.i===0?[h("div",{class:"dk-stand"},h("span",{text:"Stand der Ziele"}),h("div",{class:"dk-seg",role:"group","aria-label":"Stand der Ziele"},STAENDE.map(([lab,txt])=>h("button",{type:"button","aria-pressed":standJetzt===txt?"true":"false",on:{click:()=>{upd(()=>{S.ziele=S.ziele.filter(x=>!/^Stand: /.test(x));if(standJetzt!==txt)S.ziele.push("Stand: "+txt)});dkRender()}}},lab))))]:[chips]),f);
-  if(DK.i>0){const v=DK.i-1,zz=S.ziele.filter(x=>!/^Stand: /.test(x)).length,stz=(S.ziele.find(x=>/^Stand: /.test(x))||"").slice(7),t=v===0?(zz+(zz===1?" Ziel":" Ziele")+(stz?" · "+stz:"")):DK.antw[v].trim()||(DK_SCHRITTE[v].bisher?"nicht diktiert, bisheriger Text bleibt":"übersprungen");
+    pills,h("div",{class:"dk-q",text:sch.q}),h("div",{class:"dk-hint",text:sch.hint}),...(WF?[chips]:[]),ta,h("div",{class:"dk-zw",id:"dk-zw"},DK.aktiv&&DK.recI===DK.i?DK.zw:""),h("div",{class:"dk-bisher",id:"dk-bisher"}),...(WF==="ziele"?[h("div",{class:"dk-stand"},h("span",{text:"Stand der Ziele"}),h("div",{class:"dk-seg",role:"group","aria-label":"Stand der Ziele"},STAENDE.map(([lab,txt])=>h("button",{type:"button","aria-pressed":standJetzt===txt?"true":"false",on:{click:()=>{upd(()=>{S.ziele=S.ziele.filter(x=>!/^Stand: /.test(x));if(standJetzt!==txt)S.ziele.push("Stand: "+txt)});dkRender()}}},lab))))]:WF?[]:[chips]),f);
+  if(DK.i>0){const v=DK.i-1,zz=S.ziele.filter(x=>!/^Stand: /.test(x)).length,stz=(S.ziele.find(x=>/^Stand: /.test(x))||"").slice(7),mm=S.massnahmen.filter(x=>x.trim()).length,t=v===0?(zz+(zz===1?" Ziel":" Ziele")+(stz?" · "+stz:"")):v===1?(mm+(mm===1?" Maßnahme":" Maßnahmen")):DK.antw[v].trim()||(DK_SCHRITTE[v].bisher?"nicht diktiert, bisheriger Text bleibt":"übersprungen");
     k.append(h("div",{class:"dk-vorher"},h("span",{},h("b",{text:DK_SCHRITTE[v].pill+": "}),t),h("button",{type:"button",on:{click:()=>dkGehe(v)}},"ändern")))}
   dkBisher();dkMark()}
 $("dk-start").onclick=dkAuf_;
