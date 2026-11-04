@@ -159,6 +159,53 @@ textarea.in{resize:vertical;min-height:70px;line-height:1.4}
   .dock svg{width:22px;height:22px}
 }
 @media (max-width:480px){.row2,.checks{grid-template-columns:1fr}}
+/* ---------- Bericht diktieren ---------- */
+.lspalte{min-width:0;display:grid;grid-template-columns:minmax(0,1fr);gap:12px;align-content:start}
+.paper{position:relative}
+.dkbtn{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:999px;background:var(--fg);color:var(--bg);padding:10px 16px;font-weight:800;font-size:13px;white-space:nowrap}
+.dkbtn svg{width:16px;height:16px}
+.dk{grid-template-columns:minmax(0,1fr);background:#2a2a2a;border:1px solid #3a3a3a;color:#f3f6ec;border-radius:22px;padding:18px;display:grid;gap:12px;min-width:0;scroll-margin-top:calc(env(safe-area-inset-top,0px) + 10px)}
+html[data-theme="light"] .dk{background:#1a1a1a;border-color:#1a1a1a}
+.dk-k{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#ddf6a2}
+.dk-x{width:30px;height:30px;border-radius:50%;border:0;background:#333;color:#f3f6ec;font-size:17px;line-height:1;display:grid;place-items:center}
+.dk-pills{display:flex;gap:6px;flex-wrap:wrap}
+.dk-pills button{border:0;font-size:12px;font-weight:700;border-radius:999px;padding:6px 11px;background:#333;color:#a3a99a;white-space:nowrap}
+.dk-pills button.ok{background:#33401a;color:#ddf6a2}.dk-pills button.jetzt{background:#fff;color:#1a1a1a}
+.dk-q{font-family:var(--display);font-weight:800;font-size:clamp(19px,2.6vw,23px);line-height:1.15;text-wrap:balance}
+.dk-hint{font-size:13px;color:#a3a99a;margin-top:-6px}
+.dk-ta{width:100%;background:#1f1f1f;border:1.5px solid #3a3a3a;border-radius:14px;padding:12px 14px;font-size:16px;line-height:1.45;color:#f3f6ec;resize:vertical;min-height:84px;outline:none}
+html[data-theme="light"] .dk-ta{background:#262626}
+.dk-ta:focus{border-color:#ddf6a2}
+.dk-ta::placeholder{color:#7d8274}
+.dk-zw{font-size:14px;color:#a3a99a;font-style:italic;min-height:0}
+.dk-zw:empty{display:none}
+.dk-bisher{font-size:13px;color:#a3a99a;display:flex;gap:8px;flex-wrap:wrap;align-items:baseline}
+.dk-bisher button{border:0;background:none;color:#ddf6a2;font-weight:700;padding:0;font-size:13px;text-decoration:underline;text-underline-offset:3px}
+.dk-chips{min-width:0;display:flex;gap:6px;flex-wrap:wrap}
+.dk-chips button{border:1.5px solid #3a3a3a;background:transparent;color:#f3f6ec;border-radius:999px;padding:8px 12px;font-size:13px;font-weight:600;text-align:left}
+.dk-chips button::before{content:"+ ";color:#ddf6a2}
+.dk-f{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.dk-mic{width:58px;height:58px;border-radius:50%;border:0;background:#ddf6a2;color:#1a1a1a;display:grid;place-items:center;flex:none;box-shadow:0 0 0 7px rgba(221,246,162,.18)}
+.dk-mic svg{width:26px;height:26px}
+.dk-mic i{display:none;width:18px;height:18px;border-radius:5px;background:#fff}
+.dk-mic.an{background:#e5484d;box-shadow:0 0 0 7px rgba(229,72,77,.22)}
+.dk-mic.an svg{display:none}.dk-mic.an i{display:block}
+.dk-mic[disabled]{opacity:.5}
+.dk-wave{display:inline-flex;gap:3px;align-items:center;height:24px}
+.dk-wave i{display:block;width:3px;height:4px;border-radius:2px;background:#ddf6a2;transition:height .08s}
+.dk-st{font-size:13px;color:#a3a99a;min-width:0;flex:1 1 120px}
+.dk-st.fehler{color:#ffb3b5}
+.dk-b{border:0;border-radius:999px;padding:11px 18px;font-weight:800;font-size:14px;white-space:nowrap}
+.dk-b.g{background:#333;color:#f3f6ec}.dk-b.a{background:#ddf6a2;color:#1a1a1a}
+.dk-b[disabled]{opacity:.4}
+.dk-vorher{display:flex;align-items:baseline;gap:10px;border-top:1px solid #3a3a3a;padding-top:10px;font-size:13px;color:#a3a99a}
+.dk-vorher b{color:#ddf6a2}.dk-vorher span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dk-vorher button{margin-left:auto;border:0;background:none;color:#f3f6ec;font-weight:700;font-size:13px;padding:0;flex:none}
+.dkmark{position:absolute;border-radius:6px;background:rgba(221,246,162,.32);box-shadow:0 0 0 3px #b9dc5c,0 0 0 9px rgba(221,246,162,.5);pointer-events:none;transition:all .25s}
+.dkmark b{position:absolute;right:-2px;top:-24px;background:#1a1a1a;color:#ddf6a2;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;border-radius:999px;padding:3px 9px;white-space:nowrap}
+@media (max-width:899px){body[data-view="vorschau"] .lspalte{display:none}}
+@media (max-width:480px){.dk{padding:16px}.dk-wave{display:none}.dk-st{order:9;flex-basis:100%}.dk-f .dk-b.g{margin-left:auto}.dk-b{padding:11px 15px}}
+
 </style>
 
 <div class="wrap">
@@ -168,6 +215,7 @@ textarea.in{resize:vertical;min-height:70px;line-height:1.4}
       <h1>Therapie<span>bericht</span></h1>
     </div>
     <div class="topctl">
+      <button class="dkbtn" id="dk-start" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg>Bericht diktieren</button>
       <div class="tabs" role="group" aria-label="Schrift">
         <button id="m-hand" aria-pressed="true">Handschrift</button>
         <button id="m-klar" aria-pressed="false">Klartext</button>
@@ -181,7 +229,7 @@ textarea.in{resize:vertical;min-height:70px;line-height:1.4}
   </div>
 
   <div class="grid">
-    <section class="left" id="tiles" aria-label="Abschnitte des Berichts"></section>
+    <div class="lspalte"><section class="dk" id="dk" aria-label="Bericht diktieren" hidden></section><section class="left" id="tiles" aria-label="Abschnitte des Berichts"></section></div>
     <section class="right" aria-label="Vorschau">
       <div class="pv">
         <div class="pvhead">
@@ -210,6 +258,489 @@ textarea.in{resize:vertical;min-height:70px;line-height:1.4}
 </nav>
 
 <script src="jspdf.umd.min.js"></script>
+<script>
+/* Doku-Fix · Diktieren
+   Teile, die im Browser und zum Testen in Node laufen:
+   - segmente(): Aufnahme an Sprechpausen in Stücke ≤ 25 s schneiden (Whisper verliert sonst Text)
+   - koelner(): Kölner Phonetik, deutsche Lautähnlichkeit
+   - korrigieren(): Text mit Wörterbuch und Fachwortliste glätten
+   - lernen(): aus Brunos Korrektur neue Wörterbuch-Paare vorschlagen */
+(function (root) {
+  'use strict';
+
+  /* ---------- Aufnahme in Stücke schneiden ---------- */
+  function segmente(samples, sr, opt) {
+    opt = opt || {};
+    var maxS = (opt.maxSek || 25) * sr, minPause = Math.round((opt.pauseMs || 350) / 1000 * sr);
+    var fl = Math.round(0.03 * sr), n = Math.floor(samples.length / fl), rms = new Float32Array(n);
+    for (var i = 0; i < n; i++) { var s = 0; for (var j = i * fl; j < (i + 1) * fl; j++) s += samples[j] * samples[j]; rms[i] = Math.sqrt(s / fl); }
+    var sortiert = Array.prototype.slice.call(rms).sort(function (a, b) { return a - b; });
+    var boden = sortiert[Math.floor(n * 0.1)] || 0, spitze = sortiert[Math.floor(n * 0.95)] || 0;
+    var schwelle = boden + (spitze - boden) * 0.12;
+    var still = []; // Pausen: [startFrame, endFrame]
+    var a = -1;
+    for (i = 0; i < n; i++) {
+      if (rms[i] < schwelle) { if (a < 0) a = i; }
+      else if (a >= 0) { if ((i - a) * fl >= minPause) still.push([a, i]); a = -1; }
+    }
+    var stuecke = [], start = 0;
+    function schnitt(ende) { if (ende - start > sr * 0.4) stuecke.push([start, ende]); start = ende; }
+    var kandidaten = still.map(function (p) { return Math.round((p[0] + p[1]) / 2) * fl; });
+    var letzte = 0;
+    kandidaten.forEach(function (k, idx) {
+      var naechste = kandidaten[idx + 1] != null ? kandidaten[idx + 1] : samples.length;
+      if (naechste - start > maxS && k - start > sr * 2) schnitt(k);
+      letzte = k;
+    });
+    while (samples.length - start > maxS) schnitt(start + maxS);
+    schnitt(samples.length);
+    return stuecke.map(function (x) { return samples.subarray ? samples.subarray(x[0], x[1]) : samples.slice(x[0], x[1]); });
+  }
+
+  /* ---------- Kölner Phonetik ---------- */
+  function koelner(wort) {
+    var w = String(wort).toUpperCase().replace(/Ä/g, 'A').replace(/Ö/g, 'O').replace(/Ü/g, 'U').replace(/ß/g, 'S').replace(/[^A-Z]/g, '');
+    if (!w) return '';
+    var code = '';
+    for (var i = 0; i < w.length; i++) {
+      var c = w[i], v = i ? w[i - 1] : '', h = w[i + 1] || '', z;
+      if ('AEIJOUY'.indexOf(c) >= 0) z = '0';
+      else if (c === 'H') z = '';
+      else if (c === 'B') z = '1';
+      else if (c === 'P') z = h === 'H' ? '3' : '1';
+      else if (c === 'D' || c === 'T') z = 'CSZ'.indexOf(h) >= 0 ? '8' : '2';
+      else if (c === 'F' || c === 'V' || c === 'W') z = '3';
+      else if (c === 'G' || c === 'K' || c === 'Q') z = '4';
+      else if (c === 'C') {
+        if (i === 0) z = 'AHKLOQRUX'.indexOf(h) >= 0 ? '4' : '8';
+        else z = 'SZ'.indexOf(v) >= 0 ? '8' : 'AHKOQUX'.indexOf(h) >= 0 ? '4' : '8';
+      }
+      else if (c === 'X') z = 'CKQ'.indexOf(v) >= 0 ? '8' : '48';
+      else if (c === 'L') z = '5';
+      else if (c === 'M' || c === 'N') z = '6';
+      else if (c === 'R') z = '7';
+      else if (c === 'S' || c === 'Z') z = '8';
+      else z = '';
+      code += z;
+    }
+    var out = '';
+    for (i = 0; i < code.length; i++) if (code[i] !== out[out.length - 1]) out += code[i];
+    return out[0] + out.slice(1).replace(/0/g, '');
+  }
+
+  function lev(a, b) {
+    var m = a.length, n = b.length, d = [], i, j;
+    for (i = 0; i <= m; i++) d[i] = [i];
+    for (j = 0; j <= n; j++) d[0][j] = j;
+    for (i = 1; i <= m; i++) for (j = 1; j <= n; j++) d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    return d[m][n];
+  }
+
+  /* ---------- Fachwörter ---------- */
+  // Schreibweise, wie sie im Text stehen soll. Mehrwortige Begriffe werden auch zusammengezogen erkannt.
+  var FACHWOERTER = ['Lasègue', 'Slump', 'Spurling', 'Hawkins', 'Neer', 'Jobe', 'Lachman', 'McMurray', 'Thessaly', 'Painful Arc', 'Talar Tilt', 'Trendelenburg', 'Finkelstein', 'Phalen', 'Tinel',
+    'Trapezius', 'Levator scapulae', 'Supraspinatus', 'Infraspinatus', 'Subscapularis', 'Teres minor', 'Deltoideus', 'Pectoralis', 'Rhomboideus', 'Sternocleidomastoideus', 'Scaleni',
+    'subokzipital', 'subokzipitale', 'Erector spinae', 'Quadratus lumborum', 'Iliopsoas', 'Piriformis', 'Gluteus medius', 'Adduktoren', 'Quadrizeps', 'Ischiokrurale', 'Gastrocnemius', 'Soleus', 'Unterarmextensoren',
+    'Glenohumeralgelenk', 'Akromioklavikulargelenk', 'Patella', 'Patellamobilisation', 'Iliosakralgelenk',
+    'Detonisierung', 'Mobilisation', 'Nervenmobilisation', 'Triggerpunkttechnik', 'Querfriktion', 'Weichteiltechnik', 'Lymphdrainage', 'Theraband', 'Skapula-Setting', 'Chin Tuck', 'Vierfüßlerstand', 'Einbeinstand',
+    'Abduktion', 'Adduktion', 'Außenrotation', 'Innenrotation', 'Lateralflexion', 'Dorsalextension', 'Plantarflexion', 'Flexion', 'Extension', 'kaudal', 'kranial', 'dorsal', 'ventral',
+    'Impingement', 'Bursitis', 'subacromialis', 'Lumboischialgie', 'Epicondylitis', 'Coxarthrose', 'Gonarthrose', 'Supinationstrauma', 'Hartspann', 'Druckdolenz', 'Befund', 'Erstbefund', 'Heimübungen',
+    'Schilddrüsenunterfunktion', 'Softwareentwickler', 'Schichtdienst', 'Steuerfachangestellte', 'Fraktur',
+    'Rudern', 'Brücke', 'Kniebeuge', 'Ausfallschritt', 'Fersenheben', 'Beinpresse', 'Gangschule', 'Quadrizepsanspannung', 'Entlastungslagerung'];
+  var FUELLWOERTER = /^(und|oder|mit|nach|in|im|am|an|der|die|das|den|dem|zu|bis|links|rechts|heute|jetzt|dann|dazu|auch|sehr|noch|nur|ab|bei|beim|von|vom|für|ist|sind|war|hat|ein|eine|einer|einen)$/i;
+  // Wörter, die die Erkennung gern an das nächste Wort klebt
+  var VORSILBEN = ['heute', 'ziel', 'danach', 'dazu', 'befund', 'behandlung', 'hartspann', 'druckdolenz', 'mobilisation', 'detonisierung', 'übungen'];
+  var KLEBE_AUS = /^(druckpunkt|triggerpunkt|schmerzpunkt|schwerpunkt|zeitpunkt|ansatzpunkt|ausgangspunkt|endpunkt|tiefpunkt|höhepunkt|mittelpunkt|standpunkt)/i;
+
+  // Feste Ersetzungen: was Spracherkennung typischerweise daraus macht (wächst mit Brunos Korrekturen)
+  var GRUNDREGELN = [
+    [/\bnrs[- ]?(\d{1,2})\b/gi, 'NRS $1'], [/\bnas[- ]?(\d{1,2})\b/gi, 'NAS $1'],
+    [/\b(interess|enn er es|n r s|en er es)\b/gi, 'NRS'],
+    [/\b(\d)\s*x\s*(\d+)\b/g, '$1 mal $2'],
+    [/\b([12])0(\d) und (\d)0\b/g, '$1$3$2'],
+    [/\bhundert(und)?(\w+)/gi, function (m) { return m; }],
+    [/\b(la ?s[eè]g\w*|[lv]as[eè]k|lasseg\w*|la seck)\b/gi, 'Lasègue'],
+    [/\baus(sen| einer| ner|en)? ?rotation\b/gi, 'Außenrotation'],
+    [/\b(für|vier) ?(füßler|verstand|füsslerstand|fuß ?lerstand|füßlerstand)\w*/gi, 'Vierfüßlerstand'],
+    [/\bschil?d?drüsen ?unter ?funktion\w*/gi, 'Schilddrüsenunterfunktion'],
+    [/\b(druck ?dolen\w*|tru[ck]t?o?lens|truckdolens|druck ?to ?lenz)\b/gi, 'Druckdolenz'],
+    [/\brecht (\d)/g, 'rechts $1'],
+    [/\bbeiz?w?ei[tz]s?t?( als)?\b/gi, 'beidseits'],
+    [/\bschwollen\b/gi, 'geschwollen'],
+    [/\bvorder\w* schubla\w*/gi, 'vordere Schublade'],
+    [/\btal[ae]t? ?(t?ilt|hilt|hält|tild)\b/gi, 'Talar Tilt'],
+    [/\bta(pp|ip)e\b/gi, 'Tape'], [/\bfaktur\b/gi, 'Fraktur'],
+    [/\b(nerven) (mobilisation)\b/gi, 'Nervenmobilisation'],
+    [/\bbeschwerde ?begi?nn?\b/gi, 'Beschwerdebeginn'], [/\bneben ?diagnose\b/gi, 'Nebendiagnose'],
+    [/\bL\s?(\d)\s*[\/ ]\s*([LS])\s?(\d)\b/g, 'L$1/$2$3'],
+    [/\b(thera|terra|tera)[ -]?band\w*/gi, 'Theraband'],
+    [/\b(schien ?tr?o[ck]k?|schien ?tu[ck]k?|tschin ?ta[ck]k?|chin ?ta[ck]k|chin ?tuk)\b/gi, 'Chin Tuck'],
+    [/\b(scapula|skapula)[ -]?setting\b/gi, 'Skapula-Setting'],
+    [/\bglenohumeral[ -]gelenk\b/gi, 'Glenohumeralgelenk'],
+    [/\b(erst[ -]?befund\w*|erste befond\w*)\b/gi, 'Erstbefund'],
+    [/\blater[ -]?al[ -]?flexion\b/gi, 'Lateralflexion'],
+    [/\bbeiz?a?dit?s\b/gi, 'beidseits'],
+    [/\b(ein beinstand)\b/gi, 'Einbeinstand'],
+    [/\b(heim ?übo?m?en|heim ?gebohnen|heim ?übungen)\b/gi, 'Heimübungen'],
+    [/\bfortgefüllt\b/gi, 'fortgeführt'],
+    [/\b(hart ?spann\w*|hart ?spand\w*)\b/gi, 'Hartspann'],
+    [/\b(\d+)\s*°/g, '$1 Grad']
+  ];
+
+  function laden(k, std) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : std; } catch (e) { return std; } }
+  function speichern(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* ohne Speicher weiter */ } }
+  var LS = 'doku-fix-diktat-woerterbuch';
+  function woerterbuch() { return laden(LS, []); }
+  function woerterbuchSetzen(l) { speichern(LS, l); }
+
+  var FW_INDEX = null;
+  function fwIndex(eigene) {
+    var liste = FACHWOERTER.concat((eigene || []).map(function (e) { return e.richtig; }).filter(function (w) { return !/\s/.test(w) && w.length >= 5; }));
+    return liste.map(function (w) { var k = w.replace(/[\s-]/g, ''); return { wort: w, klein: k.toLowerCase(), code: koelner(k) }; });
+  }
+
+  // Fachwort-Abgleich: ein bis zwei aufeinanderfolgende Wörter, die nach Laut und Schreibung nahe an einem Fachwort liegen
+  function fachwortAbgleich(text, eigene) {
+    var idx = fwIndex(eigene), treffer = [];
+    var toks = text.split(/(\s+|[,.;:!?]+)/);
+    var woerter = [];
+    toks.forEach(function (t, i) { if (/^[A-Za-zÄÖÜäöüß-]{3,}$/.test(t)) woerter.push(i); });
+    var ersetzt = {};
+    for (var w = 0; w < woerter.length; w++) {
+      for (var len = 2; len >= 1; len--) {
+        if (w + len > woerter.length) continue;
+        var teil = woerter.slice(w, w + len);
+        if (len === 2 && teil[1] - teil[0] !== 2) continue; // nur durch Leerzeichen getrennt
+        if (teil.some(function (t) { return ersetzt[t]; })) continue;
+        if (len === 2 && (FUELLWOERTER.test(toks[teil[1]]) || FUELLWOERTER.test(toks[teil[0]]))) continue;
+        if (len === 2 && idx.some(function (f) { return f.klein === toks[teil[0]].toLowerCase() || f.klein === toks[teil[1]].toLowerCase(); })) continue;
+        var roh = teil.map(function (t) { return toks[t]; }).join(len === 2 ? ' ' : '');
+        var zus = roh.replace(/[\s-]/g, ''), kl = zus.toLowerCase();
+        if (kl.length < 5) continue;
+        var bester = null;
+        idx.forEach(function (f) {
+          if (f.klein === kl) { bester = { f: f, d: 0, exakt: true }; return; }
+          if (bester && bester.exakt) return;
+          var d = lev(kl, f.klein), rel = d / Math.max(kl.length, f.klein.length);
+          var lautGleich = koelner(zus) === f.code;
+          var ok = (lautGleich && rel <= 0.34) || rel <= 0.2;
+          if (ok && (!bester || d < bester.d)) bester = { f: f, d: d };
+        });
+        if (bester && !bester.exakt && bester.d > 0) {
+          var neu = bester.f.wort;
+          if (/^[A-ZÄÖÜ]/.test(roh) && /^[a-zäöü]/.test(neu) && !/^(kaudal|kranial|dorsal|ventral|subokzipital\w*|subacromialis)$/.test(neu)) neu = neu.charAt(0).toUpperCase() + neu.slice(1);
+          treffer.push({ von: roh, nach: neu });
+          toks[teil[0]] = neu;
+          if (len === 2) { toks[teil[0] + 1] = ''; toks[teil[1]] = ''; }
+          teil.forEach(function (t) { ersetzt[t] = 1; });
+          break;
+        }
+        if (bester && bester.exakt) {
+          if (len === 2) { treffer.push({ von: roh, nach: bester.f.wort }); toks[teil[0]] = bester.f.wort; toks[teil[0] + 1] = ''; toks[teil[1]] = ''; }
+          teil.forEach(function (t) { ersetzt[t] = 1; }); break;
+        }
+      }
+    }
+    return { text: toks.join('').replace(/\s{2,}/g, ' '), treffer: treffer };
+  }
+
+  function entkleben(text) {
+    // „Behandlungpunkt“ → „Behandlung Punkt“, „Heutetetonisierung“ → „Heute Detonisierung“
+    var t = text.replace(/\b([A-Za-zÄÖÜäöüß]{4,}?)(punkt|komma)\b/gi, function (m, a, b) { return KLEBE_AUS.test(m) ? m : a + ' ' + b; });
+    return t.replace(/[A-Za-zÄÖÜäöüß]{9,}/g, function (w) {
+      var kl = w.toLowerCase();
+      for (var i = 0; i < VORSILBEN.length; i++) {
+        var v = VORSILBEN[i];
+        for (var cut = v.length - 1; cut <= v.length + 1; cut++) {
+          if (cut >= kl.length - 3) continue;
+          if (lev(kl.slice(0, cut), v) <= (v.length > 6 ? 1 : 0)) {
+            var rest = w.slice(cut);
+            if (rest.length >= 4 && !FUELLWOERTER.test(rest)) return w.slice(0, cut) + ' ' + rest.charAt(0).toUpperCase() + rest.slice(1);
+          }
+        }
+      }
+      return w;
+    });
+  }
+  function esc(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+  function korrigieren(text, eigene) {
+    eigene = eigene || woerterbuch();
+    var t = String(text || ''), log = [];
+    // 1. eigene Paare zuerst (Bruno hat recht)
+    eigene.forEach(function (e) {
+      var re = new RegExp('(^|[^A-Za-zÄÖÜäöüß])' + esc(e.falsch) + '(?=$|[^A-Za-zÄÖÜäöüß])', 'gi');
+      t = t.replace(re, function (m, vor) { log.push({ von: e.falsch, nach: e.richtig, eigen: true }); return vor + e.richtig; });
+    });
+    // 2. Grundregeln
+    GRUNDREGELN.forEach(function (r) {
+      if (typeof r[1] === 'function') return;
+      t = t.replace(r[0], function () { var m0 = arguments[0], neu = m0.replace(new RegExp(r[0].source, r[0].flags.replace('g', '')), r[1]); if (neu !== m0) log.push({ von: m0, nach: neu }); return neu; });
+    });
+    // 3. Zusammengeklebtes trennen, dann Fachwort-Abgleich
+    var vorher = t; t = entkleben(t); if (t !== vorher) log.push({ von: 'zusammengeklebt', nach: 'getrennt' });
+    var fa = fachwortAbgleich(t, eigene);
+    return { text: fa.text, korrekturen: log.concat(fa.treffer) };
+  }
+
+  /* ---------- Aus Korrekturen lernen ---------- */
+  function tokens(t) { return String(t).split(/\s+/).filter(Boolean); }
+  function lernen(vorher, nachher) {
+    var a = tokens(vorher), b = tokens(nachher), n = a.length, m = b.length;
+    if (!n || !m || n * m > 400000) return [];
+    var L = []; for (var i = 0; i <= n; i++) { L[i] = new Int32Array(m + 1); }
+    var nk = function (w) { return w.toLowerCase().replace(/[,.;:!?]+$/, ''); };
+    for (i = n - 1; i >= 0; i--) for (var j = m - 1; j >= 0; j--) L[i][j] = nk(a[i]) === nk(b[j]) ? L[i + 1][j + 1] + 1 : Math.max(L[i + 1][j], L[i][j + 1]);
+    var paare = [], ia = 0, ib = 0, wa = [], wb = [];
+    function flush() {
+      if (wa.length && wb.length && wa.length <= 3 && wb.length <= 3) {
+        var f = wa.join(' ').replace(/[,.;:!?]+$/, ''), r = wb.join(' ').replace(/[,.;:!?]+$/, '');
+        if (f.toLowerCase() !== r.toLowerCase() && f.length > 1 && r.length > 1 && !/^\d+$/.test(f)) paare.push({ falsch: f, richtig: r });
+      }
+      wa = []; wb = [];
+    }
+    i = 0; j = 0;
+    while (i < n && j < m) {
+      if (nk(a[i]) === nk(b[j])) { flush(); i++; j++; }
+      else if (L[i + 1][j] >= L[i][j + 1]) { wa.push(a[i]); i++; }
+      else { wb.push(b[j]); j++; }
+    }
+    while (i < n) wa.push(a[i++]); while (j < m) wb.push(b[j++]);
+    flush();
+    return paare;
+  }
+
+  var api = { segmente: segmente, koelner: koelner, korrigieren: korrigieren, lernen: lernen, woerterbuch: woerterbuch, woerterbuchSetzen: woerterbuchSetzen, FACHWOERTER: FACHWOERTER };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  else root.DiktatSprache = api;
+})(this);
+
+</script>
+<script>
+/* Doku-Fix · Aufnahme
+   Drei Wege zum Text:
+   - live:   Spracherkennung des Browsers (Safari: Apple), Text erscheint beim Sprechen
+   - geraet: Whisper läuft im Browser, nach einmaligem Laden des Modells ohne Internet
+   - demo:   spielt eine Testaufnahme ab, für das Artefakt, in dem das Mikrofon gesperrt ist
+   Rückgaben über Callbacks: zwischen(text), teil(text), status(text, art), pegel(0..1), fertig() */
+(function (root) {
+  'use strict';
+  var TF_URL = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.5.1';
+  var MODELLE = { klein: 'onnx-community/whisper-base', gut: 'onnx-community/whisper-small' };
+
+  function liveVerfuegbar() { return !!(root.SpeechRecognition || root.webkitSpeechRecognition); }
+  // Vom Home-Bildschirm gestartet: dort liefert Apples Live-Erkennung oft keinen Text
+  function alsApp() { try { return navigator.standalone === true || root.matchMedia('(display-mode: standalone)').matches; } catch (e) { return false; } }
+  function mikroVerfuegbar() { return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia); }
+
+  /* ---------- Whisper im Hintergrund ---------- */
+  var worker = null, wartend = {}, wid = 0, modellGeladen = null, ladeVersprechen = null;
+  function workerCode() {
+    return [
+      "import { pipeline, env } from '" + TF_URL + "';",
+      "env.allowLocalModels = false;",
+      "let asr = null, aktuell = null;",
+      "self.onmessage = async (ev) => {",
+      "  const m = ev.data;",
+      "  try {",
+      "    if (m.typ === 'laden') {",
+      "      if (aktuell !== m.modell) {",
+      "        let gpu = false;",
+      "        try { gpu = !!(self.navigator && self.navigator.gpu && await self.navigator.gpu.requestAdapter()); } catch (e) { gpu = false; }",
+      "        const opt = { progress_callback: (p) => self.postMessage({ typ: 'fortschritt', p }) };",
+      "        try { asr = await pipeline('automatic-speech-recognition', m.modell, Object.assign({}, opt, gpu ? { device: 'webgpu', dtype: { encoder_model: 'fp32', decoder_model_merged: 'q4' } } : { device: 'wasm', dtype: 'q8' })); }",
+      "        catch (e) { asr = await pipeline('automatic-speech-recognition', m.modell, Object.assign({}, opt, { device: 'wasm', dtype: 'q8' })); }",
+      "        aktuell = m.modell;",
+      "      }",
+      "      self.postMessage({ typ: 'antwort', id: m.id, ok: true });",
+      "    } else if (m.typ === 'erkennen') {",
+      "      const r = await asr(m.audio, { language: 'german', task: 'transcribe' });",
+      "      self.postMessage({ typ: 'antwort', id: m.id, ok: true, text: (r.text || '').trim() });",
+      "    }",
+      "  } catch (e) { self.postMessage({ typ: 'antwort', id: m.id, ok: false, fehler: String(e && e.message || e) }); }",
+      "};"
+    ].join('\n');
+  }
+  function sende(msg, beiFortschritt) {
+    if (!worker) {
+      worker = new Worker(URL.createObjectURL(new Blob([workerCode()], { type: 'text/javascript' })), { type: 'module' });
+      worker.onmessage = function (ev) {
+        var d = ev.data;
+        if (d.typ === 'fortschritt') { Object.keys(wartend).forEach(function (k) { if (wartend[k].fort) wartend[k].fort(d.p); }); return; }
+        var w = wartend[d.id]; if (!w) return; delete wartend[d.id];
+        d.ok ? w.ok(d) : w.nein(new Error(d.fehler));
+      };
+      worker.onerror = function (e) { Object.keys(wartend).forEach(function (k) { wartend[k].nein(new Error(e.message || 'Hintergrund-Prozess fehlgeschlagen')); delete wartend[k]; }); };
+    }
+    return new Promise(function (ok, nein) { var id = ++wid; wartend[id] = { ok: ok, nein: nein, fort: beiFortschritt }; msg.id = id; worker.postMessage(msg, msg.audio ? [msg.audio.buffer] : []); });
+  }
+  function modellLaden(groesse, status) {
+    var modell = MODELLE[groesse] || MODELLE.gut;
+    if (modellGeladen === modell) return Promise.resolve();
+    var dateien = {};
+    ladeVersprechen = sende({ typ: 'laden', modell: modell }, function (p) {
+      if (p.status === 'progress' && p.total) {
+        dateien[p.file] = [p.loaded, p.total];
+        var l = 0, t = 0; Object.keys(dateien).forEach(function (k) { l += dateien[k][0]; t += dateien[k][1]; });
+        status('Sprachmodell wird geladen · ' + Math.round(l / 1048576) + ' von ' + Math.round(t / 1048576) + ' MB', 'laden');
+      }
+    }).then(function () { modellGeladen = modell; });
+    return ladeVersprechen;
+  }
+
+  /* ---------- Audio umwandeln ---------- */
+  function nach16k(arrayBuffer) {
+    var AC = root.AudioContext || root.webkitAudioContext;
+    var ctx = new AC();
+    return new Promise(function (ok, nein) { ctx.decodeAudioData(arrayBuffer, ok, nein); }).then(function (buf) {
+      ctx.close && ctx.close();
+      var laenge = Math.ceil(buf.duration * 16000);
+      var off = new (root.OfflineAudioContext || root.webkitOfflineAudioContext)(1, laenge, 16000);
+      var q = off.createBufferSource(); q.buffer = buf; q.connect(off.destination); q.start();
+      return off.startRendering();
+    }).then(function (r) { return r.getChannelData(0); });
+  }
+  function whisperText(samples, opt) {
+    var stuecke = root.DiktatSprache.segmente(samples, 16000);
+    var texte = [], i = 0;
+    function weiter() {
+      if (i >= stuecke.length) return Promise.resolve(texte.join(' '));
+      opt.status('Wird erkannt · Stück ' + (i + 1) + ' von ' + stuecke.length, 'arbeit');
+      var kopie = new Float32Array(stuecke[i]);
+      return sende({ typ: 'erkennen', audio: kopie }).then(function (r) { if (r.text) { texte.push(r.text); opt.teil(r.text); } i++; return weiter(); });
+    }
+    return modellLaden(opt.groesse, opt.status).then(weiter);
+  }
+
+  /* ---------- Aufnahme ---------- */
+  function erstelle(opt) {
+    var aktiv = false, art = null, rec = null, liveRest = '', liveBekam = false, liveWacht = 0, stream = null, mr = null, chunks = [], analyse = null, raf = 0, startZeit = 0, uhr = 0, demoTimer = 0;
+    function zeit() { var s = Math.floor((Date.now() - startZeit) / 1000); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+    function pegelStart(st) {
+      try {
+        var AC = root.AudioContext || root.webkitAudioContext, ctx = new AC(), src = ctx.createMediaStreamSource(st), an = ctx.createAnalyser();
+        an.fftSize = 512; src.connect(an); var daten = new Uint8Array(an.fftSize);
+        analyse = { ctx: ctx };
+        (function schleife() { an.getByteTimeDomainData(daten); var s = 0; for (var i = 0; i < daten.length; i++) { var v = (daten[i] - 128) / 128; s += v * v; } opt.pegel(Math.min(1, Math.sqrt(s / daten.length) * 4)); raf = requestAnimationFrame(schleife); })();
+      } catch (e) { /* ohne Pegel */ }
+    }
+    function aufraeumen() {
+      cancelAnimationFrame(raf); clearInterval(uhr); clearTimeout(demoTimer);
+      if (analyse && analyse.ctx.close) analyse.ctx.close(); analyse = null;
+      if (stream) stream.getTracks().forEach(function (t) { t.stop(); }); stream = null;
+      opt.pegel(0);
+    }
+    function fehler(t) { clearTimeout(liveWacht); aktiv = false; aufraeumen(); opt.status(t, 'fehler'); opt.fertig(true); }
+
+    function startLive() {
+      var SR = root.SpeechRecognition || root.webkitSpeechRecognition;
+      rec = new SR(); rec.lang = 'de-DE'; rec.continuous = true; rec.interimResults = true;
+      liveRest = ''; liveBekam = false;
+      rec.onresult = function (ev) {
+        if (!aktiv) return; // nach Stopp kommt nichts mehr dazu, der Rest ist schon übernommen
+        var zw = ''; liveBekam = true;
+        for (var i = ev.resultIndex; i < ev.results.length; i++) {
+          var r = ev.results[i];
+          if (r.isFinal) { opt.teil(r[0].transcript.trim()); liveRest = ''; } else zw += r[0].transcript;
+        }
+        liveRest = zw.trim();
+        opt.zwischen(liveRest);
+      };
+      // Kommt nach einigen Sekunden gar nichts an, nicht stumm weiterlaufen
+      clearTimeout(liveWacht);
+      liveWacht = setTimeout(function () { if (aktiv && art === 'live' && !liveBekam) { try { rec.abort(); } catch (e) { } fehler('Live-Erkennung bekommt hier keinen Text. Nimm „Auf dem Gerät“ und sprich noch einmal.'); } }, 9000);
+      rec.onerror = function (ev) {
+        if (ev.error === 'no-speech' || ev.error === 'aborted') return;
+        if (ev.error === 'not-allowed' || ev.error === 'service-not-allowed') fehler('Mikrofon nicht freigegeben. Hier geht nur die Testaufnahme.');
+        else if (ev.error === 'network') fehler('Live-Erkennung braucht Internet. Nimm „Auf dem Gerät“.');
+        else fehler('Live-Erkennung gestoppt (' + ev.error + ').');
+      };
+      rec.onend = function () { if (aktiv && art === 'live') { try { rec.start(); } catch (e) { /* schon gestartet */ } } };
+      rec.onaudiostart = function () { opt.status('Hört zu · ' + zeit(), 'hoeren'); };
+      try { rec.start(); } catch (e) { fehler('Live-Erkennung ließ sich nicht starten.'); return; }
+      opt.status('Hört zu', 'hoeren');
+      uhr = setInterval(function () { if (aktiv) opt.status('Hört zu · ' + zeit(), 'hoeren'); }, 500);
+    }
+
+    function startGeraet() {
+      if (!mikroVerfuegbar() || !root.MediaRecorder) { fehler('Dieser Browser kann nicht aufnehmen.'); return; }
+      navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true } }).then(function (st) {
+        if (!aktiv) { st.getTracks().forEach(function (t) { t.stop(); }); return; }
+        stream = st; chunks = [];
+        mr = new MediaRecorder(st);
+        mr.ondataavailable = function (e) { if (e.data && e.data.size) chunks.push(e.data); };
+        mr.onstop = function () {
+          var blob = new Blob(chunks, { type: mr.mimeType || 'audio/mp4' });
+          aufraeumen();
+          opt.status('Wird umgewandelt …', 'arbeit');
+          blob.arrayBuffer().then(nach16k).then(function (s) { return whisperText(s, opt); })
+            .then(function () { opt.status('Fertig', 'ok'); opt.fertig(); })
+            .catch(function (e) { fehler(modellFehler(e)); });
+        };
+        mr.start(1000);
+        pegelStart(st);
+        opt.status('Nimmt auf · 0:00', 'hoeren');
+        uhr = setInterval(function () { if (aktiv) opt.status('Nimmt auf · ' + zeit(), 'hoeren'); }, 500);
+        // Modell schon während der Aufnahme laden
+        modellLaden(opt.groesse, function () { }).catch(function () { });
+      }).catch(function () { fehler('Mikrofon nicht freigegeben. Hier geht nur die Testaufnahme.'); });
+    }
+
+    function startDemo() {
+      var text = opt.demoText();
+      if (!text) { fehler('Keine Testaufnahme zu dieser Probe.'); return; }
+      var saetze = text.match(/[^.!?]+[.!?]*/g) || [text], si = 0, wi = 0, woerter = [];
+      opt.status('Testaufnahme läuft · so kam sie aus der Erkennung', 'hoeren');
+      (function tick() {
+        if (!aktiv) return;
+        if (!woerter.length) { if (si >= saetze.length) { stopp(); return; } woerter = saetze[si].trim().split(/\s+/); wi = 0; }
+        wi = Math.min(woerter.length, wi + 2);
+        opt.zwischen(woerter.slice(0, wi).join(' '));
+        opt.pegel(0.3 + Math.random() * 0.5);
+        if (wi >= woerter.length) { opt.teil(woerter.join(' ')); opt.zwischen(''); woerter = []; si++; }
+        demoTimer = setTimeout(tick, 160);
+      })();
+    }
+
+    function start(neueArt) {
+      if (aktiv) return;
+      art = neueArt; aktiv = true; startZeit = Date.now();
+      if (art === 'live') startLive(); else if (art === 'geraet') startGeraet(); else startDemo();
+    }
+    function stopp() {
+      if (!aktiv) return;
+      aktiv = false;
+      opt.zwischen('');
+      if (art === 'live') {
+        clearTimeout(liveWacht);
+        // Safari liefert das letzte Stück oft nur als Zwischenergebnis: nicht verlieren
+        var rest = liveRest; liveRest = '';
+        try { rec && rec.stop(); } catch (e) { /* egal */ }
+        if (rest) opt.teil(rest);
+        aufraeumen(); opt.status('Fertig', 'ok'); opt.fertig();
+      }
+      else if (art === 'geraet') { clearInterval(uhr); if (mr && mr.state !== 'inactive') mr.stop(); else { aufraeumen(); opt.fertig(); } }
+      else { aufraeumen(); opt.status('Testaufnahme fertig', 'ok'); opt.fertig(); }
+    }
+    function datei(file) {
+      opt.status('Datei wird umgewandelt …', 'arbeit');
+      return file.arrayBuffer().then(nach16k).then(function (s) { return whisperText(s, opt); })
+        .then(function () { opt.status('Fertig', 'ok'); opt.fertig(); })
+        .catch(function (e) { fehler(modellFehler(e)); });
+    }
+    return { start: start, stopp: stopp, datei: datei, aktiv: function () { return aktiv; } };
+  }
+  function modellFehler(e) {
+    var t = String(e && e.message || e);
+    try { console.error('Diktat-Fehler:', t); } catch (x) { /* egal */ }
+    if (/fetch|network|load|import|Failed|CSP|Content Security/i.test(t)) return 'Sprachmodell konnte nicht geladen werden. Im Testartefakt sperrt claude.ai den Download, in der App klappt es.';
+    if (/decode|EncodingError/i.test(t)) return 'Diese Audiodatei kann der Browser nicht lesen.';
+    return 'Erkennung fehlgeschlagen: ' + t;
+  }
+
+  root.DiktatAufnahme = { erstelle: erstelle, alsApp: alsApp, liveVerfuegbar: liveVerfuegbar, mikroVerfuegbar: mikroVerfuegbar, MODELLE: MODELLE };
+})(this);
+
+</script>
 <script>var CLD=window.claude||(function(){try{return window.parent!==window?window.parent.claude:null}catch(e){return null}})();</script><script>
 const VAR={"a": ["a", "", "", "", ""], "b": ["b", "", "", "", ""], "c": ["c", "", "", "", ""], "d": ["d", "", "", "", ""], "e": ["e", "", "", "", ""], "f": ["f", "", "", "", ""], "g": ["g", "", "", "", ""], "h": ["h", "", "", "", ""], "j": ["j", "", "", "", ""], "k": ["k", "", "", "", ""], "l": ["l", "", "", "", ""], "m": ["m", "", "", "", ""], "n": ["n", "", "", "", ""], "o": ["o", "", "", "", ""], "p": ["p", "", "", "", ""], "q": ["q", "", "", "", ""], "r": ["r", "", "", "", ""], "s": ["s", "", "", "", ""], "t": ["t", "", "", "", ""], "u": ["u", "", "", "", ""], "v": ["v", "", "", "", ""], "w": ["w", "", "", "", ""], "x": ["x", "", "", "", ""], "y": ["y", "", "", "", ""], "z": ["z", "", "", "", ""], "ä": ["ä", "", "", "", ""], "ö": ["ö", "", "", "", ""], "ü": ["ü", "", "", "", ""], "ß": ["ß", "", "", "", ""], "i": ["i", "", "", "", ""], "A": ["A", ""], "B": ["B", ""], "C": ["C", ""], "D": ["D", ""], "E": ["E", ""], "F": ["F", ""], "G": ["G", ""], "H": ["H", ""], "I": ["I", ""], "J": ["J", ""], "K": ["K", ""], "L": ["L", ""], "M": ["M", ""], "N": ["N", ""], "O": ["O", ""], "P": ["P", ""], "Q": ["Q", ""], "R": ["R", ""], "S": ["S", ""], "T": ["T", ""], "U": ["U", ""], "V": ["V", ""], "W": ["W", ""], "X": ["X", ""], "Y": ["Y", ""], "Z": ["Z", ""], "Ä": ["Ä", ""], "Ö": ["Ö", ""], "Ü": ["Ü", ""], "0": ["0", ""], "1": ["1", ""], "2": ["2", ""], "3": ["3", ""], "4": ["4", ""], "5": ["5", ""], "6": ["6", ""], "7": ["7", ""], "8": ["8", ""], "9": ["9", ""], ".": ["."], ",": [","], ";": [";"], ":": [":"], "!": ["!"], "?": ["?"], "-": ["-"], "–": ["–"], "(": ["("], ")": [")"], "/": ["/"], "+": ["+"], "=": ["="], "%": ["%"], "&": ["&", ""], "€": ["€"], "@": ["@", ""], "°": ["°"], "\"": ["\""], "„": ["„"], "“": ["“"], "'": ["'"], "*": ["*"], "#": ["#", ""], "→": ["→"], "⇒": ["⇒"], "✓": ["✓", ""], "↓": ["↓"], "↑": ["↑"], "♥": ["♥"], "☺": ["☺"], "☹": ["☹"], "★": ["★"], "☀": ["☀"], "✗": ["✗"], "←": ["←"], "⇐": ["⇐"], "⇔": ["⇔"], "↗": ["↗"], "↘": ["↘"], "~": ["~"], "<": ["<"], ">": [">"], "[": ["["], "]": ["]"], "{": ["{"], "}": ["}"], "_": ["_"], "|": ["|"], "$": ["$"], "²": ["²"], "³": ["³"], "½": ["½"], "±": ["±"], "×": ["×"], "…": ["…"], "•": ["•"], "ch": ["", ""], "ck": [""], "sch": [""], "ei": ["", ""], "ie": [""], "en": ["", ""], "er": ["", ""], "st": [""], "tt": [""], "ll": [""], "nn": [""], "mm": [""], "ss": [""], "ng": [""], "un": [""], "ge": [""], "de": [""], "te": [""], "in": [""], "an": [""]};
 const ICD={quelle:"BfArM, ICD-10-GM Version 2026, Systematik (klassifikationen.bfarm.de). Auswahl physiotherapeutisch typischer Kapitel, nicht vollständig.",hinweis:"[Titel, 1 = Kode hat eine 5. Stelle]",kodes:{E10:["Diabetes mellitus, Typ 1",0],E11:["Diabetes mellitus, Typ 2",0],E13:["Sonstiger näher bezeichneter Diabetes mellitus",0],E14:["Nicht näher bezeichneter Diabetes mellitus",0],E66:["Adipositas",0],"E66.0":["Adipositas durch übermäßige Kalorienzufuhr",1],"E66.8":["Sonstige Adipositas",1],"E66.9":["Adipositas, nicht näher bezeichnet",1],F00:["Demenz bei Alzheimer-Krankheit",0],F01:["Vaskuläre Demenz",0],F02:["Demenz bei anderenorts klassifizierten Krankheiten",0],F03:["Nicht näher bezeichnete Demenz",0],G10:["Chorea Huntington",0],G11:["Hereditäre Ataxie",0],"G11.0":["Angeborene nichtprogressive Ataxie",0],"G11.1":["Früh beginnende zerebellare Ataxie",0],"G11.2":["Spät beginnende zerebellare Ataxie",0],"G11.4":["Hereditäre spastische Paraplegie",0],"G11.8":["Sonstige hereditäre Ataxien",0],"G11.9":["Hereditäre Ataxie, nicht näher bezeichnet",0],G12:["Spinale Muskelatrophie und verwandte Syndrome",0],"G12.0":["Infantile spinale Muskelatrophie, Typ I [Typ Werdnig-Hoffmann]",0],"G12.1":["Sonstige vererbte spinale Muskelatrophie",0],"G12.2":["Motoneuron-Krankheit",0],"G12.8":["Sonstige spinale Muskelatrophien und verwandte Syndrome",0],"G12.9":["Spinale Muskelatrophie, nicht näher bezeichnet",0],G13:["Systematrophien, vorwiegend das Zentralnervensystem betreffend, bei anderenorts klassifizierten Krankheiten",0],G14:["Postpolio-Syndrom",0],G20:["Primäres Parkinson-Syndrom",0],"G20.0":["Primäres Parkinson-Syndrom mit fehlender oder geringer Beeinträchtigung",0],"G20.1":["Primäres Parkinson-Syndrom mit mäßiger bis schwerer Beeinträchtigung",0],"G20.2":["Primäres Parkinson-Syndrom mit schwerster Beeinträchtigung",0],"G20.9":["Primäres Parkinson-Syndrom, nicht näher bezeichnet",0],G21:["Sekundäres Parkinson-Syndrom",0],"G21.4":["Vaskuläres Parkinson-Syndrom",0],"G21.8":["Sonstiges sekundäres Parkinson-Syndrom",0],"G21.9":["Sekundäres Parkinson-Syndrom, nicht näher bezeichnet",0],G22:["Parkinson-Syndrom bei anderenorts klassifizierten Krankheiten",0],G23:["Sonstige degenerative Krankheiten der Basalganglien",0],"G23.1":["Progressive supranukleäre Ophthalmoplegie [Steele-Richardson-Olszewski-Syndrom]",0],"G23.2":["Multiple Systematrophie vom Parkinson-Typ [MSA-P]",0],"G23.3":["Multiple Systematrophie vom zerebellären Typ [MSA-C]",0],G24:["Dystonie",0],"G24.3":["Torticollis spasticus",0],"G24.8":["Sonstige Dystonie",0],"G24.9":["Dystonie, nicht näher bezeichnet",0],G25:["Sonstige extrapyramidale Krankheiten und Bewegungsstörungen",0],"G25.0":["Essentieller Tremor",0],"G25.5":["Sonstige Chorea",0],"G25.8":["Sonstige näher bezeichnete extrapyramidale Krankheiten und Bewegungsstörungen",0],"G25.9":["Extrapyramidale Krankheit oder Bewegungsstörung, nicht näher bezeichnet",0],G30:["Alzheimer-Krankheit",0],"G30.0":["Alzheimer-Krankheit mit frühem Beginn",0],"G30.1":["Alzheimer-Krankheit mit spätem Beginn",0],"G30.8":["Sonstige Alzheimer-Krankheit",0],"G30.9":["Alzheimer-Krankheit, nicht näher bezeichnet",0],G31:["Sonstige degenerative Krankheiten des Nervensystems, anderenorts nicht klassifiziert",0],"G31.0":["Umschriebene Hirnatrophie",0],"G31.1":["Senile Degeneration des Gehirns, anderenorts nicht klassifiziert",0],"G31.2":["Degeneration des Nervensystems durch Alkohol",0],"G31.8":["Sonstige näher bezeichnete degenerative Krankheiten des Nervensystems",0],"G31.9":["Degenerative Krankheit des Nervensystems, nicht näher bezeichnet",0],G32:["Sonstige degenerative Krankheiten des Nervensystems bei anderenorts klassifizierten Krankheiten",0],G35:["Multiple Sklerose [Encephalomyelitis disseminata]",0],"G35.0":["Erstmanifestation einer multiplen Sklerose",0],"G35.1":["Multiple Sklerose mit vorherrschend schubförmigem Verlauf",1],"G35.2":["Multiple Sklerose mit primär-chronischem Verlauf",1],"G35.3":["Multiple Sklerose mit sekundär-chronischem Verlauf",1],"G35.9":["Multiple Sklerose, nicht näher bezeichnet",0],G36:["Sonstige akute disseminierte Demyelinisation",0],G37:["Sonstige demyelinisierende Krankheiten des Zentralnervensystems",0],G40:["Epilepsie",0],G41:["Status epilepticus",0],G43:["Migräne",0],"G43.0":["Migräne ohne Aura [Gewöhnliche Migräne]",0],"G43.1":["Migräne mit Aura [Klassische Migräne]",0],"G43.8":["Sonstige Migräne",0],"G43.9":["Migräne, nicht näher bezeichnet",0],G44:["Sonstige Kopfschmerzsyndrome",0],"G44.0":["Cluster-Kopfschmerz",0],"G44.2":["Spannungskopfschmerz",0],"G44.3":["Chronischer posttraumatischer Kopfschmerz",0],"G44.4":["Arzneimittelinduzierter Kopfschmerz, anderenorts nicht klassifiziert",0],"G44.8":["Sonstige näher bezeichnete Kopfschmerzsyndrome",0],G45:["Zerebrale transitorische Ischämie und verwandte Syndrome",0],G46:["Zerebrale Gefäßsyndrome bei zerebrovaskulären Krankheiten",0],G47:["Schlafstörungen",0],G50:["Krankheiten des N. trigeminus [V. Hirnnerv]",0],"G50.0":["Trigeminusneuralgie",0],G51:["Krankheiten des N. facialis [VII. Hirnnerv]",0],"G51.0":["Fazialisparese",0],"G51.3":["Spasmus (hemi)facialis",0],"G51.8":["Sonstige Krankheiten des N. facialis",0],"G51.9":["Krankheit des N. facialis, nicht näher bezeichnet",0],G52:["Krankheiten sonstiger Hirnnerven",0],G53:["Krankheiten der Hirnnerven bei anderenorts klassifizierten Krankheiten",0],G54:["Krankheiten von Nervenwurzeln und Nervenplexus",0],"G54.0":["Läsionen des Plexus brachialis",0],"G54.1":["Läsionen des Plexus lumbosacralis",0],"G54.2":["Läsionen der Zervikalwurzeln, anderenorts nicht klassifiziert",0],"G54.3":["Läsionen der Thorakalwurzeln, anderenorts nicht klassifiziert",0],"G54.4":["Läsionen der Lumbosakralwurzeln, anderenorts nicht klassifiziert",0],"G54.5":["Neuralgische Amyotrophie",0],"G54.6":["Phantomschmerz",0],"G54.7":["Phantomglied ohne Schmerzen",0],"G54.8":["Sonstige Krankheiten von Nervenwurzeln und Nervenplexus",0],"G54.9":["Krankheit von Nervenwurzeln und Nervenplexus, nicht näher bezeichnet",0],G55:["Kompression von Nervenwurzeln und Nervenplexus bei anderenorts klassifizierten Krankheiten",0],"G55.1":["Kompression von Nervenwurzeln und Nervenplexus bei Bandscheibenschäden",0],"G55.2":["Kompression von Nervenwurzeln und Nervenplexus bei Spondylose",0],"G55.3":["Kompression von Nervenwurzeln und Nervenplexus bei sonstigen Krankheiten der Wirbelsäule und des Rückens",0],G56:["Mononeuropathien der oberen Extremität",0],"G56.0":["Karpaltunnel-Syndrom",0],"G56.1":["Sonstige Läsionen des N. medianus",0],"G56.2":["Läsion des N. ulnaris",0],"G56.3":["Läsion des N. radialis",0],"G56.8":["Sonstige Mononeuropathien der oberen Extremität",0],"G56.9":["Mononeuropathie der oberen Extremität, nicht näher bezeichnet",0],G57:["Mononeuropathien der unteren Extremität",0],"G57.0":["Läsion des N. ischiadicus",0],"G57.1":["Meralgia paraesthetica",0],"G57.2":["Läsion des N. femoralis",0],"G57.3":["Läsion des N. fibularis (peronaeus) communis",0],"G57.4":["Läsion des N. tibialis",0],"G57.5":["Tarsaltunnel-Syndrom",0],"G57.6":["Läsion des N. plantaris",0],"G57.8":["Sonstige Mononeuropathien der unteren Extremität",0],"G57.9":["Mononeuropathie der unteren Extremität, nicht näher bezeichnet",0],G58:["Sonstige Mononeuropathien",0],"G58.0":["Interkostalneuropathie",0],"G58.7":["Mononeuritis multiplex",0],G59:["Mononeuropathie bei anderenorts klassifizierten Krankheiten",0],G60:["Hereditäre und idiopathische Neuropathie",0],"G60.0":["Hereditäre sensomotorische Neuropathie",0],"G60.9":["Hereditäre und idiopathische Neuropathie, nicht näher bezeichnet",0],G61:["Polyneuritis",0],"G61.0":["Guillain-Barré-Syndrom",0],"G61.8":["Sonstige Polyneuritiden",0],"G61.9":["Polyneuritis, nicht näher bezeichnet",0],G62:["Sonstige Polyneuropathien",0],"G62.0":["Arzneimittelinduzierte Polyneuropathie",0],"G62.1":["Alkohol-Polyneuropathie",0],"G62.2":["Polyneuropathie durch sonstige toxische Agenzien",0],"G62.8":["Sonstige näher bezeichnete Polyneuropathien",1],"G62.9":["Polyneuropathie, nicht näher bezeichnet",0],G63:["Polyneuropathie bei anderenorts klassifizierten Krankheiten",0],"G63.2":["Diabetische Polyneuropathie",0],G64:["Sonstige Krankheiten des peripheren Nervensystems",0],G70:["Myasthenia gravis und sonstige neuromuskuläre Krankheiten",0],"G70.0":["Myasthenia gravis",0],G71:["Primäre Myopathien",0],"G71.0":["Muskeldystrophie",1],"G71.00":["Muskeldystrophie, maligne [Typ Duchenne]",0],"G71.08":["Sonstige Muskeldystrophien",0],"G71.1":["Myotone Syndrome",0],"G71.2":["Angeborene Myopathien",0],"G71.8":["Sonstige primäre Myopathien",0],"G71.9":["Primäre Myopathie, nicht näher bezeichnet",0],G72:["Sonstige Myopathien",0],"G72.4":["Entzündliche Myopathie, anderenorts nicht klassifiziert",0],"G72.9":["Myopathie, nicht näher bezeichnet",0],G73:["Krankheiten im Bereich der neuromuskulären Synapse und des Muskels bei anderenorts klassifizierten Krankheiten",0],G80:["Infantile Zerebralparese",0],"G80.0":["Spastische tetraplegische Zerebralparese",0],"G80.1":["Spastische diplegische Zerebralparese",0],"G80.2":["Infantile hemiplegische Zerebralparese",0],"G80.3":["Dyskinetische Zerebralparese",0],"G80.4":["Ataktische Zerebralparese",0],"G80.8":["Sonstige infantile Zerebralparese",0],"G80.9":["Infantile Zerebralparese, nicht näher bezeichnet",0],G81:["Hemiparese und Hemiplegie",0],"G81.0":["Schlaffe Hemiparese und Hemiplegie",0],"G81.1":["Spastische Hemiparese und Hemiplegie",0],"G81.9":["Hemiparese und Hemiplegie, nicht näher bezeichnet",0],G82:["Paraparese und Paraplegie, Tetraparese und Tetraplegie",0],"G82.0":["Schlaffe Paraparese und Paraplegie",1],"G82.1":["Spastische Paraparese und Paraplegie",1],"G82.2":["Paraparese und Paraplegie, nicht näher bezeichnet",1],"G82.3":["Schlaffe Tetraparese und Tetraplegie",1],"G82.4":["Spastische Tetraparese und Tetraplegie",1],"G82.5":["Tetraparese und Tetraplegie, nicht näher bezeichnet",1],G83:["Sonstige Lähmungssyndrome",0],"G83.0":["Diparese und Diplegie der oberen Extremitäten",0],"G83.1":["Monoparese und Monoplegie einer unteren Extremität",0],"G83.2":["Monoparese und Monoplegie einer oberen Extremität",0],"G83.3":["Monoparese und Monoplegie, nicht näher bezeichnet",0],"G83.4":["Cauda- (equina-) Syndrom",1],"G83.5":["Locked-in-Syndrom",0],"G83.6":["Zentrale faziale Parese",0],"G83.8":["Sonstige näher bezeichnete Lähmungssyndrome",0],"G83.9":["Lähmungssyndrom, nicht näher bezeichnet",0],G90:["Krankheiten des autonomen Nervensystems",0],"G90.5":["Komplexes regionales Schmerzsyndrom, Typ I",0],"G90.6":["Komplexes regionales Schmerzsyndrom, Typ II",0],"G90.7":["Komplexes regionales Schmerzsyndrom, sonstiger und nicht näher bezeichneter Typ",0],G91:["Hydrozephalus",0],"G91.2":["Normaldruckhydrozephalus",0],"G91.3":["Posttraumatischer Hydrozephalus, nicht näher bezeichnet",0],"G91.9":["Hydrozephalus, nicht näher bezeichnet",0],G93:["Sonstige Krankheiten des Gehirns",0],"G93.1":["Anoxische Hirnschädigung, anderenorts nicht klassifiziert",0],"G93.3":["Chronisches Fatigue-Syndrom [Chronic fatigue syndrome]",0],"G93.4":["Enzephalopathie, nicht näher bezeichnet",0],G95:["Sonstige Krankheiten des Rückenmarkes",0],"G95.0":["Syringomyelie und Syringobulbie",0],"G95.1":["Vaskuläre Myelopathien",0],"G95.2":["Rückenmarkkompression, nicht näher bezeichnet",0],"G95.8":["Sonstige näher bezeichnete Krankheiten des Rückenmarkes",0],"G95.9":["Krankheit des Rückenmarkes, nicht näher bezeichnet",0],G96:["Sonstige Krankheiten des Zentralnervensystems",0],G97:["Krankheiten des Nervensystems nach medizinischen Maßnahmen, anderenorts nicht klassifiziert",0],G98:["Sonstige Krankheiten des Nervensystems, anderenorts nicht klassifiziert",0],I20:["Angina pectoris",0],I21:["Akuter Myokardinfarkt",0],I22:["Rezidivierender Myokardinfarkt",0],I25:["Chronische ischämische Herzkrankheit",0],I48:["Vorhofflimmern und Vorhofflattern",0],I50:["Herzinsuffizienz",0],"I50.0":["Rechtsherzinsuffizienz",0],"I50.1":["Linksherzinsuffizienz",0],"I50.9":["Herzinsuffizienz, nicht näher bezeichnet",0],I60:["Subarachnoidalblutung",0],I61:["Intrazerebrale Blutung",0],I62:["Sonstige nichttraumatische intrakranielle Blutung",0],I63:["Hirninfarkt",0],"I63.0":["Hirninfarkt durch Thrombose präzerebraler Arterien",0],"I63.1":["Hirninfarkt durch Embolie präzerebraler Arterien",0],"I63.2":["Hirninfarkt durch nicht näher bezeichneten Verschluss oder Stenose präzerebraler Arterien",0],"I63.3":["Hirninfarkt durch Thrombose zerebraler Arterien",0],"I63.4":["Hirninfarkt durch Embolie zerebraler Arterien",0],"I63.5":["Hirninfarkt durch nicht näher bezeichneten Verschluss oder Stenose zerebraler Arterien",0],"I63.6":["Hirninfarkt durch Thrombose der Hirnvenen, nichteitrig",0],"I63.8":["Sonstiger Hirninfarkt",0],"I63.9":["Hirninfarkt, nicht näher bezeichnet",0],I64:["Schlaganfall, nicht als Blutung oder Infarkt bezeichnet",0],I65:["Verschluss und Stenose präzerebraler Arterien ohne resultierenden Hirninfarkt",0],I66:["Verschluss und Stenose zerebraler Arterien ohne resultierenden Hirninfarkt",0],I67:["Sonstige zerebrovaskuläre Krankheiten",0],I69:["Folgen einer zerebrovaskulären Krankheit",0],"I69.0":["Folgen einer Subarachnoidalblutung",0],"I69.1":["Folgen einer intrazerebralen Blutung",0],"I69.2":["Folgen einer sonstigen nichttraumatischen intrakraniellen Blutung",0],"I69.3":["Folgen eines Hirninfarktes",0],"I69.4":["Folgen eines Schlaganfalls, nicht als Blutung oder Infarkt bezeichnet",0],"I69.8":["Folgen sonstiger und nicht näher bezeichneter zerebrovaskulärer Krankheiten",0],I70:["Atherosklerose",0],"I70.2":["Atherosklerose der Extremitätenarterien",0],"I70.9":["Generalisierte und nicht näher bezeichnete Atherosklerose",0],I73:["Sonstige periphere Gefäßkrankheiten",0],"I73.0":["Raynaud-Syndrom",0],"I73.9":["Periphere Gefäßkrankheit, nicht näher bezeichnet",0],I80:["Thrombose, Phlebitis und Thrombophlebitis",0],I83:["Varizen der unteren Extremitäten",0],I87:["Sonstige Venenkrankheiten",0],I89:["Sonstige nichtinfektiöse Krankheiten der Lymphgefäße und Lymphknoten",0],"I89.0":["Lymphödem, anderenorts nicht klassifiziert",0],J12:["Viruspneumonie, anderenorts nicht klassifiziert",0],J13:["Pneumonie durch Streptococcus pneumoniae",0],J15:["Pneumonie durch Bakterien, anderenorts nicht klassifiziert",0],J18:["Pneumonie, Erreger nicht näher bezeichnet",0],J40:["Bronchitis, nicht als akut oder chronisch bezeichnet",0],J41:["Einfache und schleimig-eitrige chronische Bronchitis",0],J42:["Nicht näher bezeichnete chronische Bronchitis",0],J43:["Emphysem",0],J44:["Sonstige chronische obstruktive Lungenkrankheit",0],"J44.0":["Chronische obstruktive Lungenkrankheit mit akuter Infektion der unteren Atemwege",1],"J44.1":["Chronische obstruktive Lungenkrankheit mit akuter Exazerbation, nicht näher bezeichnet",1],"J44.8":["Sonstige näher bezeichnete chronische obstruktive Lungenkrankheit",1],"J44.9":["Chronische obstruktive Lungenkrankheit, nicht näher bezeichnet",1],J45:["Asthma bronchiale",0],"J45.0":["Vorwiegend allergisches Asthma bronchiale",1],"J45.1":["Nichtallergisches Asthma bronchiale",1],"J45.8":["Mischformen des Asthma bronchiale",1],"J45.9":["Asthma bronchiale, nicht näher bezeichnet",1],J46:["Status asthmaticus",0],J47:["Bronchiektasen",0],J84:["Sonstige interstitielle Lungenkrankheiten",0],M00:["Eitrige Arthritis",0],M01:["Direkte Gelenkinfektionen bei anderenorts klassifizierten infektiösen und parasitären Krankheiten",0],M02:["Reaktive Arthritiden",0],M03:["Postinfektiöse und reaktive Arthritiden bei anderenorts klassifizierten Krankheiten",0],M05:["Seropositive chronische Polyarthritis",0],"M05.0":["Felty-Syndrom",1],"M05.1":["Lungenmanifestation der seropositiven chronischen Polyarthritis",1],"M05.2":["Vaskulitis bei seropositiver chronischer Polyarthritis",1],"M05.3":["Seropositive chronische Polyarthritis mit Beteiligung sonstiger Organe und Organsysteme",1],"M05.8":["Sonstige seropositive chronische Polyarthritis",1],"M05.9":["Seropositive chronische Polyarthritis, nicht näher bezeichnet",1],M06:["Sonstige chronische Polyarthritis",0],"M06.0":["Seronegative chronische Polyarthritis",1],"M06.1":["Adulte Form der Still-Krankheit",1],"M06.2":["Bursitis bei chronischer Polyarthritis",1],"M06.3":["Rheumaknoten",1],"M06.4":["Entzündliche Polyarthropathie",1],"M06.8":["Sonstige näher bezeichnete chronische Polyarthritis",1],"M06.9":["Chronische Polyarthritis, nicht näher bezeichnet",1],M07:["Arthritis psoriatica und Arthritiden bei gastrointestinalen Grundkrankheiten",0],M08:["Juvenile Arthritis",0],M09:["Juvenile Arthritis bei anderenorts klassifizierten Krankheiten",0],M10:["Gicht",0],M11:["Sonstige Kristall-Arthropathien",0],M12:["Sonstige näher bezeichnete Arthropathien",0],M13:["Sonstige Arthritis",0],"M13.0":["Polyarthritis, nicht näher bezeichnet",0],"M13.1":["Monarthritis, anderenorts nicht klassifiziert",1],"M13.8":["Sonstige näher bezeichnete Arthritis",1],"M13.9":["Arthritis, nicht näher bezeichnet",1],M14:["Arthropathien bei sonstigen anderenorts klassifizierten Krankheiten",0],M15:["Polyarthrose",0],"M15.0":["Primäre generalisierte (Osteo-) Arthrose",0],"M15.1":["Heberden-Knoten (mit Arthropathie)",0],"M15.2":["Bouchard-Knoten (mit Arthropathie)",0],"M15.3":["Sekundäre multiple Arthrose",0],"M15.4":["Erosive (Osteo-) Arthrose",0],"M15.8":["Sonstige Polyarthrose",0],"M15.9":["Polyarthrose, nicht näher bezeichnet",0],M16:["Koxarthrose [Arthrose des Hüftgelenkes]",0],"M16.0":["Primäre Koxarthrose, beidseitig",0],"M16.1":["Sonstige primäre Koxarthrose",0],"M16.2":["Koxarthrose als Folge einer Dysplasie, beidseitig",0],"M16.3":["Sonstige dysplastische Koxarthrose",0],"M16.4":["Posttraumatische Koxarthrose, beidseitig",0],"M16.5":["Sonstige posttraumatische Koxarthrose",0],"M16.6":["Sonstige sekundäre Koxarthrose, beidseitig",0],"M16.7":["Sonstige sekundäre Koxarthrose",0],"M16.9":["Koxarthrose, nicht näher bezeichnet",0],M17:["Gonarthrose [Arthrose des Kniegelenkes]",0],"M17.0":["Primäre Gonarthrose, beidseitig",0],"M17.1":["Sonstige primäre Gonarthrose",0],"M17.2":["Posttraumatische Gonarthrose, beidseitig",0],"M17.3":["Sonstige posttraumatische Gonarthrose",0],"M17.4":["Sonstige sekundäre Gonarthrose, beidseitig",0],"M17.5":["Sonstige sekundäre Gonarthrose",0],"M17.9":["Gonarthrose, nicht näher bezeichnet",0],M18:["Rhizarthrose [Arthrose des Daumensattelgelenkes]",0],"M18.0":["Primäre Rhizarthrose, beidseitig",0],"M18.1":["Sonstige primäre Rhizarthrose",0],"M18.2":["Posttraumatische Rhizarthrose, beidseitig",0],"M18.3":["Sonstige posttraumatische Rhizarthrose",0],"M18.4":["Sonstige sekundäre Rhizarthrose, beidseitig",0],"M18.5":["Sonstige sekundäre Rhizarthrose",0],"M18.9":["Rhizarthrose, nicht näher bezeichnet",0],M19:["Sonstige Arthrose",0],"M19.0":["Primäre Arthrose sonstiger Gelenke",1],"M19.1":["Posttraumatische Arthrose sonstiger Gelenke",1],"M19.2":["Sonstige sekundäre Arthrose",1],"M19.8":["Sonstige näher bezeichnete Arthrose",1],"M19.9":["Arthrose, nicht näher bezeichnet",1],M20:["Erworbene Deformitäten der Finger und Zehen",0],"M20.0":["Deformität eines oder mehrerer Finger",0],"M20.1":["Hallux valgus (erworben)",0],"M20.2":["Hallux rigidus",0],"M20.3":["Sonstige Deformität der Großzehe (erworben)",0],"M20.4":["Sonstige Hammerzehe(n) (erworben)",0],"M20.5":["Sonstige Deformitäten der Zehe(n) (erworben)",0],"M20.6":["Erworbene Deformität der Zehe(n), nicht näher bezeichnet",0],M21:["Sonstige erworbene Deformitäten der Extremitäten",0],"M21.0":["Valgusdeformität, anderenorts nicht klassifiziert",1],"M21.1":["Varusdeformität, anderenorts nicht klassifiziert",1],"M21.2":["Flexionsdeformität",1],"M21.3":["Fallhand oder Hängefuß (erworben)",1],"M21.4":["Plattfuß [Pes planus] (erworben)",0],"M21.5":["Erworbene Klauenhand, Klumphand, erworbener Klauenfuß und Klumpfuß",1],"M21.6":["Sonstige erworbene Deformitäten des Knöchels und des Fußes",1],"M21.60":["Erworbener Hohlfuß [Pes cavus]",0],"M21.61":["Erworbener Knick-Plattfuß [Pes planovalgus]",0],"M21.62":["Erworbener Spitzfuß [Pes equinus]",0],"M21.63":["Erworbener Spreizfuß",0],"M21.68":["Sonstige erworbene Deformitäten des Knöchels und des Fußes",0],"M21.7":["Unterschiedliche Extremitätenlänge (erworben)",1],"M21.8":["Sonstige näher bezeichnete erworbene Deformitäten der Extremitäten",1],"M21.9":["Erworbene Deformität einer Extremität, nicht näher bezeichnet",1],M22:["Krankheiten der Patella",0],"M22.0":["Habituelle Luxation der Patella",0],"M22.1":["Habituelle Subluxation der Patella",0],"M22.2":["Krankheiten im Patellofemoralbereich",0],"M22.3":["Sonstige Schädigungen der Patella",0],"M22.4":["Chondromalacia patellae",0],"M22.8":["Sonstige Krankheiten der Patella",0],"M22.9":["Krankheit der Patella, nicht näher bezeichnet",0],M23:["Binnenschädigung des Kniegelenkes [internal derangement]",0],"M23.0":["Meniskusganglion",1],"M23.1":["Scheibenmeniskus (angeboren)",1],"M23.2":["Meniskusschädigung durch alten Riss oder alte Verletzung",1],"M23.21":["Meniskusschädigung durch alten Riss oder alte Verletzung: Vorderhorn des Innenmeniskus",0],"M23.22":["Meniskusschädigung durch alten Riss oder alte Verletzung: Hinterhorn des Innenmeniskus",0],"M23.23":["Meniskusschädigung durch alten Riss oder alte Verletzung: Sonstiger und nicht näher bezeichneter Teil des Innenmeniskus",0],"M23.24":["Meniskusschädigung durch alten Riss oder alte Verletzung: Vorderhorn des Außenmeniskus",0],"M23.25":["Meniskusschädigung durch alten Riss oder alte Verletzung: Hinterhorn des Außenmeniskus",0],"M23.26":["Meniskusschädigung durch alten Riss oder alte Verletzung: Sonstiger und nicht näher bezeichneter Teil des Außenmeniskus",0],"M23.3":["Sonstige Meniskusschädigungen",1],"M23.31":["Sonstige Meniskusschädigungen: Vorderhorn des Innenmeniskus",0],"M23.32":["Sonstige Meniskusschädigungen: Hinterhorn des Innenmeniskus",0],"M23.33":["Sonstige Meniskusschädigungen: Sonstiger und nicht näher bezeichneter Teil des Innenmeniskus",0],"M23.34":["Sonstige Meniskusschädigungen: Vorderhorn des Außenmeniskus",0],"M23.35":["Sonstige Meniskusschädigungen: Hinterhorn des Außenmeniskus",0],"M23.36":["Sonstige Meniskusschädigungen: Sonstiger und nicht näher bezeichneter Teil des Außenmeniskus",0],"M23.4":["Freier Gelenkkörper im Kniegelenk",0],"M23.5":["Chronische Instabilität des Kniegelenkes",1],"M23.51":["Chronische Instabilität des Kniegelenkes: Vorderes Kreuzband",0],"M23.52":["Chronische Instabilität des Kniegelenkes: Hinteres Kreuzband",0],"M23.53":["Chronische Instabilität des Kniegelenkes: Innenband [Lig. collaterale tibiale]",0],"M23.54":["Chronische Instabilität des Kniegelenkes: Außenband [Lig. collaterale fibulare]",0],"M23.6":["Sonstige Spontanruptur eines oder mehrerer Bänder des Kniegelenkes",1],"M23.61":["Sonstige Spontanruptur eines oder mehrerer Bänder des Kniegelenkes: Vorderes Kreuzband",0],"M23.62":["Sonstige Spontanruptur eines oder mehrerer Bänder des Kniegelenkes: Hinteres Kreuzband",0],"M23.8":["Sonstige Binnenschädigungen des Kniegelenkes",1],"M23.9":["Binnenschädigung des Kniegelenkes, nicht näher bezeichnet",1],M24:["Sonstige näher bezeichnete Gelenkschädigungen",0],"M24.0":["Freier Gelenkkörper",1],"M24.1":["Sonstige Gelenkknorpelschädigungen",1],"M24.2":["Krankheiten der Bänder",1],"M24.3":["Pathologische Luxation und Subluxation eines Gelenkes, anderenorts nicht klassifiziert",1],"M24.4":["Habituelle Luxation und Subluxation eines Gelenkes",1],"M24.5":["Gelenkkontraktur",1],"M24.6":["Ankylose eines Gelenkes",1],"M24.7":["Protrusio acetabuli",0],"M24.8":["Sonstige näher bezeichnete Gelenkschädigungen, anderenorts nicht klassifiziert",1],"M24.9":["Gelenkschädigung, nicht näher bezeichnet",1],M25:["Sonstige Gelenkkrankheiten, anderenorts nicht klassifiziert",0],"M25.0":["Hämarthros",1],"M25.1":["Gelenkfistel",1],"M25.2":["Schlottergelenk",1],"M25.3":["Sonstige Instabilität eines Gelenkes",1],"M25.4":["Gelenkerguss",1],"M25.5":["Gelenkschmerz",1],"M25.6":["Gelenksteife, anderenorts nicht klassifiziert",1],"M25.7":["Osteophyt",1],"M25.8":["Sonstige näher bezeichnete Gelenkkrankheiten",1],"M25.9":["Gelenkkrankheit, nicht näher bezeichnet",1],M30:["Panarteriitis nodosa und verwandte Zustände",0],M31:["Sonstige nekrotisierende Vaskulopathien",0],M32:["Systemischer Lupus erythematodes",0],M33:["Dermatomyositis-Polymyositis",0],M34:["Systemische Sklerose",0],M35:["Sonstige Krankheiten mit Systembeteiligung des Bindegewebes",0],M36:["Systemkrankheiten des Bindegewebes bei anderenorts klassifizierten Krankheiten",0],M40:["Kyphose und Lordose",0],"M40.0":["Kyphose als Haltungsstörung",1],"M40.1":["Sonstige sekundäre Kyphose",1],"M40.2":["Sonstige und nicht näher bezeichnete Kyphose",1],"M40.3":["Flachrücken",1],"M40.4":["Sonstige Lordose",1],"M40.5":["Lordose, nicht näher bezeichnet",1],M41:["Skoliose",0],"M41.0":["Idiopathische Skoliose beim Kind",1],"M41.1":["Idiopathische Skoliose beim Jugendlichen",1],"M41.2":["Sonstige idiopathische Skoliose",1],"M41.3":["Thoraxbedingte Skoliose",1],"M41.4":["Neuromyopathische Skoliose",1],"M41.5":["Sonstige sekundäre Skoliose",1],"M41.8":["Sonstige Formen der Skoliose",1],"M41.9":["Skoliose, nicht näher bezeichnet",1],M42:["Osteochondrose der Wirbelsäule",0],"M42.0":["Juvenile Osteochondrose der Wirbelsäule",1],"M42.1":["Osteochondrose der Wirbelsäule beim Erwachsenen",1],"M42.9":["Osteochondrose der Wirbelsäule, nicht näher bezeichnet",1],M43:["Sonstige Deformitäten der Wirbelsäule und des Rückens",0],"M43.0":["Spondylolyse",1],"M43.1":["Spondylolisthesis",1],"M43.2":["Sonstige Wirbelfusion",1],"M43.3":["Habituelle atlanto-axiale Subluxation mit Myelopathie",0],"M43.4":["Sonstige habituelle atlanto-axiale Subluxation",0],"M43.5":["Sonstige habituelle Wirbelsubluxation",1],"M43.6":["Tortikollis",0],"M43.8":["Sonstige näher bezeichnete Deformitäten der Wirbelsäule und des Rückens",1],"M43.9":["Deformität der Wirbelsäule und des Rückens, nicht näher bezeichnet",1],M45:["Spondylitis ankylosans",0],M46:["Sonstige entzündliche Spondylopathien",0],"M46.0":["Spinale Enthesopathie",0],"M46.1":["Sakroiliitis, anderenorts nicht klassifiziert",0],"M46.2":["Wirbelosteomyelitis",0],"M46.3":["Bandscheibeninfektion (pyogen)",0],"M46.4":["Diszitis, nicht näher bezeichnet",0],"M46.5":["Sonstige infektiöse Spondylopathien",0],"M46.8":["Sonstige näher bezeichnete entzündliche Spondylopathien",0],"M46.9":["Entzündliche Spondylopathie, nicht näher bezeichnet",0],M47:["Spondylose",0],"M47.0":["Arteria-spinalis-anterior-Kompressionssyndrom und Arteria-vertebralis-Kompressionssyndrom",0],"M47.1":["Sonstige Spondylose mit Myelopathie",0],"M47.2":["Sonstige Spondylose mit Radikulopathie",0],"M47.8":["Sonstige Spondylose",0],"M47.9":["Spondylose, nicht näher bezeichnet",0],M48:["Sonstige Spondylopathien",0],"M48.0":["Spinal(kanal)stenose",0],"M48.1":["Spondylitis hyperostotica [Forestier-Ott]",0],"M48.2":["Baastrup-Syndrom",0],"M48.3":["Traumatische Spondylopathie",0],"M48.4":["Ermüdungsbruch eines Wirbels",0],"M48.5":["Wirbelkörperkompression, anderenorts nicht klassifiziert",0],"M48.8":["Sonstige näher bezeichnete Spondylopathien",0],"M48.9":["Spondylopathie, nicht näher bezeichnet",0],M49:["Spondylopathien bei anderenorts klassifizierten Krankheiten",0],M50:["Zervikale Bandscheibenschäden",0],"M50.0":["Zervikaler Bandscheibenschaden mit Myelopathie",0],"M50.1":["Zervikaler Bandscheibenschaden mit Radikulopathie",0],"M50.2":["Sonstige zervikale Bandscheibenverlagerung",0],"M50.3":["Sonstige zervikale Bandscheibendegeneration",0],"M50.8":["Sonstige zervikale Bandscheibenschäden",0],"M50.9":["Zervikaler Bandscheibenschaden, nicht näher bezeichnet",0],M51:["Sonstige Bandscheibenschäden",0],"M51.0":["Lumbale und sonstige Bandscheibenschäden mit Myelopathie",0],"M51.1":["Lumbale und sonstige Bandscheibenschäden mit Radikulopathie",0],"M51.2":["Sonstige näher bezeichnete Bandscheibenverlagerung",0],"M51.3":["Sonstige näher bezeichnete Bandscheibendegeneration",0],"M51.4":["Schmorl-Knötchen",0],"M51.8":["Sonstige näher bezeichnete Bandscheibenschäden",0],"M51.9":["Bandscheibenschaden, nicht näher bezeichnet",0],M53:["Sonstige Krankheiten der Wirbelsäule und des Rückens, anderenorts nicht klassifiziert",0],"M53.0":["Zervikozephales Syndrom",0],"M53.1":["Zervikobrachial-Syndrom",0],"M53.2":["Instabilität der Wirbelsäule",1],"M53.3":["Krankheiten der Sakrokokzygealregion, anderenorts nicht klassifiziert",0],"M53.8":["Sonstige näher bezeichnete Krankheiten der Wirbelsäule und des Rückens",1],"M53.9":["Krankheit der Wirbelsäule und des Rückens, nicht näher bezeichnet",1],M54:["Rückenschmerzen",0],"M54.0":["Pannikulitis in der Nacken- und Rückenregion",1],"M54.1":["Radikulopathie",1],"M54.2":["Zervikalneuralgie",0],"M54.3":["Ischialgie",0],"M54.4":["Lumboischialgie",0],"M54.5":["Kreuzschmerz",0],"M54.6":["Schmerzen im Bereich der Brustwirbelsäule",0],"M54.8":["Sonstige Rückenschmerzen",1],"M54.9":["Rückenschmerzen, nicht näher bezeichnet",1],M60:["Myositis",0],"M60.0":["Infektiöse Myositis",0],"M60.1":["Interstitielle Myositis",0],"M60.8":["Sonstige Myositis",0],"M60.9":["Myositis, nicht näher bezeichnet",0],M61:["Kalzifikation und Ossifikation von Muskeln",0],"M61.0":["Traumatische Myositis ossificans",0],"M61.1":["Myositis ossificans progressiva",0],"M61.2":["Kalzifikation und Ossifikation von Muskeln bei Lähmungen",0],"M61.9":["Kalzifikation und Ossifikation von Muskeln, nicht näher bezeichnet",0],M62:["Sonstige Muskelkrankheiten",0],"M62.0":["Muskeldiastase",0],"M62.1":["Sonstiger Muskelriss (nichttraumatisch)",0],"M62.2":["Ischämischer Muskelinfarkt (nichttraumatisch)",0],"M62.3":["Immobilitätssyndrom (paraplegisch)",0],"M62.4":["Muskelkontraktur",0],"M62.5":["Muskelschwund und -atrophie, anderenorts nicht klassifiziert",0],"M62.6":["Muskelzerrung",0],"M62.8":["Sonstige näher bezeichnete Muskelkrankheiten",0],"M62.9":["Muskelkrankheit, nicht näher bezeichnet",0],M63:["Muskelkrankheiten bei anderenorts klassifizierten Krankheiten",0],M65:["Synovitis und Tenosynovitis",0],"M65.0":["Sehnenscheidenabszess",1],"M65.1":["Sonstige infektiöse (Teno-)Synovitis",1],"M65.2":["Tendinitis calcarea",1],"M65.3":["Schnellender Finger",0],"M65.4":["Tendovaginitis stenosans [de Quervain]",0],"M65.8":["Sonstige Synovitis und Tenosynovitis",1],"M65.9":["Synovitis und Tenosynovitis, nicht näher bezeichnet",1],M66:["Spontanruptur der Synovialis und von Sehnen",0],"M66.0":["Ruptur einer Poplitealzyste",0],"M66.1":["Ruptur der Synovialis",1],"M66.2":["Spontanruptur von Strecksehnen",1],"M66.3":["Spontanruptur von Beugesehnen",1],"M66.4":["Spontanruptur sonstiger Sehnen",1],"M66.5":["Spontanruptur von nicht näher bezeichneten Sehnen",1],M67:["Sonstige Krankheiten der Synovialis und der Sehnen",0],"M67.0":["Achillessehnenverkürzung (erworben)",0],"M67.1":["Sonstige Sehnen- (Scheiden-) Kontraktur",1],"M67.2":["Hypertrophie der Synovialis, anderenorts nicht klassifiziert",1],"M67.3":["Transitorische Synovitis",1],"M67.4":["Ganglion",1],"M67.8":["Sonstige näher bezeichnete Krankheiten der Synovialis und der Sehnen",1],"M67.9":["Krankheit der Synovialis und der Sehnen, nicht näher bezeichnet",1],M68:["Krankheiten der Synovialis und der Sehnen bei anderenorts klassifizierten Krankheiten",0],M70:["Krankheiten des Weichteilgewebes im Zusammenhang mit Beanspruchung, Überbeanspruchung und Druck",0],"M70.0":["Chronische Tenosynovitis crepitans der Hand und des Handgelenkes",0],"M70.1":["Bursitis im Bereich der Hand",0],"M70.2":["Bursitis olecrani",0],"M70.3":["Sonstige Bursitis im Bereich des Ellenbogens",0],"M70.4":["Bursitis praepatellaris",0],"M70.5":["Sonstige Bursitis im Bereich des Knies",0],"M70.6":["Bursitis trochanterica",0],"M70.7":["Sonstige Bursitis im Bereich der Hüfte",0],"M70.8":["Sonstige Krankheiten des Weichteilgewebes durch Beanspruchung, Überbeanspruchung und Druck",0],"M70.9":["Nicht näher bezeichnete Krankheit des Weichteilgewebes durch Beanspruchung, Überbeanspruchung und Druck",0],M71:["Sonstige Bursopathien",0],"M71.0":["Schleimbeutelabszess",1],"M71.1":["Sonstige infektiöse Bursitis",1],"M71.2":["Synovialzyste im Bereich der Kniekehle [Baker-Zyste]",0],"M71.3":["Sonstige Schleimbeutelzyste",1],"M71.4":["Bursitis calcarea",1],"M71.5":["Sonstige Bursitis, anderenorts nicht klassifiziert",1],"M71.8":["Sonstige näher bezeichnete Bursopathien",1],"M71.9":["Bursopathie, nicht näher bezeichnet",1],M72:["Fibromatosen",0],"M72.0":["Fibromatose der Palmarfaszie [Dupuytren-Kontraktur]",0],"M72.1":["Fingerknöchelpolster [Knuckle pads]",0],"M72.2":["Fibromatose der Plantarfaszie [Ledderhose-Kontraktur]",0],"M72.4":["Pseudosarkomatöse Fibromatose",1],"M72.6":["Nekrotisierende Fasziitis",1],"M72.8":["Sonstige Fibromatosen",1],"M72.9":["Fibromatose, nicht näher bezeichnet",1],M73:["Krankheiten des Weichteilgewebes bei anderenorts klassifizierten Krankheiten",0],M75:["Schulterläsionen",0],"M75.0":["Adhäsive Entzündung der Schultergelenkkapsel",0],"M75.1":["Läsionen der Rotatorenmanschette",0],"M75.2":["Tendinitis des M. biceps brachii",0],"M75.3":["Tendinitis calcarea im Schulterbereich",0],"M75.4":["Impingement-Syndrom der Schulter",0],"M75.5":["Bursitis im Schulterbereich",0],"M75.6":["Läsion des Labrums bei degenerativer Veränderung des Schultergelenkes",0],"M75.8":["Sonstige Schulterläsionen",0],"M75.9":["Schulterläsion, nicht näher bezeichnet",0],M76:["Enthesopathien der unteren Extremität mit Ausnahme des Fußes",0],"M76.0":["Tendinitis der Glutäus-Sehne(n)",0],"M76.1":["Tendinitis der Iliopsoas-Sehne",0],"M76.2":["Knochensporn am Darmbeinkamm",0],"M76.3":["Tractus-iliotibialis-Scheuersyndrom [Iliotibial band syndrome]",0],"M76.4":["Bursitis im Bereich des Lig. collaterale tibiale [Stieda-Pellegrini]",0],"M76.5":["Tendinitis der Patellarsehne",0],"M76.6":["Tendinitis der Achillessehne",0],"M76.7":["Tendinitis der Peronäussehne(n)",0],"M76.8":["Sonstige Enthesopathien der unteren Extremität mit Ausnahme des Fußes",0],"M76.9":["Enthesopathie der unteren Extremität, nicht näher bezeichnet",0],M77:["Sonstige Enthesopathien",0],"M77.0":["Epicondylitis ulnaris humeri",0],"M77.1":["Epicondylitis radialis humeri",0],"M77.2":["Periarthritis im Bereich des Handgelenkes",0],"M77.3":["Kalkaneussporn",0],"M77.4":["Metatarsalgie",0],"M77.5":["Sonstige Enthesopathie des Fußes",0],"M77.8":["Sonstige Enthesopathien, anderenorts nicht klassifiziert",0],"M77.9":["Enthesopathie, nicht näher bezeichnet",0],M79:["Sonstige Krankheiten des Weichteilgewebes, anderenorts nicht klassifiziert",0],"M79.0":["Rheumatismus, nicht näher bezeichnet",1],"M79.1":["Myalgie",1],"M79.2":["Neuralgie und Neuritis, nicht näher bezeichnet",1],"M79.3":["Pannikulitis, nicht näher bezeichnet",1],"M79.4":["Hypertrophie des Corpus adiposum (infrapatellare) [Hoffa-Kastert-Syndrom]",1],"M79.5":["Verbliebener Fremdkörper im Weichteilgewebe",1],"M79.6":["Schmerzen in den Extremitäten",1],"M79.7":["Fibromyalgie",1],"M79.8":["Sonstige näher bezeichnete Krankheiten des Weichteilgewebes",1],"M79.9":["Krankheit des Weichteilgewebes, nicht näher bezeichnet",1],M80:["Osteoporose mit pathologischer Fraktur",0],"M80.0":["Postmenopausale Osteoporose mit pathologischer Fraktur",1],"M80.1":["Osteoporose mit pathologischer Fraktur nach Ovarektomie",1],"M80.2":["Inaktivitätsosteoporose mit pathologischer Fraktur",1],"M80.3":["Osteoporose mit pathologischer Fraktur infolge Malabsorption nach chirurgischem Eingriff",1],"M80.4":["Arzneimittelinduzierte Osteoporose mit pathologischer Fraktur",1],"M80.5":["Idiopathische Osteoporose mit pathologischer Fraktur",1],"M80.8":["Sonstige Osteoporose mit pathologischer Fraktur",1],"M80.9":["Nicht näher bezeichnete Osteoporose mit pathologischer Fraktur",1],M81:["Osteoporose ohne pathologische Fraktur",0],"M81.0":["Postmenopausale Osteoporose",1],"M81.1":["Osteoporose nach Ovarektomie",1],"M81.2":["Inaktivitätsosteoporose",1],"M81.3":["Osteoporose infolge Malabsorption nach chirurgischem Eingriff",1],"M81.4":["Arzneimittelinduzierte Osteoporose",1],"M81.5":["Idiopathische Osteoporose",1],"M81.6":["Lokalisierte Osteoporose [Lequesne]",1],"M81.8":["Sonstige Osteoporose",1],"M81.9":["Osteoporose, nicht näher bezeichnet",1],M82:["Osteoporose bei anderenorts klassifizierten Krankheiten",0],M83:["Osteomalazie im Erwachsenenalter",0],M84:["Veränderungen der Knochenkontinuität",0],"M84.0":["Frakturheilung in Fehlstellung",1],"M84.1":["Nichtvereinigung der Frakturenden [Pseudarthrose]",1],"M84.2":["Verzögerte Frakturheilung",1],"M84.3":["Stressfraktur, anderenorts nicht klassifiziert",1],"M84.4":["Pathologische Fraktur, anderenorts nicht klassifiziert",1],"M84.8":["Sonstige Veränderungen der Knochenkontinuität",1],"M84.9":["Veränderung der Knochenkontinuität, nicht näher bezeichnet",1],M85:["Sonstige Veränderungen der Knochendichte und -struktur",0],M86:["Osteomyelitis",0],M87:["Knochennekrose",0],"M87.0":["Idiopathische aseptische Knochennekrose",0],"M87.1":["Knochennekrose durch Arzneimittel",0],"M87.2":["Knochennekrose durch vorangegangenes Trauma",0],"M87.3":["Sonstige sekundäre Knochennekrose",0],"M87.8":["Sonstige Knochennekrose",0],"M87.9":["Knochennekrose, nicht näher bezeichnet",0],M88:["Osteodystrophia deformans [Paget-Krankheit]",0],M89:["Sonstige Knochenkrankheiten",0],"M89.0":["Neurodystrophie [Algodystrophie]",0],"M89.1":["Stillstand des Epiphysenwachstums",0],"M89.2":["Sonstige Störungen der Knochenentwicklung und des Knochenwachstums",0],"M89.3":["Hypertrophie des Knochens",0],"M89.4":["Sonstige hypertrophische Osteoarthropathie",0],"M89.5":["Osteolyse",0],"M89.6":["Osteopathie nach Poliomyelitis",0],"M89.8":["Sonstige näher bezeichnete Knochenkrankheiten",0],"M89.9":["Knochenkrankheit, nicht näher bezeichnet",0],M90:["Osteopathien bei anderenorts klassifizierten Krankheiten",0],M91:["Juvenile Osteochondrose der Hüfte und des Beckens",0],"M91.0":["Juvenile Osteochondrose des Beckens",0],"M91.1":["Juvenile Osteochondrose des Femurkopfes [Perthes-Legg-Calvé-Krankheit]",0],"M91.2":["Coxa plana",0],"M91.3":["Pseudokoxalgie",0],"M91.8":["Sonstige juvenile Osteochondrose der Hüfte und des Beckens",0],"M91.9":["Juvenile Osteochondrose der Hüfte und des Beckens, nicht näher bezeichnet",0],M92:["Sonstige juvenile Osteochondrosen",0],"M92.0":["Juvenile Osteochondrose des Humerus",0],"M92.1":["Juvenile Osteochondrose des Radius und der Ulna",0],"M92.2":["Juvenile Osteochondrose der Hand",0],"M92.3":["Sonstige juvenile Osteochondrose der oberen Extremität",0],"M92.4":["Juvenile Osteochondrose der Patella",0],"M92.5":["Juvenile Osteochondrose der Tibia und der Fibula",0],"M92.6":["Juvenile Osteochondrose des Tarsus",0],"M92.7":["Juvenile Osteochondrose des Metatarsus",0],"M92.8":["Sonstige näher bezeichnete juvenile Osteochondrose",0],"M92.9":["Juvenile Osteochondrose, nicht näher bezeichnet",0],M93:["Sonstige Osteochondropathien",0],"M93.0":["Epiphyseolysis capitis femoris (nichttraumatisch)",0],"M93.1":["Kienböck-Krankheit bei Erwachsenen",0],"M93.2":["Osteochondrosis dissecans",0],"M93.8":["Sonstige näher bezeichnete Osteochondropathien",0],"M93.9":["Osteochondropathie, nicht näher bezeichnet",0],M94:["Sonstige Knorpelkrankheiten",0],"M94.0":["Tietze-Syndrom",0],"M94.1":["Panchondritis [Rezidivierende Polychondritis]",0],"M94.2":["Chondromalazie",0],"M94.3":["Chondrolyse",0],"M94.8":["Sonstige näher bezeichnete Knorpelkrankheiten",0],"M94.9":["Knorpelkrankheit, nicht näher bezeichnet",0],M95:["Sonstige erworbene Deformitäten des Muskel-Skelett-Systems und des Bindegewebes",0],"M95.2":["Sonstige erworbene Deformität des Kopfes",0],"M95.3":["Erworbene Deformität des Halses",0],"M95.4":["Erworbene Deformität des Brustkorbes und der Rippen",0],"M95.5":["Erworbene Deformität des Beckens",0],"M95.8":["Sonstige näher bezeichnete erworbene Deformitäten des Muskel-Skelett-Systems",0],"M95.9":["Erworbene Deformität des Muskel-Skelett-Systems, nicht näher bezeichnet",0],M96:["Krankheiten des Muskel-Skelett-Systems nach medizinischen Maßnahmen, anderenorts nicht klassifiziert",0],"M96.0":["Pseudarthrose nach Fusion oder Arthrodese",0],"M96.1":["Postlaminektomie-Syndrom, anderenorts nicht klassifiziert",0],"M96.2":["Kyphose nach Bestrahlung",0],"M96.3":["Kyphose nach Laminektomie",0],"M96.4":["Postoperative Lordose",0],"M96.5":["Skoliose nach Bestrahlung",0],"M96.6":["Knochenfraktur nach Einsetzen eines orthopädischen Implantates, einer Gelenkprothese oder einer Knochenplatte",0],"M96.8":["Sonstige Krankheiten des Muskel-Skelett-Systems nach medizinischen Maßnahmen",0],"M96.9":["Krankheit des Muskel-Skelett-Systems nach medizinischen Maßnahmen, nicht näher bezeichnet",0],M99:["Biomechanische Funktionsstörungen, anderenorts nicht klassifiziert",0],"M99.0":["Segmentale und somatische Funktionsstörungen",0],"M99.1":["Subluxation (der Wirbelsäule)",0],"M99.2":["Subluxationsstenose des Spinalkanals",0],"M99.3":["Knöcherne Stenose des Spinalkanals",0],"M99.4":["Bindegewebige Stenose des Spinalkanals",0],"M99.5":["Stenose des Spinalkanals durch Bandscheiben",0],"M99.6":["Stenose der Foramina intervertebralia, knöchern oder durch Subluxation",0],"M99.7":["Stenose der Foramina intervertebralia, bindegewebig oder durch Bandscheiben",0],"M99.8":["Sonstige biomechanische Funktionsstörungen",0],"M99.9":["Biomechanische Funktionsstörung, nicht näher bezeichnet",0],Q65:["Angeborene Deformitäten der Hüfte",0],"Q65.0":["Angeborene Luxation des Hüftgelenkes, einseitig",0],"Q65.1":["Angeborene Luxation des Hüftgelenkes, beidseitig",0],"Q65.3":["Angeborene Subluxation des Hüftgelenkes, einseitig",0],"Q65.4":["Angeborene Subluxation des Hüftgelenkes, beidseitig",0],"Q65.6":["Instabiles Hüftgelenk (angeboren)",0],"Q65.8":["Sonstige angeborene Deformitäten der Hüfte",0],"Q65.9":["Angeborene Deformität der Hüfte, nicht näher bezeichnet",0],Q66:["Angeborene Deformitäten der Füße",0],"Q66.0":["Pes equinovarus congenitus",0],"Q66.2":["Pes adductus (congenitus)",0],"Q66.5":["Pes planus congenitus",0],"Q66.7":["Pes cavus",0],"Q66.8":["Sonstige angeborene Deformitäten der Füße",0],"Q66.9":["Angeborene Deformität der Füße, nicht näher bezeichnet",0],Q67:["Angeborene Muskel-Skelett-Deformitäten des Kopfes, des Gesichtes, der Wirbelsäule und des Thorax",0],Q68:["Sonstige angeborene Muskel-Skelett-Deformitäten",0],Q76:["Angeborene Fehlbildungen der Wirbelsäule und des knöchernen Thorax",0],R25:["Abnorme unwillkürliche Bewegungen",0],"R25.1":["Tremor, nicht näher bezeichnet",0],"R25.2":["Krämpfe und Spasmen der Muskulatur",0],R26:["Störungen des Ganges und der Mobilität",0],"R26.0":["Ataktischer Gang",0],"R26.1":["Paretischer Gang",0],"R26.2":["Gehbeschwerden, anderenorts nicht klassifiziert",0],"R26.3":["Immobilität",0],"R26.8":["Sonstige und nicht näher bezeichnete Störungen des Ganges und der Mobilität",0],R27:["Sonstige Koordinationsstörungen",0],"R27.0":["Ataxie, nicht näher bezeichnet",0],R29:["Sonstige Symptome, die das Nervensystem und das Muskel-Skelett-System betreffen",0],"R29.3":["Abnorme Körperhaltung",0],"R29.4":["Schnappende Hüfte",0],"R29.5":["Neurologischer Neglect",0],"R29.6":["Sturzneigung, anderenorts nicht klassifiziert",0],R52:["Schmerz, anderenorts nicht klassifiziert",0],"R52.0":["Akuter Schmerz",0],"R52.1":["Chronischer unbeeinflussbarer Schmerz",0],"R52.2":["Sonstiger chronischer Schmerz",0],"R52.9":["Schmerz, nicht näher bezeichnet",0],R53:["Malaise und Fatigue",0],R54:["Senilität",0],S02:["Fraktur des Schädels und der Gesichtsschädelknochen",0],S06:["Intrakranielle Verletzung",0],"S06.0":["Gehirnerschütterung",0],"S06.1":["Traumatisches Hirnödem",0],"S06.2":["Diffuse Hirnverletzung",1],"S06.3":["Umschriebene Hirnverletzung",1],"S06.4":["Epidurale Blutung",0],"S06.5":["Traumatische subdurale Blutung",0],"S06.6":["Traumatische subarachnoidale Blutung",0],"S06.8":["Sonstige intrakranielle Verletzungen",0],"S06.9":["Intrakranielle Verletzung, nicht näher bezeichnet",0],S09:["Sonstige und nicht näher bezeichnete Verletzungen des Kopfes",0],S12:["Fraktur im Bereich des Halses",0],"S12.0":["Fraktur des 1. Halswirbels",0],"S12.1":["Fraktur des 2. Halswirbels",0],"S12.2":["Fraktur eines sonstigen näher bezeichneten Halswirbels",1],"S12.7":["Multiple Frakturen der Halswirbelsäule",0],S13:["Luxation, Verstauchung und Zerrung von Gelenken und Bändern in Halshöhe",0],"S13.0":["Traumatische Ruptur einer zervikalen Bandscheibe",0],"S13.1":["Luxation eines Halswirbels",1],"S13.4":["Verstauchung und Zerrung der Halswirbelsäule",0],S14:["Verletzung der Nerven und des Rückenmarkes in Halshöhe",0],"S14.0":["Kontusion und Ödem des zervikalen Rückenmarkes",0],"S14.1":["Sonstige und nicht näher bezeichnete Verletzungen des zervikalen Rückenmarkes",1],"S14.2":["Verletzung von Nervenwurzeln der Halswirbelsäule",0],"S14.3":["Verletzung des Plexus brachialis",0],S16:["Verletzung von Muskeln und Sehnen in Halshöhe",0],S19:["Sonstige und nicht näher bezeichnete Verletzungen des Halses",0],S22:["Fraktur der Rippe(n), des Sternums und der Brustwirbelsäule",0],"S22.0":["Fraktur eines Brustwirbels",0],"S22.1":["Multiple Frakturen der Brustwirbelsäule",0],"S22.2":["Fraktur des Sternums",0],"S22.3":["Rippenfraktur",0],"S22.4":["Rippenserienfraktur",0],"S22.8":["Fraktur sonstiger Teile des knöchernen Thorax",0],"S22.9":["Fraktur des knöchernen Thorax, Teil nicht näher bezeichnet",0],S23:["Luxation, Verstauchung und Zerrung von Gelenken und Bändern im Bereich des Thorax",0],S24:["Verletzung der Nerven und des Rückenmarkes in Thoraxhöhe",0],S29:["Sonstige und nicht näher bezeichnete Verletzungen des Thorax",0],S32:["Fraktur der Lendenwirbelsäule und des Beckens",0],"S32.0":["Fraktur eines Lendenwirbels",1],"S32.1":["Fraktur des Os sacrum",0],"S32.2":["Fraktur des Os coccygis",0],"S32.3":["Fraktur des Os ilium",0],"S32.4":["Fraktur des Acetabulums",0],"S32.5":["Fraktur des Os pubis",0],"S32.7":["Multiple Frakturen mit Beteiligung der Lendenwirbelsäule und des Beckens",0],"S32.8":["Fraktur sonstiger und nicht näher bezeichneter Teile der Lendenwirbelsäule und des Beckens",1],S33:["Luxation, Verstauchung und Zerrung von Gelenken und Bändern der Lendenwirbelsäule und des Beckens",0],"S33.0":["Traumatische Ruptur einer lumbalen Bandscheibe",0],"S33.1":["Luxation eines Lendenwirbels",1],"S33.2":["Luxation des Iliosakral- und des Sakro-Kokzygeal-Gelenkes",0],"S33.4":["Traumatische Symphysensprengung",0],"S33.5":["Verstauchung und Zerrung der Lendenwirbelsäule",1],"S33.6":["Verstauchung und Zerrung des Iliosakralgelenkes",0],"S33.7":["Verstauchung und Zerrung sonstiger und nicht näher bezeichneter Teile der Lendenwirbelsäule und des Beckens",0],S34:["Verletzung der Nerven und des lumbalen Rückenmarkes in Höhe des Abdomens, der Lumbosakralgegend und des Beckens",0],S39:["Sonstige und nicht näher bezeichnete Verletzungen des Abdomens, der Lumbosakralgegend und des Beckens",0],S40:["Oberflächliche Verletzung der Schulter und des Oberarmes",0],S42:["Fraktur im Bereich der Schulter und des Oberarmes",0],"S42.0":["Fraktur der Klavikula",0],"S42.1":["Fraktur der Skapula",0],"S42.2":["Fraktur des proximalen Endes des Humerus",0],"S42.3":["Fraktur des Humerusschaftes",0],"S42.4":["Fraktur des distalen Endes des Humerus",0],"S42.7":["Multiple Frakturen der Klavikula, der Skapula und des Humerus",0],"S42.8":["Fraktur sonstiger Teile der Schulter und des Oberarmes",0],"S42.9":["Fraktur des Schultergürtels, Teil nicht näher bezeichnet",0],S43:["Luxation, Verstauchung und Zerrung von Gelenken und Bändern des Schultergürtels",0],"S43.0":["Luxation des Schultergelenkes [Glenohumeralgelenk]",0],"S43.1":["Luxation des Akromioklavikulargelenkes",0],"S43.2":["Luxation des Sternoklavikulargelenkes",0],"S43.4":["Verstauchung und Zerrung des Schultergelenkes",0],"S43.5":["Verstauchung und Zerrung des Akromioklavikulargelenkes",0],S44:["Verletzung von Nerven in Höhe der Schulter und des Oberarmes",0],S46:["Verletzung von Muskeln und Sehnen in Höhe der Schulter und des Oberarmes",0],"S46.0":["Verletzung der Muskeln und der Sehnen der Rotatorenmanschette",0],"S46.1":["Verletzung des Muskels und der Sehne des Caput longum des M. biceps brachii",0],"S46.2":["Verletzung des Muskels und der Sehne an sonstigen Teilen des M. biceps brachii",0],"S46.3":["Verletzung des Muskels und der Sehne des M. triceps brachii",0],S49:["Sonstige und nicht näher bezeichnete Verletzungen der Schulter und des Oberarmes",0],S50:["Oberflächliche Verletzung des Unterarmes",0],S52:["Fraktur des Unterarmes",0],"S52.0":["Fraktur des proximalen Endes der Ulna",1],"S52.1":["Fraktur des proximalen Endes des Radius",1],"S52.2":["Fraktur des Ulnaschaftes",1],"S52.3":["Fraktur des Radiusschaftes",1],"S52.4":["Fraktur des Ulna- und Radiusschaftes, kombiniert",0],"S52.5":["Distale Fraktur des Radius",1],"S52.6":["Distale Fraktur der Ulna und des Radius, kombiniert",0],"S52.7":["Multiple Frakturen des Unterarmes",0],"S52.8":["Fraktur sonstiger Teile des Unterarmes",0],"S52.9":["Fraktur des Unterarmes, Teil nicht näher bezeichnet",0],S53:["Luxation, Verstauchung und Zerrung des Ellenbogengelenkes und von Bändern des Ellenbogens",0],"S53.0":["Luxation des Radiuskopfes",0],"S53.1":["Luxation sonstiger und nicht näher bezeichneter Teile des Ellenbogens",1],"S53.2":["Traumatische Ruptur des Lig. collaterale radiale",0],"S53.3":["Traumatische Ruptur des Lig. collaterale ulnare",0],"S53.4":["Verstauchung und Zerrung des Ellenbogens",1],S54:["Verletzung von Nerven in Höhe des Unterarmes",0],S56:["Verletzung von Muskeln und Sehnen in Höhe des Unterarmes",0],S59:["Sonstige und nicht näher bezeichnete Verletzungen des Unterarmes",0],S60:["Oberflächliche Verletzung des Handgelenkes und der Hand",0],S62:["Fraktur im Bereich des Handgelenkes und der Hand",0],"S62.0":["Fraktur des Os scaphoideum der Hand",0],"S62.1":["Fraktur eines oder mehrerer sonstiger Handwurzelknochen",0],"S62.2":["Fraktur des 1. Mittelhandknochens",0],"S62.3":["Fraktur eines sonstigen Mittelhandknochens",0],"S62.4":["Multiple Frakturen der Mittelhandknochen",0],"S62.5":["Fraktur des Daumens",0],"S62.6":["Fraktur eines sonstigen Fingers",0],"S62.7":["Multiple Frakturen der Finger",0],"S62.8":["Fraktur sonstiger und nicht näher bezeichneter Teile des Handgelenkes und der Hand",0],S63:["Luxation, Verstauchung und Zerrung von Gelenken und Bändern in Höhe des Handgelenkes und der Hand",0],"S63.0":["Luxation des Handgelenkes",0],"S63.1":["Luxation eines Fingers",0],"S63.3":["Traumatische Ruptur von Bändern des Handgelenkes und der Handwurzel",0],"S63.4":["Traumatische Ruptur von Bändern der Finger im Metakarpophalangeal- und Interphalangealgelenk",0],"S63.5":["Verstauchung und Zerrung des Handgelenkes",0],"S63.6":["Verstauchung und Zerrung eines oder mehrerer Finger",0],S64:["Verletzung von Nerven in Höhe des Handgelenkes und der Hand",0],S66:["Verletzung von Muskeln und Sehnen in Höhe des Handgelenkes und der Hand",0],S68:["Traumatische Amputation an Handgelenk und Hand",0],S69:["Sonstige und nicht näher bezeichnete Verletzungen des Handgelenkes und der Hand",0],S70:["Oberflächliche Verletzung der Hüfte und des Oberschenkels",0],S72:["Fraktur des Femurs",0],"S72.0":["Schenkelhalsfraktur",1],"S72.1":["Pertrochantäre Fraktur",1],"S72.2":["Subtrochantäre Fraktur",0],"S72.3":["Fraktur des Femurschaftes",0],"S72.4":["Distale Fraktur des Femurs",1],"S72.7":["Multiple Frakturen des Femurs",0],"S72.8":["Frakturen sonstiger Teile des Femurs",0],"S72.9":["Fraktur des Femurs, Teil nicht näher bezeichnet",0],S73:["Luxation, Verstauchung und Zerrung des Hüftgelenkes und von Bändern der Hüfte",0],S74:["Verletzung von Nerven in Höhe der Hüfte und des Oberschenkels",0],S76:["Verletzung von Muskeln und Sehnen in Höhe der Hüfte und des Oberschenkels",0],S78:["Traumatische Amputation an Hüfte und Oberschenkel",0],S79:["Sonstige und nicht näher bezeichnete Verletzungen der Hüfte und des Oberschenkels",0],S80:["Oberflächliche Verletzung des Unterschenkels",0],S82:["Fraktur des Unterschenkels, einschließlich des oberen Sprunggelenkes",0],"S82.0":["Fraktur der Patella",0],"S82.1":["Fraktur des proximalen Endes der Tibia",1],"S82.2":["Fraktur des Tibiaschaftes",1],"S82.3":["Distale Fraktur der Tibia",1],"S82.4":["Fraktur der Fibula, isoliert",1],"S82.5":["Fraktur des Innenknöchels",0],"S82.6":["Fraktur des Außenknöchels",0],"S82.7":["Multiple Frakturen des Unterschenkels",0],"S82.8":["Frakturen sonstiger Teile des Unterschenkels",1],"S82.9":["Fraktur des Unterschenkels, Teil nicht näher bezeichnet",0],S83:["Luxation, Verstauchung und Zerrung des Kniegelenkes und von Bändern des Kniegelenkes",0],"S83.0":["Luxation der Patella",0],"S83.1":["Luxation des Kniegelenkes",1],"S83.2":["Meniskusriss, akut",0],"S83.3":["Riss des Kniegelenkknorpels, akut",0],"S83.4":["Verstauchung und Zerrung des Kniegelenkes mit Beteiligung des (fibularen) (tibialen) Seitenbandes",1],"S83.5":["Verstauchung und Zerrung des Kniegelenkes mit Beteiligung des (vorderen) (hinteren) Kreuzbandes",1],"S83.6":["Verstauchung und Zerrung sonstiger und nicht näher bezeichneter Teile des Knies",0],"S83.7":["Verletzung mehrerer Strukturen des Knies",0],S84:["Verletzung von Nerven in Höhe des Unterschenkels",0],S86:["Verletzung von Muskeln und Sehnen in Höhe des Unterschenkels",0],S88:["Traumatische Amputation am Unterschenkel",0],S89:["Sonstige und nicht näher bezeichnete Verletzungen des Unterschenkels",0],S90:["Oberflächliche Verletzung der Knöchelregion und des Fußes",0],S92:["Fraktur des Fußes [ausgenommen oberes Sprunggelenk]",0],"S92.0":["Fraktur des Kalkaneus",0],"S92.1":["Fraktur des Talus",0],"S92.2":["Fraktur eines oder mehrerer sonstiger Fußwurzelknochen",0],"S92.3":["Fraktur der Mittelfußknochen",0],"S92.4":["Fraktur der Großzehe",0],"S92.5":["Fraktur einer sonstigen Zehe",0],"S92.7":["Multiple Frakturen des Fußes",0],"S92.9":["Fraktur des Fußes, nicht näher bezeichnet",0],S93:["Luxation, Verstauchung und Zerrung der Gelenke und Bänder in Höhe des oberen Sprunggelenkes und des Fußes",0],"S93.0":["Luxation des oberen Sprunggelenkes",0],"S93.1":["Luxation einer oder mehrerer Zehen",0],"S93.2":["Traumatische Ruptur von Bändern in Höhe des oberen Sprunggelenkes und des Fußes",0],"S93.3":["Luxation sonstiger und nicht näher bezeichneter Teile des Fußes",0],"S93.4":["Verstauchung und Zerrung des oberen Sprunggelenkes",0],"S93.5":["Verstauchung und Zerrung einer oder mehrerer Zehen",0],"S93.6":["Verstauchung und Zerrung sonstiger und nicht näher bezeichneter Teile des Fußes",0],S94:["Verletzung von Nerven in Höhe des Knöchels und des Fußes",0],S96:["Verletzung von Muskeln und Sehnen in Höhe des Knöchels und des Fußes",0],S98:["Traumatische Amputation am oberen Sprunggelenk und Fuß",0],S99:["Sonstige und nicht näher bezeichnete Verletzungen der Knöchelregion und des Fußes",0],T08:["Fraktur der Wirbelsäule, Höhe nicht näher bezeichnet",0],T09:["Sonstige Verletzungen der Wirbelsäule und des Rumpfes, Höhe nicht näher bezeichnet",0],T10:["Fraktur der oberen Extremität, Höhe nicht näher bezeichnet",0],T11:["Sonstige Verletzungen der oberen Extremität, Höhe nicht näher bezeichnet",0],T12:["Fraktur der unteren Extremität, Höhe nicht näher bezeichnet",0],T13:["Sonstige Verletzungen der unteren Extremität, Höhe nicht näher bezeichnet",0],T14:["Verletzung an einer nicht näher bezeichneten Körperregion",0],"T84.0":["Mechanische Komplikation durch eine Gelenkendoprothese",1],"T84.1":["Mechanische Komplikation durch eine interne Osteosynthesevorrichtung an Extremitätenknochen",1],"T84.2":["Mechanische Komplikation durch eine interne Osteosynthesevorrichtung an sonstigen Knochen",1],"T84.3":["Mechanische Komplikation durch sonstige Knochengeräte, -implantate oder -transplantate",0],"T84.4":["Mechanische Komplikation durch sonstige intern verwendete orthopädische Geräte, Implantate und Transplantate",0],"T84.5":["Infektion und entzündliche Reaktion durch eine Gelenkendoprothese",0],"T84.6":["Infektion und entzündliche Reaktion durch eine interne Osteosynthesevorrichtung [jede Lokalisation]",0],"T84.7":["Infektion und entzündliche Reaktion durch sonstige orthopädische Endoprothesen, Implantate oder Transplantate",0],"T84.8":["Sonstige Komplikationen durch orthopädische Endoprothesen, Implantate oder Transplantate",0],"T84.9":["Nicht näher bezeichnete Komplikation durch orthopädische Endoprothese, Implantat oder Transplantat",0],T90:["Folgen von Verletzungen des Kopfes",0],T91:["Folgen von Verletzungen des Halses und des Rumpfes",0],"T91.1":["Folgen einer Fraktur der Wirbelsäule",0],"T91.2":["Folgen einer sonstigen Fraktur des Thorax und des Beckens",0],"T91.3":["Folgen einer Verletzung des Rückenmarkes",0],"T91.8":["Folgen sonstiger näher bezeichneter Verletzungen des Halses und des Rumpfes",0],"T91.9":["Folgen einer nicht näher bezeichneten Verletzung des Halses und des Rumpfes",0],T92:["Folgen von Verletzungen der oberen Extremität",0],"T92.1":["Folgen einer Fraktur des Armes",0],"T92.2":["Folgen einer Fraktur in Höhe des Handgelenkes und der Hand",0],"T92.3":["Folgen einer Luxation, Verstauchung oder Zerrung der oberen Extremität",0],"T92.4":["Folgen einer Verletzung von Nerven der oberen Extremität",0],"T92.5":["Folgen einer Verletzung von Muskeln und Sehnen der oberen Extremität",0],"T92.6":["Folgen einer Zerquetschung oder einer traumatischen Amputation der oberen Extremität",0],"T92.8":["Folgen sonstiger näher bezeichneter Verletzungen der oberen Extremität",0],"T92.9":["Folgen einer nicht näher bezeichneten Verletzung der oberen Extremität",0],T93:["Folgen von Verletzungen der unteren Extremität",0],"T93.1":["Folgen einer Fraktur des Femurs",0],"T93.2":["Folgen sonstiger Frakturen der unteren Extremität",0],"T93.3":["Folgen einer Luxation, Verstauchung oder Zerrung der unteren Extremität",0],"T93.4":["Folgen einer Verletzung von Nerven der unteren Extremität",0],"T93.5":["Folgen einer Verletzung von Muskeln und Sehnen der unteren Extremität",0],"T93.6":["Folgen einer Zerquetschung oder einer traumatischen Amputation der unteren Extremität",0],"T93.8":["Folgen sonstiger näher bezeichneter Verletzungen der unteren Extremität",0],"T93.9":["Folgen einer nicht näher bezeichneten Verletzung der unteren Extremität",0],T94:["Folgen von Verletzungen mehrerer oder nicht näher bezeichneter Körperregionen",0],U09:["Post-COVID-19-Zustand",0],Z89:["Extremitätenverlust",0],"Z89.0":["Verlust eines oder mehrerer Finger [einschließlich Daumen], einseitig",0],"Z89.1":["Verlust der Hand und des Handgelenkes, einseitig",0],"Z89.2":["Verlust der oberen Extremität oberhalb des Handgelenkes, einseitig",0],"Z89.3":["(Teilweiser) Verlust der oberen Extremität, beidseitig",0],"Z89.4":["Verlust des Fußes und des Knöchels, einseitig",0],"Z89.5":["Verlust der unteren Extremität unterhalb oder bis zum Knie, einseitig",0],"Z89.6":["Verlust der unteren Extremität oberhalb des Knies, einseitig",0],"Z89.7":["(Teilweiser) Verlust der unteren Extremität, beidseitig",0],"Z89.8":["Verlust von oberen und unteren Extremitäten [jede Höhe]",0],"Z89.9":["Extremitätenverlust, nicht näher bezeichnet",0],Z96:["Vorhandensein von anderen funktionellen Implantaten",0],"Z96.6":["Vorhandensein von orthopädischen Gelenkimplantaten",0],"Z96.60":["Vorhandensein einer Schulterprothese",0],"Z96.61":["Vorhandensein einer Ellenbogenprothese",0],"Z96.62":["Vorhandensein einer Radiuskopfprothese",0],"Z96.63":["Vorhandensein einer Handgelenkprothese",0],"Z96.64":["Vorhandensein einer Hüftgelenkprothese",0],"Z96.65":["Vorhandensein einer Kniegelenkprothese",0],"Z96.66":["Vorhandensein einer Sprunggelenkprothese",0],"Z96.67":["Vorhandensein einer Bandscheibenprothese",0],"Z96.68":["Vorhandensein von sonstigen näher bezeichneten orthopädischen Gelenkimplantaten",0],"Z96.7":["Vorhandensein von anderen Knochen- und Sehnenimplantaten",0],Z98:["Sonstige Zustände nach chirurgischem Eingriff",0],Z99:["Abhängigkeit (langzeitig) von unterstützenden Apparaten, medizinischen Geräten oder Hilfsmitteln, anderenorts nicht klassifiziert",0]}};
@@ -665,6 +1196,90 @@ async function sichern(art){
 }
 $("dl-jpg").onclick=()=>sichern("jpg");$("dl-pdf").onclick=()=>sichern("pdf");$("v-save").onclick=()=>sichern("jpg");
 dlP.then(dl=>{if(!dl){["dl-jpg","dl-pdf","v-save"].forEach(i=>$(i).disabled=true);toast("Sichern ist in dieser Ansicht nicht verfügbar.")}});
+
+
+/* ---------- Bericht diktieren: Leitkarte mit vier Fragen ---------- */
+const DK_MIC='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg>';
+const DK_KEIN=t=>/^\s*keine besonderheiten\.?\s*$/i.test(t);
+const DK_SCHRITTE=[
+  {k:"ziele",pill:"Ziele",ziel:"Therapieziele",q:"Wie weit sind die Ziele erreicht?",hint:"Zum Beispiel erreicht, überwiegend, teilweise, gern mit Werten",
+    chips:["Ziele erreicht","Ziele überwiegend erreicht","Ziele teilweise erreicht","Ziele noch nicht erreicht"],feld:[80,625,1165,765],kachel:"ziele",
+    lesen:()=>{const z=S.ziele.find(t=>/^Stand: /.test(t));return z?z.slice(7):""},
+    schreiben:t=>{S.ziele=S.ziele.filter(x=>!/^Stand: /.test(x));if(t.trim())S.ziele.push("Stand: "+t.trim())}},
+  {k:"empf",pill:"Empfehlung",ziel:"Empfehlungen",q:"Wie geht es weiter, was empfiehlst du?",hint:"Zum Beispiel Fortführung, Schwerpunkt, Heimprogramm, Arztkontakt",
+    chips:BASIS.empfehlungen,feld:[80,1140,1165,1232],kachel:"empf",bisher:"empfehlungen",
+    lesen:()=>"",schreiben:t=>{S.empfehlungen=t.trim()?t.trim():DK.alt.empfehlungen}},
+  {k:"verord",pill:"Verordnung",ziel:"Weitere Verordnungen",q:"Braucht es eine weitere Verordnung, und warum?",hint:"Ja oder nein, dazu die Begründung",
+    chips:["Weitere Verordnung nötig","Keine weitere Verordnung",...BASIS.begruendung],feld:[80,1262,1165,1495],kachel:"verord",bisher:"begruendung",
+    lesen:()=>"",
+    schreiben:t=>{const x=t.trim(),l=x.toLowerCase();
+      if(!x){S.begruendung=DK.alt.begruendung;S.verord=DK.alt.verord;return}
+      if(/\bkeine (weitere )?verordnung|\bnicht (mehr )?(nötig|notwendig|erforderlich)|^nein\b/.test(l))S.verord="nein";
+      else{S.verord="ja";if(!S.arten.length)S.arten=["physio"]}
+      const b=x.replace(/^(ja|nein)\b[,.:;\s]*/i,"").replace(/^(weitere verordnung (ist )?(nötig|notwendig|erforderlich)|keine weitere verordnung( (nötig|notwendig|erforderlich))?)[,.:;\s]*/i,"").replace(/^(weil|da)\s+/i,"").trim();
+      S.begruendung=b?b.charAt(0).toUpperCase()+b.slice(1):(S.verord==="ja"?DK.alt.begruendung:"")}},
+  {k:"beso",pill:"Besonderheiten",ziel:"Therapeutische Maßnahmen",q:"Gibt es Besonderheiten?",hint:"Zum Beispiel Mitarbeit, Ausfälle, Belastung im Alltag. Sonst einfach „Fertig“.",
+    chips:["Keine Besonderheiten","Heimprogramm wird gut umgesetzt","Mehrere Termine abgesagt","Belastung im Alltag gesteigert"],feld:[80,775,1165,1112],kachel:"mass",
+    lesen:()=>{const z=S.massnahmen.find(t=>/^Besonderheiten: /.test(t));return z?z.slice(16):""},
+    schreiben:t=>{S.massnahmen=S.massnahmen.filter(x=>!/^Besonderheiten: /.test(x));if(t.trim()&&!DK_KEIN(t))S.massnahmen.push("Besonderheiten: "+t.trim())}}
+];
+const DK={arbeit:false,an:false,i:0,antw:["","","",""],alt:{},rec:null,aktiv:false,recI:0,zw:"",st:"",stArt:"",weiterNach:false};
+function dkAlsApp(){try{const p=window.parent;if(p&&p!==window&&(p.navigator.standalone===true||p.matchMedia("(display-mode: standalone)").matches))return true}catch(e){}const A=window.DiktatAufnahme;return !!(A&&A.alsApp())}
+function dkWeg(){const A=window.DiktatAufnahme;let w="auto";try{w=localStorage.getItem("doku-fix-diktat-weg")||"auto"}catch(e){}
+  if(w==="live"&&A.liveVerfuegbar())return"live";if(w==="geraet")return"geraet";return A.liveVerfuegbar()&&!dkAlsApp()?"live":"geraet"}
+function dkKorr(t){const SP=window.DiktatSprache;try{return SP?SP.korrigieren(t.trim(),SP.woerterbuch()).text:t.trim()}catch(e){return t.trim()}}
+function dkSetze(i,t){DK.antw[i]=t;const sch=DK_SCHRITTE[i];upd(()=>sch.schreiben(t))}
+function dkAnhaengen(i,t){t=t.trim();if(!t)return;const a=DK.antw[i].trim();
+  const neu=a?a.replace(/[,;]\s*$/,"")+(/[.!?]$/.test(a)?" ":", ")+t:t.charAt(0).toUpperCase()+t.slice(1);
+  dkSetze(i,neu);if(i===DK.i){const ta=$("dk-ta");if(ta)ta.value=neu;dkBisher()}}
+function dkAuf(){
+  const A=window.DiktatAufnahme;if(!A){dkStatus("Diktat hier nicht verfügbar.","fehler");return null}
+  if(DK.rec)return DK.rec;
+  DK.rec=A.erstelle({
+    groesse:(()=>{try{return localStorage.getItem("doku-fix-diktat-modell")||"klein"}catch(e){return"klein"}})(),
+    zwischen:t=>{DK.zw=t;const z=$("dk-zw");if(z)z.textContent=DK.recI===DK.i?t:""},
+    teil:t=>dkAnhaengen(DK.recI,dkKorr(t)),
+    status:(t,art)=>dkStatus(t,art),
+    pegel:p=>{const w=$("dk-wave");if(!w)return;[...w.children].forEach((b,j)=>{b.style.height=(4+Math.round(20*p*(.45+.55*Math.abs(Math.sin(j*1.7+Date.now()/180)))))+"px"})},
+    fertig:()=>{DK.aktiv=false;DK.arbeit=false;DK.zw="";dkMic()},
+    demoText:()=>""});
+  return DK.rec}
+function dkStatus(t,art){DK.st=t;DK.stArt=art||"";const e=$("dk-st");if(e){e.textContent=t;e.className="dk-st"+(art==="fehler"?" fehler":"")}}
+function dkMic(){const m=$("dk-mic");if(!m)return;m.classList.toggle("an",DK.aktiv);m.disabled=!!DK.arbeit;m.setAttribute("aria-label",DK.aktiv?"Aufnahme beenden":"Aufnahme starten");const z=$("dk-zw");if(z&&!DK.aktiv)z.textContent=""}
+function dkStart(){const r=dkAuf();if(!r||DK.aktiv||DK.arbeit)return;DK.recI=DK.i;DK.aktiv=true;dkMic();r.start(dkWeg())}
+function dkStopp(){if(DK.rec&&DK.aktiv){DK.arbeit=dkWeg()==="geraet";DK.aktiv=false;DK.rec.stopp()}DK.aktiv=false;dkMic()}
+function dkMark(){const p=document.querySelector(".paper");if(!p)return;let m=$("dkmark");
+  if(!DK.an){if(m)m.remove();return}
+  if(!m){m=h("div",{class:"dkmark",id:"dkmark"},h("b",{text:"wird diktiert"}));p.append(m)}
+  const r=DK_SCHRITTE[DK.i].feld,W=1241,H=1755;m.style.left=r[0]/W*100+"%";m.style.top=r[1]/H*100+"%";m.style.width=(r[2]-r[0])/W*100+"%";m.style.height=(r[3]-r[1])/H*100+"%"}
+function dkBisher(){const e=$("dk-bisher");if(!e)return;const sch=DK_SCHRITTE[DK.i];e.textContent="";if(!sch.bisher)return;
+  const alt=DK.alt[sch.bisher]||"";if(!alt.trim())return;
+  if(!DK.antw[DK.i].trim())e.append(h("span",{text:"Jetzt im Bericht: "+alt}),h("button",{type:"button",on:{click:()=>{dkSetze(DK.i,alt);dkRender();const ta=$("dk-ta");if(ta){ta.focus();const n=ta.value.length;ta.setSelectionRange(n,n)}}}},"übernehmen und ergänzen"));
+  else e.append(h("span",{text:"Ersetzt den bisherigen Text."}),h("button",{type:"button",on:{click:()=>{dkSetze(DK.i,"");dkRender()}}},"Bisherigen wiederherstellen"))}
+function dkGehe(i,auto){const war=DK.aktiv;if(war)dkStopp();DK.i=Math.max(0,Math.min(3,i));dkRender();
+  if(auto&&war&&dkWeg()==="live")setTimeout(dkStart,350)}
+function dkAuf_(){if(DK.an)return;DK.an=true;DK.alt={empfehlungen:S.empfehlungen,begruendung:S.begruendung,verord:S.verord};
+  DK.antw=DK_SCHRITTE.map((s,j)=>DK.antw[j]||s.lesen());DK.i=0;
+  const k=$("dk");k.hidden=false;$("dk-start").hidden=true;if(typeof setView==="function"&&document.body.dataset.view==="vorschau")setView("eingabe");
+  offen="";renderTiles();dkRender();setTimeout(()=>k.scrollIntoView({block:"start",behavior:"smooth"}),40)}
+function dkZu(fertig){dkStopp();DK.an=false;$("dk").hidden=true;$("dk-start").hidden=false;dkMark();renderTiles();if(fertig)toast("Diktat ist im Bericht. Prüfe die Vorschau und sichere den Bericht.")}
+function dkRender(){
+  const k=$("dk");if(!k||!DK.an)return;const sch=DK_SCHRITTE[DK.i],letzte=DK.i===3;k.textContent="";
+  const pills=h("div",{class:"dk-pills",role:"group","aria-label":"Fragen"},DK_SCHRITTE.map((s,j)=>{const ok=j!==DK.i&&!!DK.antw[j].trim();
+    return h("button",{type:"button",class:j===DK.i?"jetzt":ok?"ok":"","aria-current":j===DK.i?"step":false,on:{click:()=>dkGehe(j)}},(j===DK.i?"● ":ok?"✓ ":"")+s.pill)}));
+  const ta=h("textarea",{class:"dk-ta",id:"dk-ta",rows:3,placeholder:"Tippe auf das Mikrofon und sprich, oder schreib hier.","aria-label":sch.ziel,on:{input:e=>{dkSetze(DK.i,e.target.value);dkBisher()}}},DK.antw[DK.i]);
+  const chips=h("div",{class:"dk-chips"},sch.chips.filter(c=>!DK.antw[DK.i].toLowerCase().includes(c.toLowerCase())).map(c=>h("button",{type:"button",on:{click:()=>{dkAnhaengen(DK.i,c);dkRender()}}},c)));
+  const mic=h("button",{type:"button",class:"dk-mic"+(DK.aktiv?" an":""),id:"dk-mic",disabled:!!DK.arbeit,"aria-label":DK.aktiv?"Aufnahme beenden":"Aufnahme starten",on:{click:()=>DK.aktiv?dkStopp():dkStart()}});mic.innerHTML=DK_MIC+"<i></i>";
+  const wave=h("span",{class:"dk-wave",id:"dk-wave","aria-hidden":"true"},Array.from({length:14},()=>h("i",{})));
+  const st=h("span",{class:"dk-st"+(DK.stArt==="fehler"?" fehler":""),id:"dk-st",role:"status"},DK.st||"Landet in „"+sch.ziel+"“");
+  const f=h("div",{class:"dk-f"},mic,wave,st,h("button",{type:"button",class:"dk-b g",disabled:DK.i===0,on:{click:()=>dkGehe(DK.i-1)}},"‹ Zurück"),
+    h("button",{type:"button",class:"dk-b a",on:{click:()=>{if(letzte)dkZu(true);else dkGehe(DK.i+1,true)}}},letzte?"Fertig":"Weiter ›"));
+  k.append(h("div",{class:"dk-k"},h("span",{text:"Bericht diktieren"}),h("span",{style:"display:flex;align-items:center;gap:10px"},h("span",{text:(DK.i+1)+" / 4"}),h("button",{type:"button",class:"dk-x","aria-label":"Diktat schließen",on:{click:()=>dkZu(false)}},"×"))),
+    pills,h("div",{class:"dk-q",text:sch.q}),h("div",{class:"dk-hint",text:sch.hint}),ta,h("div",{class:"dk-zw",id:"dk-zw"},DK.aktiv&&DK.recI===DK.i?DK.zw:""),h("div",{class:"dk-bisher",id:"dk-bisher"}),chips,f);
+  if(DK.i>0){const v=DK.i-1,t=DK.antw[v].trim()||(DK_SCHRITTE[v].bisher?"nicht diktiert, bisheriger Text bleibt":"übersprungen");
+    k.append(h("div",{class:"dk-vorher"},h("span",{},h("b",{text:DK_SCHRITTE[v].pill+": "}),t),h("button",{type:"button",on:{click:()=>dkGehe(v)}},"ändern")))}
+  dkBisher();dkMark()}
+$("dk-start").onclick=dkAuf_;
 
 /* ---------- Start ---------- */
 document.body.dataset.view="eingabe";
