@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v105 | 05.11.2026 | 6b83c5b | Dienstplan: Der Pausenblock füllt sich während der Pause von links nach rechts mit Grün, so sieht man, wie viel der Pause schon vorbei ist. |
 | v104 | 05.11.2026 | 9f67eff | Dienstplan: Die Feierabend-Zeile wächst beim Pulsieren auf etwa die dreifache Höhe (Schrift und Symbol mit) und geht wieder zurück, bis sie angetippt wird. |
 | v103 | 05.11.2026 | 2fc3ae7 | Dienstplan: Ist der Feierabend erreicht, pulsiert die Feierabend-Zeile („Schönen Feierabend!“), bis sie einmal angetippt wird; das merkt sich die App für den Tag. |
 | v102 | 05.11.2026 | 69e652d | Dienstplan: Die Feierabend-Zeile geht über die volle Breite bis unter die Uhrzeiten und hat links keine eigene Uhrzeit mehr, damit sie als Tagesende und nicht als Termin erscheint. |
