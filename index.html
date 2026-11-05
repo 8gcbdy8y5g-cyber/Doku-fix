@@ -3274,6 +3274,15 @@ html[data-theme="dark"] #hb-ov[data-karte="k3"]{--hb-land:#1E1E1E;--hb-gruen:#21
 #hb-export .hb-hinw{font-size:12.5px}
 #hb-export .hb-zx-kn .hb-knopf{flex:1 1 140px}
 #hb-export .hb-knopf{white-space:nowrap}
+.hb-knoepfe button[data-k="sperre"].an{color:#fff!important;background:#E5484D}
+.hb-edit .hb-sp-info{margin:2px 0 6px;font-size:14px;line-height:1.4;color:var(--schrift2)}
+.hb-edit .hb-sp-hinw{display:block;margin-top:6px;font-size:12.5px;color:var(--schrift2)}
+.hb-edit .hb-sp-dat{display:flex;flex-wrap:wrap;gap:10px;margin:4px 0 2px}
+.hb-edit .hb-sp-dat label{flex:1 1 140px;display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--schrift2)}
+.hb-edit .hb-sp-dat input{font:inherit;font-size:16px;font-weight:600;letter-spacing:0;text-transform:none;min-height:42px;padding:0 10px;border-radius:12px;border:1px solid var(--linie);background:var(--seite);color:var(--schrift)}
+.hb-edit .hb-zx-kn{display:flex;flex-wrap:wrap;gap:8px}
+.hb-edit .hb-zx-kn .hb-knopf{flex:1 1 130px}
+#hb-ov.hb-sperrmodus .hb-karte{cursor:crosshair}
 </style><script id="hb-js">/* Doku-Fix · Hausbesuche: Tour-Karte aus dem Dienstplan und Fahrtkostenabrechnung.
    Alles läuft offline auf dem Gerät. Die Karte (Straßennetz aus OpenStreetMap) liegt als karte.txt neben der App.
    Speicher: doku-fix-hb-adressen, doku-fix-fahrtkosten, doku-fix-hb-routen, doku-fix-therapeut */
@@ -3285,7 +3294,7 @@ function stil() { return "c2"; }
 var KARTE_KEY = "doku-fix-hb-karte";
 function kartenStil() { return "k2"; }
 function kachel() { return stil().charAt(0) === "c"; }
-var DP_KEY = "doku-fix-dienstplan", ADR_KEY = "doku-fix-hb-adressen", FK_KEY = "doku-fix-fahrtkosten", RT_KEY = "doku-fix-hb-routen", TH_KEY = "doku-fix-therapeut";
+var DP_KEY = "doku-fix-dienstplan", ADR_KEY = "doku-fix-hb-adressen", FK_KEY = "doku-fix-fahrtkosten", RT_KEY = "doku-fix-hb-routen", SP_KEY = "doku-fix-hb-sperren", TH_KEY = "doku-fix-therapeut";
 var WT = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"], WK = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
 var MON = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
 
@@ -3427,6 +3436,10 @@ function geocode(addr) {
 function strecke(s, t) {
   if (s === t) return { m: 0, s: 0, pfad: [s] };
   var key = s + ">" + t; if (legMemo[key]) return legMemo[key];
+  var r0 = strecke0(s, t, K.sp); if (!r0 && K.sp) r0 = strecke0(s, t, null);
+  if (r0) legMemo[key] = r0; return r0;
+}
+function strecke0(s, t, sp) {
   var k = K, dist = k.dist, stamp = k.stamp, prev = k.prev, r = ++k.runde, hk = [], hv = [];
   function push(a, v) { var i = hk.length; hk.push(a); hv.push(v); while (i > 0) { var p = (i - 1) >> 1; if (hk[p] <= a) break; hk[i] = hk[p]; hv[i] = hv[p]; i = p; } hk[i] = a; hv[i] = v; }
   function pop() { var v = hv[0], lk = hk.pop(), lv = hv.pop(), n = hk.length; if (n) { var i = 0; for (;;) { var a = 2 * i + 1, b = a + 1, c = i, ck = lk; if (a < n && hk[a] < ck) { c = a; ck = hk[a]; } if (b < n && hk[b] < ck) c = b; if (c === i) break; hk[i] = hk[c]; hv[i] = hv[c]; i = c; } hk[i] = lk; hv[i] = lv; } return v; }
@@ -3437,6 +3450,7 @@ function strecke(s, t) {
     if (du > dist[u]) continue;
     if (u === t) { fertig = true; break; }
     for (var e = k.off[u]; e < k.off[u + 1]; e++) {
+      if (sp && sp[e]) continue;
       var v = k.tg[e], nd = du + k.ln[e] * k.fak[k.wz[e]];
       if (stamp[v] !== r || nd < dist[v]) { stamp[v] = r; dist[v] = nd; prev[v] = e; push(nd, v); }
     }
@@ -3449,8 +3463,68 @@ function strecke(s, t) {
     x = lo;
   }
   pfad.push(s); pfad.reverse();
-  var res = { m: m, s: sek * 1.08 + 20, pfad: pfad };
-  legMemo[key] = res; return res;
+  return { m: m, s: sek * 1.08 + 20, pfad: pfad };
+}
+
+/* ---------- Eigene Sperrungen (Baustellen), nur auf dem Gerät ---------- */
+// Eine Sperrung: { name, ab, bis, pts:[[x,y],…] } – pts sind die Knoten der gesperrten Abschnitte, je Abschnitt eine Liste
+function sperren() { return lies(SP_KEY, {}); }
+function sperrAktiv(sp, d) { return sp && sp.ab <= d && (!sp.bis || d <= sp.bis); }
+function sperrSig(d) { var S0 = sperren(); return Object.keys(S0).filter(function (id) { return sperrAktiv(S0[id], d); }).sort().join(","); }
+function kvFuer(d) { var g = sperrSig(d); return g ? KARTE_V + "|" + g : KARTE_V; }
+function knotenAn(x, y) {
+  if (!K.knIdx) { var m0 = new Map(); for (var i = 0; i < K.nR; i++) m0.set(K.X[i] + "," + K.Y[i], i); K.knIdx = m0; }
+  var g = K.knIdx.get(x + "," + y); if (g != null) return g;
+  // Karte neu gebaut: nächster Knoten im Umkreis von 15 m
+  var best = -1, bd = 225; for (var j = 0; j < K.nR; j++) { var dx = K.X[j] - x, dy = K.Y[j] - y, d2 = dx * dx + dy * dy; if (d2 < bd) { bd = d2; best = j; } }
+  return best;
+}
+function kantenZw(a, b, f) { for (var e = K.off[a]; e < K.off[a + 1]; e++) if (K.tg[e] === b) f(e); for (var e2 = K.off[b]; e2 < K.off[b + 1]; e2++) if (K.tg[e2] === a) f(e2); }
+// Kanten-Sperrmaske für ein Datum setzen (nur wenn sich etwas ändert)
+function sperrenSetzen(d) {
+  if (!K) return; var sig = sperrSig(d); if (K.spSig === sig) return;
+  K.spSig = sig; legMemo = {};
+  if (!sig) { K.sp = null; return; }
+  var mk = new Uint8Array(K.tg.length), S0 = sperren();
+  sig.split(",").forEach(function (id) { (S0[id].pts || []).forEach(function (zug) { var ks = zug.map(function (p) { return knotenAn(p[0], p[1]); }); for (var i = 1; i < ks.length; i++) if (ks[i - 1] >= 0 && ks[i] >= 0) kantenZw(ks[i - 1], ks[i], function (e) { mk[e] = 1; }); }); });
+  K.sp = mk;
+}
+// ungerichtete Nachbarn (für das Auswählen eines Abschnitts zwischen zwei Kreuzungen)
+function nachbarn() {
+  if (K.nb) return K.nb;
+  var nb = new Array(K.nR); for (var u = 0; u < K.nR; u++) nb[u] = [];
+  for (var u2 = 0; u2 < K.nR; u2++) for (var e = K.off[u2]; e < K.off[u2 + 1]; e++) { var v = K.tg[e]; if (nb[u2].indexOf(v) < 0) nb[u2].push(v); if (nb[v].indexOf(u2) < 0) nb[v].push(u2); }
+  K.nb = nb; return nb;
+}
+function kantenName() {
+  if (K.kn) return K.kn; var m0 = new Map(), p0 = 0;
+  for (var w = 0; w < K.kopf.nw; w++) { var ni = K.wegK[w * 3 + 1], len = K.wegK[w * 3 + 2]; if (ni) for (var i = 1; i < len; i++) { var a = K.wegI[p0 + i - 1], b = K.wegI[p0 + i]; m0.set(a < b ? a + "-" + b : b + "-" + a, ni); } p0 += len; }
+  K.kn = m0; return m0;
+}
+// Abschnitt unter dem Fingertipp: nächste Kante, dann bis zur nächsten Kreuzung in beide Richtungen
+function abschnittBei(x, y, tol) {
+  var best = null, bd = tol * tol;
+  for (var u = 0; u < K.nR; u++) {
+    var ux = K.X[u], uy = K.Y[u]; if (Math.abs(ux - x) > 3000 || Math.abs(uy - y) > 3000) continue;
+    for (var e = K.off[u]; e < K.off[u + 1]; e++) {
+      var v = K.tg[e], vx = K.X[v] - ux, vy = K.Y[v] - uy, l2 = vx * vx + vy * vy, t = l2 ? Math.max(0, Math.min(1, ((x - ux) * vx + (y - uy) * vy) / l2)) : 0, dx = ux + vx * t - x, dy = uy + vy * t - y, d2 = dx * dx + dy * dy;
+      if (d2 < bd) { bd = d2; best = [u, v]; }
+    }
+  }
+  if (!best) return null;
+  var nb = nachbarn();
+  function lauf(von, nach) { var z = [nach], vor = von, cur = nach, n = 0; while (nb[cur].length === 2 && n++ < 400) { var nx = nb[cur][0] === vor ? nb[cur][1] : nb[cur][0]; if (nx === best[0] || nx === best[1]) break; z.push(nx); vor = cur; cur = nx; } return z; }
+  var li = lauf(best[1], best[0]).reverse(), re = lauf(best[0], best[1]), kn = li.concat(re), m = 0, KN = kantenName(), nm = 0;
+  for (var i = 1; i < kn.length; i++) { m += Math.hypot(K.X[kn[i]] - K.X[kn[i - 1]], K.Y[kn[i]] - K.Y[kn[i - 1]]); var a = kn[i - 1], b = kn[i]; nm = nm || KN.get(a < b ? a + "-" + b : b + "-" + a) || 0; }
+  return { kn: kn, m: m, name: nm ? K.kopf.namen[nm - 1] : "", pts: kn.map(function (q) { return [K.X[q], K.Y[q]]; }) };
+}
+function sperrNeu(name, ab, bis, zuege) { var S0 = sperren(), id = "s" + Date.now().toString(36); S0[id] = { name: name || "Straße", ab: ab, bis: bis || null, pts: zuege, seit: heute() }; schreib(SP_KEY, S0); return id; }
+function sperrFreigeben(id) {
+  var S0 = sperren(), sp = S0[id]; if (!sp) return;
+  var g = new Date(); g.setDate(g.getDate() - 1); var gestern = iso(g);
+  // schon gefahrene Tage behalten die Sperrung, ab heute ist frei
+  if (sp.ab > gestern) delete S0[id]; else sp.bis = gestern;
+  schreib(SP_KEY, S0);
 }
 
 /* ---------- Touren aus dem Dienstplan ---------- */
@@ -3460,6 +3534,7 @@ function hbTage() { var P = plaene(); return Object.keys(P).filter(function (d) 
 function tourBerechnen(datum, mitKarte) {
   var tag = plaene()[datum]; if (!tag || !Array.isArray(tag.eintraege)) return null;
   var E = tag.eintraege.filter(function (x) { return minVon(x.zeit) != null; }).slice().sort(function (a, b) { return minVon(a.zeit) - minVon(b.zeit); });
+  if (mitKarte) sperrenSetzen(datum);
   var wd = wtag(datum), pi = mitKarte ? geocode(PRAXIS) : -1, praxisK = pi >= 0 ? K.AK[pi] : -1;
   var bl = [], cur = null, gesehen = {};
   E.forEach(function (x, i) {
@@ -3524,7 +3599,7 @@ function tagEintragen(T) {
     bleiben[k] = 1;
     if (alt && alt.korr && gleich) return;
     var km = R[t.rk] != null ? R[t.rk] : t.km;
-    var neu = { datum: T.datum, teil: t.teil, namen: t.namen, km: km, kmKarte: t.km, rk: t.rk, quelle: "tour", korr: R[t.rk] != null, start: t.startPraxis, ende: t.endePraxis, kv: KARTE_V };
+    var neu = { datum: T.datum, teil: t.teil, namen: t.namen, km: km, kmKarte: t.km, rk: t.rk, quelle: "tour", korr: R[t.rk] != null, start: t.startPraxis, ende: t.endePraxis, kv: kvFuer(T.datum) };
     if (!alt || JSON.stringify(Object.assign({}, alt, { stand: 0 })) !== JSON.stringify(Object.assign({}, neu, { stand: 0 }))) { neu.stand = new Date().toISOString(); F[k] = neu; ge = true; }
   });
   Object.keys(F).forEach(function (k) { if (k.indexOf(T.datum + "#") === 0 && F[k].quelle === "tour" && !bleiben[k]) { delete F[k]; ge = true; } });
@@ -3538,7 +3613,7 @@ function offeneTage() {
     if (d > h) return false;
     if (Object.keys(F).some(function (k) { return k.indexOf(d + "#") === 0 && F[k].quelle === "alt"; })) return false;
     var T = tourBerechnen(d, false); if (!T) return false;
-    return T.touren.some(function (t) { var e = F[fkSchluessel(d, t.teil)]; return !e || e.namen.join("|") !== t.namen.join("|") || (e.km == null && !e.korr) || (e.quelle === "tour" && !e.korr && e.kv !== KARTE_V); });
+    return T.touren.some(function (t) { var e = F[fkSchluessel(d, t.teil)]; return !e || e.namen.join("|") !== t.namen.join("|") || (e.km == null && !e.korr) || (e.quelle === "tour" && !e.korr && e.kv !== kvFuer(d)); });
   });
 }
 var syncLauf = null;
@@ -3568,6 +3643,7 @@ var IC = {
   auto: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17h14M6 17l1.5-5.5A2 2 0 0 1 9.4 10h5.2a2 2 0 0 1 1.9 1.5L18 17"/><circle cx="8" cy="17" r="1.6"/><circle cx="16" cy="17" r="1.6"/></svg>',
   navi: '<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor" aria-hidden="true"><path d="M21.3 2.7a1 1 0 0 0-1.1-.2l-17 7.4a1 1 0 0 0 .1 1.9l7.1 2 2 7.1a1 1 0 0 0 1.9.1l7.4-17a1 1 0 0 0-.4-1.3z"/></svg>',
   ort: '<svg viewBox="0 0 24 24" width="19" height="19" fill="currentColor" aria-hidden="true"><path d="M21.3 2.7a1 1 0 0 0-1.1-.2l-17 7.4a1 1 0 0 0 .1 1.9l7.1 2 2 7.1a1 1 0 0 0 1.9.1l7.4-17a1 1 0 0 0-.4-1.3z"/></svg>',
+  sperre: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="6" rx="1.5"/><path d="M7.5 7 4.5 13M13.5 7l-3 6M19.5 7l-3 6M6 13v7M18 13v7"/></svg>',
   karte: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg>'
 };
 function oeffnen(titel, zurueck) {
@@ -3593,7 +3669,7 @@ function tourOeffnen(datum, zurueck) {
     '<canvas class="hb-karte" aria-label="Karte mit der Route"></canvas>' +
     '<div class="hb-oben"><button type="button" class="hb-rund hb-zu" aria-label="Zurück zum ' + esc(OV.zurueck) + '">' + IC.zur + '</button>' +
     '<div class="hb-datum"><button type="button" class="hb-vor" data-r="-1" aria-label="Vorheriger Hausbesuchstag">' + IC.li + '</button><b class="hb-tag"></b><button type="button" class="hb-vor" data-r="1" aria-label="Nächster Hausbesuchstag">' + IC.re + '</button></div><span class="hb-platz"></span></div>' +
-    '<div class="hb-knoepfe"><button type="button" data-k="ganz" aria-label="Ganze Route zeigen">' + IC.ganz + '</button><button type="button" data-k="praxis" aria-label="Praxis zeigen">' + IC.haus + '</button><button type="button" data-k="ort" aria-label="Mein Standort" aria-pressed="false">' + IC.ort + '</button></div><p class="hb-hinweis" hidden></p>' +
+    '<div class="hb-knoepfe"><button type="button" data-k="ganz" aria-label="Ganze Route zeigen">' + IC.ganz + '</button><button type="button" data-k="praxis" aria-label="Praxis zeigen">' + IC.haus + '</button><button type="button" data-k="ort" aria-label="Mein Standort" aria-pressed="false">' + IC.ort + '</button><button type="button" data-k="sperre" aria-label="Sperrung eintragen" aria-pressed="false">' + IC.sperre + '</button></div><p class="hb-hinweis" hidden></p>' +
     '<section class="hb-blatt"><button type="button" class="hb-griff" aria-label="Liste größer oder kleiner"></button><div class="hb-inhalt">' +
     '<div class="hb-kopf"><h2>Hausbesuche</h2><p class="hb-unter">Karte wird geladen …</p></div><div class="hb-zahlen"></div><div class="hb-fk"></div><div class="hb-edit" hidden></div><ol class="hb-ablauf"></ol>' +
     '<p class="hb-fuss">Reihenfolge und Uhrzeiten kommen aus dem Dienstplan. Strecke und Fahrzeit rechnet Doku-Fix auf der Offline-Karte aus (OpenStreetMap). Adressen bleiben auf diesem Gerät.</p></div></section>';
@@ -3639,8 +3715,19 @@ function tourOeffnen(datum, zurueck) {
       if (!w.r) return; if (!w.p2d) { var p = new Path2D(), pf = w.r.pfad; p.moveTo(K.X[pf[0]], K.Y[pf[0]]); for (var j = 1; j < pf.length; j++) p.lineTo(K.X[pf[j]], K.Y[pf[j]]); w.p2d = p; }
       c.strokeStyle = FA["hb-route-rand"]; c.lineWidth = 9 / s; c.stroke(w.p2d); c.strokeStyle = FA["hb-route"]; c.lineWidth = 5.5 / s; c.stroke(w.p2d);
     }); });
+    sperrMalen(c, s);
     c.setTransform(DPR, 0, 0, DPR, 0, 0);
     if (S.T) pfeile(); schrift(); standortMalen(); if (S.T) nadeln();
+  }
+  function sperrListe() { var S0 = sperren(), h0 = heute(); return Object.keys(S0).filter(function (id) { var sp = S0[id]; return S.sperrModus ? !sp.bis || sp.bis >= h0 : sperrAktiv(sp, S.datum); }).map(function (id) { return { id: id, sp: S0[id] }; }); }
+  function zugPfad(z) { var p = new Path2D(); z.forEach(function (q, i) { if (i) p.lineTo(q[0], q[1]); else p.moveTo(q[0], q[1]); }); return p; }
+  function sperrMalen(c, s) {
+    var L0 = sperrListe(), E0 = S.entwurf ? S.entwurf.teile : [];
+    if (!L0.length && !E0.length) return;
+    c.setLineDash([]); c.lineCap = "round";
+    function strich(z, farbe) { var p = zugPfad(z); c.setLineDash([]); c.strokeStyle = "#fff"; c.lineWidth = 9 / s; c.stroke(p); c.strokeStyle = farbe; c.lineWidth = 6 / s; c.setLineDash([7 / s, 6 / s]); c.stroke(p); c.setLineDash([]); }
+    L0.forEach(function (x) { (x.sp.pts || []).forEach(function (z) { strich(z, S.sperrWahl === x.id ? "#B4232A" : "#E5484D"); }); });
+    E0.forEach(function (t) { strich(t.pts, "#F5A524"); });
   }
   function pfeile() {
     var c = cx; c.strokeStyle = FA["hb-route-rand"]; c.lineWidth = 1.8; c.lineCap = "round"; c.lineJoin = "round";
@@ -3767,11 +3854,54 @@ function tourOeffnen(datum, zurueck) {
   }
   cv.addEventListener("pointerup", ende); cv.addEventListener("pointercancel", ende);
   function tipp(x, y) {
+    if (S.sperrModus && K) { sperrTipp(x, y); return; }
     for (var i = S.nadeln.length - 1; i >= 0; i--) { var n = S.nadeln[i]; if (Math.hypot(n.sx - x, n.sy - y) < n.r + 8) { S.wahl = n.id; S.offen = null; liste(); var el = o.querySelector('[data-wahl="' + n.id + '"]'); if (el) el.scrollIntoView({ block: "nearest", behavior: "smooth" }); malen(); return; } }
     if (S.T && S.T.praxis) { var q = schirm(S.T.praxis.x, S.T.praxis.y); if (Math.hypot(q.x - x, q.y - y) < 22) { S.wahl = "p"; liste(); malen(); return; } }
+    if (K) { var gt = sperrGetroffen(x, y); if (gt) { S.sperrWahl = gt; S.wahl = null; S.offen = null; liste(); malen(); return; } }
     var j = performance.now(); if (j - letzter < 300) { var w = welt(x, y), s = Math.min(4, S.ans.s * 2); fliege({ s: s, x: w.x - (x - BW / 2) / s, y: w.y - (y - BH / 2) / s }, 250); } letzter = j;
   }
   cv.addEventListener("wheel", function (e) { e.preventDefault(); var R0 = cv.getBoundingClientRect(), px = e.clientX - R0.left, py = e.clientY - R0.top, w = welt(px, py), s = Math.max(0.02, Math.min(4, S.ans.s * Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0022)))); S.ans.s = s; S.ans.x = w.x - (px - BW / 2) / s; S.ans.y = w.y - (py - BH / 2) / s; malen(); }, { passive: false });
+  function sperrGetroffen(x, y) {
+    var w = welt(x, y), tol = 14 / S.ans.s, L0 = sperrListe();
+    for (var i = 0; i < L0.length; i++) { var zs = L0[i].sp.pts || []; for (var j = 0; j < zs.length; j++) { var z = zs[j]; for (var q = 1; q < z.length; q++) { var ax = z[q - 1][0], ay = z[q - 1][1], vx = z[q][0] - ax, vy = z[q][1] - ay, l2 = vx * vx + vy * vy, t = l2 ? Math.max(0, Math.min(1, ((w.x - ax) * vx + (w.y - ay) * vy) / l2)) : 0; if (Math.hypot(ax + vx * t - w.x, ay + vy * t - w.y) < tol) return L0[i].id; } } }
+    return null;
+  }
+  function sperrTipp(x, y) {
+    var gt = sperrGetroffen(x, y); if (gt && !(S.entwurf && S.entwurf.teile.length)) { S.sperrWahl = gt; liste(); malen(); return; }
+    var w = welt(x, y), a = abschnittBei(w.x, w.y, Math.max(12, 16 / S.ans.s));
+    if (!a) { hinweis("Hier ist keine befahrbare Straße. Tipp direkt auf die Straße, näher heranzoomen hilft."); return; }
+    if (!S.entwurf) S.entwurf = { teile: [], ab: heute(), bis: "" };
+    var key = a.kn.slice().sort(function (p, q) { return p - q; }).join(","), i0 = -1;
+    S.entwurf.teile.forEach(function (t, i) { if (t.key === key) i0 = i; });
+    if (i0 >= 0) S.entwurf.teile.splice(i0, 1); else { a.key = key; S.entwurf.teile.push(a); }
+    S.sperrWahl = null; liste(); malen();
+  }
+  function sperrModus(an) {
+    S.sperrModus = an; S.entwurf = null; S.sperrWahl = null; S.wahl = null; S.offen = null;
+    var b = o.querySelector('[data-k="sperre"]'); if (b) { b.setAttribute("aria-pressed", an ? "true" : "false"); b.classList.toggle("an", an); }
+    o.classList.toggle("hb-sperrmodus", an);
+    if (an) hinweis(""); liste(); malen();
+  }
+  function sperrPanel() {
+    var S0 = sperren();
+    if (S.sperrWahl && S0[S.sperrWahl]) {
+      var sp = S0[S.sperrWahl];
+      return '<div class="hb-edit-kopf"><b>Gesperrt: ' + esc(sp.name) + '</b><button type="button" class="hb-edit-zu" data-k="sp-zu" aria-label="Schließen">✕</button></div>' +
+        '<p class="hb-sp-info">Seit ' + datKurz(sp.ab) + sp.ab.slice(0, 4) + (sp.bis ? ' · bis ' + datKurz(sp.bis) + sp.bis.slice(0, 4) : ' · Ende offen') + '. Routen fahren außen herum.</p>' +
+        '<div class="hb-zx-kn"><button type="button" class="hb-knopf" data-k="sp-frei">Wieder freigeben</button></div>' +
+        '<small class="hb-sp-hinw">Freigeben gilt ab heute. Schon gefahrene Tage bleiben, wie sie berechnet wurden.</small>';
+    }
+    if (!S.sperrModus) return "";
+    var E0 = S.entwurf, n = E0 ? E0.teile.length : 0;
+    if (!n) return '<div class="hb-edit-kopf"><b>Sperrung eintragen</b><button type="button" class="hb-edit-zu" data-k="sp-ende" aria-label="Fertig">✕</button></div><p class="hb-sp-info">Tipp auf der Karte auf die gesperrte Straße. Doku-Fix markiert das Stück bis zur nächsten Kreuzung. Weitere Stücke kannst du dazutippen.</p>' +
+      (Object.keys(S0).length ? '<small class="hb-sp-hinw">Rot gestrichelt: deine Sperrungen. Antippen zum Freigeben.</small>' : "");
+    var m = E0.teile.reduce(function (a, t) { return a + t.m; }, 0), nm = E0.teile.map(function (t) { return t.name; }).filter(function (x, i, A) { return x && A.indexOf(x) === i; });
+    return '<div class="hb-edit-kopf"><b>' + esc(nm.join(", ") || "Straße") + '</b><button type="button" class="hb-edit-zu" data-k="sp-ab" aria-label="Verwerfen">✕</button></div>' +
+      '<p class="hb-sp-info">' + n + (n === 1 ? " Stück" : " Stücke") + ' · ' + kmTxt(m / 1000) + ' km. Weitere Stücke antippen, nochmal tippen nimmt sie raus.</p>' +
+      '<div class="hb-sp-dat"><label>Gesperrt ab<input type="date" data-sp="ab" value="' + esc(E0.ab) + '"></label><label>bis (wenn bekannt)<input type="date" data-sp="bis" value="' + esc(E0.bis) + '"></label></div>' +
+      '<div class="hb-zx-kn"><button type="button" class="hb-knopf" data-k="sp-ok">Sperren</button><button type="button" class="hb-knopf zwei" data-k="sp-ab">Verwerfen</button></div>';
+  }
+  function sperrGeaendert() { sync().then(function () { if (OV && OV.el === o) neu(true); }); neu(true); }
   // Blatt
   function stufen() { var H = o.clientHeight; return [Math.min(222, H * 0.32), H * 0.5, H * 0.9]; }
   function blattH() { return BW >= 760 ? 0 : kachel() ? blatt.offsetHeight : stufen()[STUFE]; }
@@ -3797,6 +3927,7 @@ function tourOeffnen(datum, zurueck) {
     o.querySelector('.hb-vor[data-r="1"]').disabled = !tage.some(function (x) { return x > S.datum; });
     if (!S.geladen) { $(".hb-unter").textContent = "Karte wird geladen …"; return; }
     if (!T || !T.touren.length) {
+      var spp0 = sperrPanel(), ed0 = $(".hb-edit"); ed0.innerHTML = spp0; ed0.hidden = !spp0;
       $(".hb-unter").textContent = "Keine Hausbesuche an diesem Tag"; $(".hb-zahlen").innerHTML = ""; $(".hb-fk").innerHTML = "";
       $(".hb-ablauf").innerHTML = '<li class="hb-leer"><b>Keine Hausbesuche</b>Im Dienstplan ist an diesem Tag kein Termin als Hausbesuch markiert.</li>'; return;
     }
@@ -3836,6 +3967,7 @@ function tourOeffnen(datum, zurueck) {
       });
     });
     $(".hb-ablauf").innerHTML = h;
+    var spp = sperrPanel(); if (spp) edit = spp;
     var ed = $(".hb-edit"); ed.innerHTML = edit; ed.hidden = !edit;
     if (edit) { try { ed.scrollIntoView({ block: "nearest" }); } catch (x) {} }
     var sel = o.querySelector(".hb-halt.an"); if (sel) { try { sel.scrollIntoView({ block: "nearest", inline: "nearest" }); } catch (x) {} }
@@ -3869,6 +4001,19 @@ function tourOeffnen(datum, zurueck) {
     var k = t.getAttribute("data-k");
     if (k === "ganz") { S.wahl = null; liste(); ganz(); return; }
     if (k === "ort") { ortAn(true); return; }
+    if (k === "sperre") { sperrModus(!S.sperrModus); if (S.sperrModus) stufe(1); return; }
+    if (k === "sp-ende") { sperrModus(false); return; }
+    if (k === "sp-zu") { S.sperrWahl = null; liste(); malen(); return; }
+    if (k === "sp-ab") { S.entwurf = null; liste(); malen(); return; }
+    if (k === "sp-ok") {
+      var E1 = S.entwurf; if (!E1 || !E1.teile.length) return;
+      var ab = o.querySelector('[data-sp="ab"]').value || heute(), bis = o.querySelector('[data-sp="bis"]').value || "";
+      if (bis && bis < ab) { hinweis("Das Ende liegt vor dem Beginn."); return; }
+      var nm = E1.teile.map(function (t2) { return t2.name; }).filter(function (x, i, A) { return x && A.indexOf(x) === i; }).join(", ");
+      sperrNeu(nm, ab, bis, E1.teile.map(function (t2) { return t2.pts; }));
+      sperrModus(false); hinweis("Gesperrt. Touren ab " + datKurz(ab) + " fahren außen herum."); sperrGeaendert(); return;
+    }
+    if (k === "sp-frei") { var id0 = S.sperrWahl; sperrFreigeben(id0); S.sperrWahl = null; hinweis("Wieder frei."); sperrGeaendert(); return; }
     if (k === "praxis") { S.wahl = "p"; liste(); zeige(S.T && S.T.praxis); return; }
     if (k === "edit-zu") { S.offen = null; S.wahl = null; liste(); malen(); return; }
     if (k === "zuordnen") { zuordnen(t.getAttribute("data-n"), t.getAttribute("data-key")); S.offen = null; neu(true); return; }
@@ -3884,6 +4029,7 @@ function tourOeffnen(datum, zurueck) {
     }
   });
   adrEvents(o, function () { S.offen = null; neu(true); });
+  o.addEventListener("change", function (ev) { var f0 = ev.target.getAttribute && ev.target.getAttribute("data-sp"); if (f0 && S.entwurf) S.entwurf[f0] = ev.target.value; });
   // Start
   farben(); groesse(); setze(blattH(), false);
   var ro = new ResizeObserver(function () { groesse(); setze(blattH(), false); }); ro.observe(o);
@@ -4145,12 +4291,13 @@ function blatt(ym) {
 function sicherung() {
   var o = {}, a = adressen(), f = fahrten(), r = routen(), th = liesText(TH_KEY);
   if (Object.keys(a).length) o.hbAdressen = a; if (Object.keys(f).length) o.fahrtkosten = f; if (Object.keys(r).length) o.hbRouten = r; if (th) o.therapeut = th;
+  var sp = sperren(); if (Object.keys(sp).length) o.hbSperren = sp;
   return o;
 }
 function einspielen(x) {
   if (!x || typeof x !== "object") return;
   function misch(key, neu) { if (!neu || typeof neu !== "object") return; var alt = lies(key, {}); Object.keys(neu).forEach(function (k) { if (!(k in alt)) alt[k] = neu[k]; }); schreib(key, alt); }
-  misch(ADR_KEY, x.hbAdressen); misch(RT_KEY, x.hbRouten);
+  misch(ADR_KEY, x.hbAdressen); misch(RT_KEY, x.hbRouten); misch(SP_KEY, x.hbSperren);
   if (x.fahrtkosten && typeof x.fahrtkosten === "object") {
     var F = fahrten(), tage = {};
     Object.keys(x.fahrtkosten).forEach(function (k) { if (x.fahrtkosten[k].quelle === "alt") tage[x.fahrtkosten[k].datum] = 1; });
@@ -4165,6 +4312,7 @@ function einspielen(x) {
 // km für eine Patientenfolge an einem Datum, nach denselben Regeln wie die Tour (auch zum Nachprüfen)
 function kmFuer(namen, datum) {
   if (!K) return null;
+  sperrenSetzen(datum);
   var wd = wtag(datum), pts = [], pi = geocode(PRAXIS);
   for (var i = 0; i < namen.length; i++) { var g = geocode(adresseVon({ name: namen[i] })); if (g < 0) return null; pts.push(K.AK[g]); }
   if (wd === 4 || wd === 5) pts.unshift(K.AK[pi]); if (wd === 1 || wd === 2) pts.push(K.AK[pi]);
@@ -6567,7 +6715,7 @@ MH_WbNeu = ({ neu }) => {
   let dazu = () => { if (!a.trim() || !b.trim() || !window.DiktatSprache) return; let w = window.DiktatSprache.woerterbuch(); if (!w.some((x) => x.falsch.toLowerCase() === a.trim().toLowerCase())) w.push({ falsch: a.trim(), richtig: b.trim() }); window.DiktatSprache.woerterbuchSetzen(w); setA(""); setB(""); neu() };
   return f("div", { className: "mh2-wbneu", children: [u("input", { className: "eingabe", value: a, placeholder: "falsch erkannt", "aria-label": "falsch erkannt", onChange: (x) => setA(x.target.value) }), u("span", { children: "→" }), u("input", { className: "eingabe", value: b, placeholder: "richtig", "aria-label": "richtig", onChange: (x) => setB(x.target.value) }), u("button", { type: "button", className: "mh2-knopf zwei", onClick: dazu, children: "+ Eintrag" })] });
 };
-function K0({z:e,mutiere:n,wechsel:t}){let[i,r]=H(""),[a,l]=H(null),[s,o]=H({}),h=e.patienten.filter((m)=>m.art==="nurVerlauf"),g=h.find((m)=>m.id===e.aktivKurz)??null,k=(m)=>n((c)=>{let p=c.patienten.find((v)=>v.id===c.aktivKurz);if(p)m(p)}),d=(m)=>k((c)=>m(c.erstbefund)),b=()=>{let m=Math.random().toString(36).slice(2,9);n((c)=>{c.patienten.unshift(av(i,m)),c.aktivKurz=m}),r(""),t?.()};if(!g&&(DSW.f=(q0,pr)=>{if(q0>=0)return!1;if(!pr)n((Q)=>{Q.tab="patienten"});return!0},!0))return f("div",{className:"schritt",children:[u(O,{hinweis:"Für Patienten, die schon länger bei dir sind oder nur zur Vertretung kommen. Du hältst nur den Verlauf fest, einen Erstbefund gibt es nicht. Im Test nur erfundene Daten verwenden.",children:"Wen dokumentierst du?"}),f("div",{className:"knopfreihe",style:{marginTop:0},children:[u("input",{className:"eingabe",style:{flex:1,minWidth:160},value:i,placeholder:"Name suchen oder neu anlegen","aria-label":"Name des Patienten ohne Erstbefund",autoComplete:"off",onChange:(m)=>r(m.target.value),onKeyDown:(m)=>{if(m.key==="Enter")b()}}),u("button",{type:"button",className:"weiter",style:{flex:"none",width:"auto",padding:"0 20px",marginTop:0},onClick:b,children:"Anlegen"})]}),u(PX_Knopf,{name:i,alle:e.patienten,mutiere:n,root:!0}),h.length===0?u("p",{className:"hinweis",style:{marginTop:18},children:"Noch kein Patient. Lege oben den ersten an."}):i.trim()?f("div",{className:"kz-treffer",children:[PV_filter(h,i).length?u("p",{className:"gruppe",style:{margin:"10px 0 6px"},children:"Passende Patienten"}):u("p",{className:"hinweis klein",style:{margin:"10px 0 0"},children:"Kein Patient passt. Mit „Anlegen“ neu anlegen."}),PV_filter(h,i).map((m)=>f("div",{className:"pt-zeile",children:[f("button",{type:"button",className:"haupt",onClick:()=>{n((c)=>{c.aktivKurz=m.id}),t?.()},children:[f("div",{className:"pt-name",children:[PV_name(m.name,i),FA_tag(m,h)]}),f("div",{className:"sek",children:[m.erstbefund.diagnose.trim()?lv(m.erstbefund.diagnose.trim(),40):"Diagnose noch offen"," · ",m.verlauf?.einheiten.length??0," Einheiten"]})]}),a===m.id?u("button",{type:"button",className:"kleinknopf rot",onClick:()=>{n((c)=>{if(c.patienten=c.patienten.filter((p)=>p.id!==m.id),c.aktivKurz===m.id)c.aktivKurz=null}),l(null)},children:"Wirklich löschen?"}):u("button",{type:"button",className:"kleinknopf rot",onClick:()=>l(m.id),children:"Löschen"})]},m.id))]}):f("details",{className:"aufklapp kz-alle",children:[f("summary",{children:[u("span",{children:"Alle Patienten"}),u("span",{className:"zaehler",children:h.length})]}),f("div",{className:"inhalt",children:[...h].sort((x,y)=>(!!x.abgeschlossen-!!y.abgeschlossen)||x.name.localeCompare(y.name,"de")).map((m)=>f("div",{className:"pt-zeile",children:[f("button",{type:"button",className:"haupt",onClick:()=>{n((c)=>{c.aktivKurz=m.id}),t?.()},children:[f("div",{className:"pt-name",children:[PV_name(m.name,i),FA_tag(m,h)]}),f("div",{className:"sek",children:[m.erstbefund.diagnose.trim()?lv(m.erstbefund.diagnose.trim(),40):"Diagnose noch offen"," · ",m.verlauf?.einheiten.length??0," Einheiten"]})]}),a===m.id?u("button",{type:"button",className:"kleinknopf rot",onClick:()=>{n((c)=>{if(c.patienten=c.patienten.filter((p)=>p.id!==m.id),c.aktivKurz===m.id)c.aktivKurz=null}),l(null)},children:"Wirklich löschen?"}):u("button",{type:"button",className:"kleinknopf rot",onClick:()=>l(m.id),children:"Löschen"})]},m.id))})]}),]});let S=g.erstbefund,z=()=>n((m)=>{m.kartAuf=DP_schluessel(g.name)||g.id;m.tab="patienten";m.aktivKurz=null;delete m.zurueck});if(!g.kurzFertig){let m=tv(S),c=Math.min(S.schritt,m.length-1),p=()=>c+1>=m.length?k(rv):d((v)=>{v.schritt=c+1});DSW.f=(q0,pr)=>{let n0=c+q0;if(n0<0||n0>=m.length)return!1;if(!pr)d((v)=>{v.schritt=n0});return!0};return f("div",{children:[f("div",{className:"v-kopf",children:[(c!==0||e.zurueck?.pid!==g.id)&&u("button",{type:"button",className:"kleinknopf",onClick:()=>{if(m[c]==="region"&&s.bereich){if(s.seite)o({bereich:s.bereich,region:s.region});else if(s.region)o({bereich:s.bereich});else o({});return}if(c===0)z();else d((v)=>{v.schritt=c-1})},children:c===0?"‹ Patienten":"‹ Zurück"}),f("span",{className:"zahl",children:[FA_name(g,h)," · Schritt ",c+1,"/",m.length]})]}),m[c]==="diagnose"&&u(Su,{e:S,aendern:d,weiter:p,name:g.name}),m[c]==="bsv"&&u(Bu,{e:S,aendern:d,weiter:p}),m[c]==="ursache"&&u(UR_Schritt,{e:S,aendern:(m0)=>k((c0)=>{m0(c0.erstbefund);UR_merke(c0)}),weiter:p}),m[c]==="region"&&u(zu,{e:S,aendern:d,weiter:p,entwurf:s,setEntwurf:o})]})}let K=!!rl(g);let KE=!K&&f("div",{className:"kurz-extras",children:[u("p",{className:"hinweis klein",children:[S.diagnose.trim(),(S.ursachen??[]).join(", "),S.stellen.map(se).join(", ")].filter(Boolean).join(" · ")||"Ohne Diagnose und Region"}),f("div",{className:"kurz-klein",children:[u("button",{type:"button",className:"kleinknopf",onClick:()=>k((m)=>{m.kurzFertig=!1,m.erstbefund.schritt=0}),children:"Diagnose, Auslöser oder Region ändern"})]}),u(FA_Wahl,{P:g,mutiere:n})]});return f("div",{children:[u(_u,{patient:g,mutiere:k,kurz:!0,extras:KE,zumPlan:()=>n((m)=>{m.tab="dienst"}),loeschen:()=>n((m)=>{qs(m,g.id)})})]})}var N0={ruhe:null,bewegung:null,tageszeit:[],schmerzBei:""};function sv(e){let n=[{art:"diagnose"},...st(e)?[{art:"bsv"}]:[],{art:"beginn"},{art:"ursache"},{art:"region"},...PF_RE.test((e.diagnose??"")+" "+(e.krankheitsbild??""))?[{art:"pfad"}]:[],{art:"vorgeschichte"},{art:"sozial"},{art:"flags"}];if(!e.stellen.length&&(e.diagnoseKat==="neuro"||pr(e)))n.push({art:"nschmerz"});if(e.stellen.forEach((t)=>n.push({art:"schmerz",stelle:t.id},{art:"beweg",stelle:t.id},{art:"schwellung",stelle:t.id})),Rb(e))n.push({art:"wurzel"});if(ru(e).length)n.push({art:"tests"});n.push({art:"ziel"});if(n.push({art:"befund"}),kr(e))n.push({art:"neurobv"});return e.stellen.forEach((t)=>n.push({art:"deton",stelle:t.id},{art:"mobi",stelle:t.id},{art:"uebung",stelle:t.id})),n.push({art:"ausgabe"}),n}var G0=(e,n)=>e.length>n?e.slice(0,n-1).trimEnd()+"…":e,uv=()=>Math.random().toString(36).slice(2,9),BH_ARTEN=new Set(["neurobv","deton","mobi","uebung"]),BH_liste=(l,bh)=>bh?[...l.filter((x)=>BH_ARTEN.has(x.art)),{art:"ausgabe"}]:l.filter((x)=>!BH_ARTEN.has(x.art)&&x.art!=="ausgabe"),Lu={dienst:f("svg",{viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"1.8",children:[u("rect",{x:"3.5",y:"5",width:"17",height:"15.5",rx:"2.5"}),u("path",{d:"M3.5 10h17M8 3v4M16 3v4"}),u("path",{d:"M8 14h2M14 14h2M8 17.5h2"})]}),beh:f("svg",{viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"1.8",children:[u("path",{d:"M7 11V6a1.5 1.5 0 0 1 3 0v4"}),u("path",{d:"M10 10V4.5a1.5 1.5 0 0 1 3 0V10"}),u("path",{d:"M13 10V5.5a1.5 1.5 0 0 1 3 0V12"}),u("path",{d:"M16 9.5a1.5 1.5 0 0 1 3 0V14a7 7 0 0 1-7 7h-.5a6 6 0 0 1-4.6-2.2L4.2 15.4a1.6 1.6 0 0 1 2.4-2.1L7 14v-3"})]}),pat:f("svg",{viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"1.8",children:[u("circle",{cx:"12",cy:"8",r:"4"}),u("path",{d:"M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"})]}),erst:f("svg",{viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"1.8",children:[u("rect",{x:"5",y:"3",width:"14",height:"18",rx:"2"}),u("path",{d:"M9 8h6M9 12h6M9 16h4"})]}),verl:u("svg",{viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"1.8",children:u("path",{d:"M3 18l5-6 4 3 5-8 4 5"})}),kurz:f("svg",{viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"1.8",children:[u("path",{d:"M4 6h16M4 12h10M4 18h6"}),u("path",{d:"M17 15l3 3-3 3"})]})};var DSW={f:null,x:0,y:0,t:0,ok:!1,lock:0,dx:0,m:null,hist:[]},DS_quer=(el,stop)=>{try{for(let n=el;n&&n!==stop&&n!==document.body;n=n.parentElement){if(n.scrollWidth>n.clientWidth+1){let o=getComputedStyle(n).overflowX;if(o==="auto"||o==="scroll")return!0}}}catch{}return!1},DS_ruhig=()=>!!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches,DS_EZ="cubic-bezier(.3,.7,.3,1)",DS_kopf=()=>document.querySelector(".links header"),DS_kopfReset=(hd,weich)=>{if(!hd)return;if(weich){hd.style.transition=`transform .32s ${DS_EZ},opacity .32s ${DS_EZ}`;setTimeout(()=>{hd.style.transition=""},340)}else hd.style.transition="";hd.style.transform="";hd.style.opacity=""},DS_aufraeumen=()=>{document.querySelectorAll(".ds-klon").forEach((x)=>x.remove());document.body.classList.remove("ds-kommt");document.querySelector(".links")?.classList.remove("ds-clip");document.querySelectorAll(".ds-kopfklon").forEach((x)=>x.remove());DS_kopfReset(DS_kopf());let m0=document.querySelector("main");if(m0&&!DSW.lock){m0.style.transform="";m0.style.opacity="";m0.style.transition=""}},DS_v=()=>{let h=DSW.hist,n=h.length;if(n<2)return 0;let b=h[n-1],a=h[0];for(let i=n-2;i>=0;i--){a=h[i];if(b.t-h[i].t>=80)break}let dt=b.t-a.t;return dt>0?(b.x-a.x)/dt:0},DS_start=(ev)=>{DS_aufraeumen();let q=ev.touches?.[0];DSW.lock=0;DSW.dx=0;DSW.hist=[];if(!q||ev.touches.length>1||!DSW.f){DSW.ok=!1;return}let el=ev.target;DSW.ok=!(el.closest&&el.closest('input,textarea,select,svg,.chips,.ziele,.nj-rolle,.pw-seg,.sn-liste,.tx-vorschlag,.pf-leiste,[role="tablist"],[role="slider"]'))&&!DS_quer(el,ev.currentTarget);DSW.x=q.clientX;DSW.y=q.clientY;DSW.t=Date.now();DSW.m=ev.currentTarget;DSW.hist=[{x:q.clientX,t:performance.now()}]},DS_zug=(ev)=>{if(!DSW.ok)return;let q=ev.touches?.[0];if(!q)return;let jetzt=performance.now();DSW.hist.push({x:q.clientX,t:jetzt});while(DSW.hist.length>2&&jetzt-DSW.hist[0].t>150)DSW.hist.shift();let dx=q.clientX-DSW.x,dy=q.clientY-DSW.y;if(!DSW.lock){if(Math.abs(dx)<10&&Math.abs(dy)<10)return;DSW.lock=Math.abs(dx)>Math.abs(dy)*1.3?1:-1}if(DSW.lock!==1)return;let m=DSW.m;if(!m)return;let geht=DSW.f?.(dx<0?1:-1,!0);if(!geht){if(m.style.transform)DS_zurueck(m);DSW.dx=0;return}DSW.dx=dx;m.style.transition="none";m.style.willChange="transform";m.classList.add("ds-zieht");m.style.transform=`translate3d(${dx}px,0,0)`;if(DSW.titel){let hd=DS_kopf(),w0=m.clientWidth||1;if(hd){hd.style.transition="none";hd.style.transform=`translate3d(${dx*.5}px,0,0)`;hd.style.opacity=String(Math.max(0,1-Math.abs(dx)/(w0*.5)))}}},DS_zurueck=(m)=>{m.classList.remove("ds-zieht");DS_kopfReset(DS_kopf(),!0);m.style.transition=`transform .32s ${DS_EZ}`;m.style.transform="translate3d(0,0,0)";m.style.opacity="";setTimeout(()=>{m.style.transition="";m.style.transform="";m.style.willChange=""},340)},DS_ende=(ev)=>{let m=DSW.m;if(!DSW.ok||DSW.lock!==1||!m){return}let q=ev.changedTouches?.[0];if(q)DSW.hist.push({x:q.clientX,t:performance.now()});let dx=q?q.clientX-DSW.x:DSW.dx,w=m.clientWidth||1,dir=dx<0?1:-1,v=DS_v(),va=Math.abs(v),schwung=va>.35&&Math.sign(v)===Math.sign(dx)&&Math.abs(dx)>30,zurueckSchwung=va>.35&&Math.sign(v)!==Math.sign(dx);if(!DSW.dx||zurueckSchwung||!(Math.abs(dx)>w*.35||schwung)||!DSW.f?.(dir,!0)){DS_zurueck(m);return}if(DS_ruhig()){m.style.transform="";m.style.transition="";DSW.f(dir);return}let rest=Math.max(0,w-Math.abs(dx)),dauer=Math.round(Math.min(420,Math.max(240,2.3*rest/Math.max(va,.7)))),r=m.getBoundingClientRect(),cs=getComputedStyle(m),st=m.scrollTop,k=document.createElement("div");for(let c0 of m.childNodes)k.appendChild(c0.cloneNode(!0));k.className="ds-klon";k.setAttribute("aria-hidden","true");k.inert=!0;Object.assign(k.style,{display:cs.display,flexDirection:cs.flexDirection,gap:cs.gap,padding:cs.padding,boxSizing:"border-box",position:"fixed",left:r.left+"px",top:r.top+"px",width:r.width+"px",height:r.height+"px",margin:"0",overflow:"hidden",zIndex:"40",pointerEvents:"none",background:getComputedStyle(document.body).backgroundColor,transform:`translate3d(${dx}px,0,0)`,willChange:"transform"});document.body.appendChild(k);k.scrollTop=st;setTimeout(()=>k.remove(),dauer+400);let L=document.querySelector(".links");L?.classList.add("ds-clip");document.documentElement.style.setProperty("--ds-x",dir*w+"px");document.body.classList.add("ds-kommt");m.classList.remove("ds-zieht");m.style.transition="none";m.style.transform="";m.style.willChange="";let h1=document.querySelector(".links header h1"),t0=h1?.textContent,hd=DSW.titel?DS_kopf():null,hk=null,hx=0,ho=1;if(hd){let hr=hd.getBoundingClientRect();hx=dx*.5;ho=Math.max(0,1-Math.abs(dx)/(w*.5));hk=hd.cloneNode(!0);hk.className="ds-kopfklon";hk.setAttribute("aria-hidden","true");hk.inert=!0;Object.assign(hk.style,{position:"fixed",left:hr.left+"px",top:hr.top+"px",width:hr.width+"px",margin:"0",zIndex:"41",pointerEvents:"none",transform:`translate3d(${hx}px,0,0)`,opacity:String(ho)});document.body.appendChild(hk);setTimeout(()=>hk.remove(),dauer+400);hd.style.transition="none";hd.style.transform=`translate3d(${dir*w*.5}px,0,0)`;hd.style.opacity="0"}DSW.lock=0;DSW.f(dir);requestAnimationFrame(()=>{let neu=document.querySelector("main"),opt={duration:dauer,easing:DS_EZ,fill:"both"};document.body.classList.remove("ds-kommt");try{if(neu){neu.classList.add("ds-zieht");neu.style.willChange="transform";neu.animate([{transform:`translate3d(${dir*w}px,0,0)`},{transform:"translate3d(0,0,0)"}],opt)}k.animate([{transform:`translate3d(${dx}px,0,0)`},{transform:`translate3d(${-dir*w}px,0,0)`}],opt)}catch{k.remove()}if(hd)try{let hd2=DS_kopf()||hd;hd2.style.transition="none";hd2.style.transform="";hd2.style.opacity="";hd2.animate([{transform:`translate3d(${dir*w*.5}px,0,0)`,opacity:0},{transform:"translate3d(0,0,0)",opacity:1}],{duration:dauer,easing:DS_EZ,fill:"both"});hk.animate([{transform:`translate3d(${hx}px,0,0)`,opacity:ho},{transform:`translate3d(${-dir*w*.5}px,0,0)`,opacity:0}],{duration:Math.round(dauer*.7),easing:DS_EZ,fill:"forwards"})}catch{hk?.remove();DS_kopfReset(DS_kopf())}let h2=document.querySelector(".links header h1");if(!hd&&h2&&h2.textContent!==t0)try{h2.animate([{opacity:0,transform:`translate3d(${dir*24}px,0,0)`},{opacity:1,transform:"none"}],{duration:Math.min(300,dauer),easing:DS_EZ})}catch{}setTimeout(()=>{k.remove();hk?.remove();let hd3=DS_kopf();if(hd3){hd3.getAnimations?.().forEach((x)=>x.cancel());DS_kopfReset(hd3)}document.querySelector(".links")?.classList.remove("ds-clip");if(neu){neu.classList.remove("ds-zieht");neu.getAnimations?.().forEach((x)=>x.cancel());neu.style.transition="";neu.style.transform="";neu.style.willChange=""}},dauer+40)})};var DF_VERSION="v112",DP_KEY="doku-fix-dienstplan",
+function K0({z:e,mutiere:n,wechsel:t}){let[i,r]=H(""),[a,l]=H(null),[s,o]=H({}),h=e.patienten.filter((m)=>m.art==="nurVerlauf"),g=h.find((m)=>m.id===e.aktivKurz)??null,k=(m)=>n((c)=>{let p=c.patienten.find((v)=>v.id===c.aktivKurz);if(p)m(p)}),d=(m)=>k((c)=>m(c.erstbefund)),b=()=>{let m=Math.random().toString(36).slice(2,9);n((c)=>{c.patienten.unshift(av(i,m)),c.aktivKurz=m}),r(""),t?.()};if(!g&&(DSW.f=(q0,pr)=>{if(q0>=0)return!1;if(!pr)n((Q)=>{Q.tab="patienten"});return!0},!0))return f("div",{className:"schritt",children:[u(O,{hinweis:"Für Patienten, die schon länger bei dir sind oder nur zur Vertretung kommen. Du hältst nur den Verlauf fest, einen Erstbefund gibt es nicht. Im Test nur erfundene Daten verwenden.",children:"Wen dokumentierst du?"}),f("div",{className:"knopfreihe",style:{marginTop:0},children:[u("input",{className:"eingabe",style:{flex:1,minWidth:160},value:i,placeholder:"Name suchen oder neu anlegen","aria-label":"Name des Patienten ohne Erstbefund",autoComplete:"off",onChange:(m)=>r(m.target.value),onKeyDown:(m)=>{if(m.key==="Enter")b()}}),u("button",{type:"button",className:"weiter",style:{flex:"none",width:"auto",padding:"0 20px",marginTop:0},onClick:b,children:"Anlegen"})]}),u(PX_Knopf,{name:i,alle:e.patienten,mutiere:n,root:!0}),h.length===0?u("p",{className:"hinweis",style:{marginTop:18},children:"Noch kein Patient. Lege oben den ersten an."}):i.trim()?f("div",{className:"kz-treffer",children:[PV_filter(h,i).length?u("p",{className:"gruppe",style:{margin:"10px 0 6px"},children:"Passende Patienten"}):u("p",{className:"hinweis klein",style:{margin:"10px 0 0"},children:"Kein Patient passt. Mit „Anlegen“ neu anlegen."}),PV_filter(h,i).map((m)=>f("div",{className:"pt-zeile",children:[f("button",{type:"button",className:"haupt",onClick:()=>{n((c)=>{c.aktivKurz=m.id}),t?.()},children:[f("div",{className:"pt-name",children:[PV_name(m.name,i),FA_tag(m,h)]}),f("div",{className:"sek",children:[m.erstbefund.diagnose.trim()?lv(m.erstbefund.diagnose.trim(),40):"Diagnose noch offen"," · ",m.verlauf?.einheiten.length??0," Einheiten"]})]}),a===m.id?u("button",{type:"button",className:"kleinknopf rot",onClick:()=>{n((c)=>{if(c.patienten=c.patienten.filter((p)=>p.id!==m.id),c.aktivKurz===m.id)c.aktivKurz=null}),l(null)},children:"Wirklich löschen?"}):u("button",{type:"button",className:"kleinknopf rot",onClick:()=>l(m.id),children:"Löschen"})]},m.id))]}):f("details",{className:"aufklapp kz-alle",children:[f("summary",{children:[u("span",{children:"Alle Patienten"}),u("span",{className:"zaehler",children:h.length})]}),f("div",{className:"inhalt",children:[...h].sort((x,y)=>(!!x.abgeschlossen-!!y.abgeschlossen)||x.name.localeCompare(y.name,"de")).map((m)=>f("div",{className:"pt-zeile",children:[f("button",{type:"button",className:"haupt",onClick:()=>{n((c)=>{c.aktivKurz=m.id}),t?.()},children:[f("div",{className:"pt-name",children:[PV_name(m.name,i),FA_tag(m,h)]}),f("div",{className:"sek",children:[m.erstbefund.diagnose.trim()?lv(m.erstbefund.diagnose.trim(),40):"Diagnose noch offen"," · ",m.verlauf?.einheiten.length??0," Einheiten"]})]}),a===m.id?u("button",{type:"button",className:"kleinknopf rot",onClick:()=>{n((c)=>{if(c.patienten=c.patienten.filter((p)=>p.id!==m.id),c.aktivKurz===m.id)c.aktivKurz=null}),l(null)},children:"Wirklich löschen?"}):u("button",{type:"button",className:"kleinknopf rot",onClick:()=>l(m.id),children:"Löschen"})]},m.id))})]}),]});let S=g.erstbefund,z=()=>n((m)=>{m.kartAuf=DP_schluessel(g.name)||g.id;m.tab="patienten";m.aktivKurz=null;delete m.zurueck});if(!g.kurzFertig){let m=tv(S),c=Math.min(S.schritt,m.length-1),p=()=>c+1>=m.length?k(rv):d((v)=>{v.schritt=c+1});DSW.f=(q0,pr)=>{let n0=c+q0;if(n0<0||n0>=m.length)return!1;if(!pr)d((v)=>{v.schritt=n0});return!0};return f("div",{children:[f("div",{className:"v-kopf",children:[(c!==0||e.zurueck?.pid!==g.id)&&u("button",{type:"button",className:"kleinknopf",onClick:()=>{if(m[c]==="region"&&s.bereich){if(s.seite)o({bereich:s.bereich,region:s.region});else if(s.region)o({bereich:s.bereich});else o({});return}if(c===0)z();else d((v)=>{v.schritt=c-1})},children:c===0?"‹ Patienten":"‹ Zurück"}),f("span",{className:"zahl",children:[FA_name(g,h)," · Schritt ",c+1,"/",m.length]})]}),m[c]==="diagnose"&&u(Su,{e:S,aendern:d,weiter:p,name:g.name}),m[c]==="bsv"&&u(Bu,{e:S,aendern:d,weiter:p}),m[c]==="ursache"&&u(UR_Schritt,{e:S,aendern:(m0)=>k((c0)=>{m0(c0.erstbefund);UR_merke(c0)}),weiter:p}),m[c]==="region"&&u(zu,{e:S,aendern:d,weiter:p,entwurf:s,setEntwurf:o})]})}let K=!!rl(g);let KE=!K&&f("div",{className:"kurz-extras",children:[u("p",{className:"hinweis klein",children:[S.diagnose.trim(),(S.ursachen??[]).join(", "),S.stellen.map(se).join(", ")].filter(Boolean).join(" · ")||"Ohne Diagnose und Region"}),f("div",{className:"kurz-klein",children:[u("button",{type:"button",className:"kleinknopf",onClick:()=>k((m)=>{m.kurzFertig=!1,m.erstbefund.schritt=0}),children:"Diagnose, Auslöser oder Region ändern"})]}),u(FA_Wahl,{P:g,mutiere:n})]});return f("div",{children:[u(_u,{patient:g,mutiere:k,kurz:!0,extras:KE,zumPlan:()=>n((m)=>{m.tab="dienst"}),loeschen:()=>n((m)=>{qs(m,g.id)})})]})}var N0={ruhe:null,bewegung:null,tageszeit:[],schmerzBei:""};function sv(e){let n=[{art:"diagnose"},...st(e)?[{art:"bsv"}]:[],{art:"beginn"},{art:"ursache"},{art:"region"},...PF_RE.test((e.diagnose??"")+" "+(e.krankheitsbild??""))?[{art:"pfad"}]:[],{art:"vorgeschichte"},{art:"sozial"},{art:"flags"}];if(!e.stellen.length&&(e.diagnoseKat==="neuro"||pr(e)))n.push({art:"nschmerz"});if(e.stellen.forEach((t)=>n.push({art:"schmerz",stelle:t.id},{art:"beweg",stelle:t.id},{art:"schwellung",stelle:t.id})),Rb(e))n.push({art:"wurzel"});if(ru(e).length)n.push({art:"tests"});n.push({art:"ziel"});if(n.push({art:"befund"}),kr(e))n.push({art:"neurobv"});return e.stellen.forEach((t)=>n.push({art:"deton",stelle:t.id},{art:"mobi",stelle:t.id},{art:"uebung",stelle:t.id})),n.push({art:"ausgabe"}),n}var G0=(e,n)=>e.length>n?e.slice(0,n-1).trimEnd()+"…":e,uv=()=>Math.random().toString(36).slice(2,9),BH_ARTEN=new Set(["neurobv","deton","mobi","uebung"]),BH_liste=(l,bh)=>bh?[...l.filter((x)=>BH_ARTEN.has(x.art)),{art:"ausgabe"}]:l.filter((x)=>!BH_ARTEN.has(x.art)&&x.art!=="ausgabe"),Lu={dienst:f("svg",{viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"1.8",children:[u("rect",{x:"3.5",y:"5",width:"17",height:"15.5",rx:"2.5"}),u("path",{d:"M3.5 10h17M8 3v4M16 3v4"}),u("path",{d:"M8 14h2M14 14h2M8 17.5h2"})]}),beh:f("svg",{viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"1.8",children:[u("path",{d:"M7 11V6a1.5 1.5 0 0 1 3 0v4"}),u("path",{d:"M10 10V4.5a1.5 1.5 0 0 1 3 0V10"}),u("path",{d:"M13 10V5.5a1.5 1.5 0 0 1 3 0V12"}),u("path",{d:"M16 9.5a1.5 1.5 0 0 1 3 0V14a7 7 0 0 1-7 7h-.5a6 6 0 0 1-4.6-2.2L4.2 15.4a1.6 1.6 0 0 1 2.4-2.1L7 14v-3"})]}),pat:f("svg",{viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"1.8",children:[u("circle",{cx:"12",cy:"8",r:"4"}),u("path",{d:"M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"})]}),erst:f("svg",{viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"1.8",children:[u("rect",{x:"5",y:"3",width:"14",height:"18",rx:"2"}),u("path",{d:"M9 8h6M9 12h6M9 16h4"})]}),verl:u("svg",{viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"1.8",children:u("path",{d:"M3 18l5-6 4 3 5-8 4 5"})}),kurz:f("svg",{viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"1.8",children:[u("path",{d:"M4 6h16M4 12h10M4 18h6"}),u("path",{d:"M17 15l3 3-3 3"})]})};var DSW={f:null,x:0,y:0,t:0,ok:!1,lock:0,dx:0,m:null,hist:[]},DS_quer=(el,stop)=>{try{for(let n=el;n&&n!==stop&&n!==document.body;n=n.parentElement){if(n.scrollWidth>n.clientWidth+1){let o=getComputedStyle(n).overflowX;if(o==="auto"||o==="scroll")return!0}}}catch{}return!1},DS_ruhig=()=>!!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches,DS_EZ="cubic-bezier(.3,.7,.3,1)",DS_kopf=()=>document.querySelector(".links header"),DS_kopfReset=(hd,weich)=>{if(!hd)return;if(weich){hd.style.transition=`transform .32s ${DS_EZ},opacity .32s ${DS_EZ}`;setTimeout(()=>{hd.style.transition=""},340)}else hd.style.transition="";hd.style.transform="";hd.style.opacity=""},DS_aufraeumen=()=>{document.querySelectorAll(".ds-klon").forEach((x)=>x.remove());document.body.classList.remove("ds-kommt");document.querySelector(".links")?.classList.remove("ds-clip");document.querySelectorAll(".ds-kopfklon").forEach((x)=>x.remove());DS_kopfReset(DS_kopf());let m0=document.querySelector("main");if(m0&&!DSW.lock){m0.style.transform="";m0.style.opacity="";m0.style.transition=""}},DS_v=()=>{let h=DSW.hist,n=h.length;if(n<2)return 0;let b=h[n-1],a=h[0];for(let i=n-2;i>=0;i--){a=h[i];if(b.t-h[i].t>=80)break}let dt=b.t-a.t;return dt>0?(b.x-a.x)/dt:0},DS_start=(ev)=>{DS_aufraeumen();let q=ev.touches?.[0];DSW.lock=0;DSW.dx=0;DSW.hist=[];if(!q||ev.touches.length>1||!DSW.f){DSW.ok=!1;return}let el=ev.target;DSW.ok=!(el.closest&&el.closest('input,textarea,select,svg,.chips,.ziele,.nj-rolle,.pw-seg,.sn-liste,.tx-vorschlag,.pf-leiste,[role="tablist"],[role="slider"]'))&&!DS_quer(el,ev.currentTarget);DSW.x=q.clientX;DSW.y=q.clientY;DSW.t=Date.now();DSW.m=ev.currentTarget;DSW.hist=[{x:q.clientX,t:performance.now()}]},DS_zug=(ev)=>{if(!DSW.ok)return;let q=ev.touches?.[0];if(!q)return;let jetzt=performance.now();DSW.hist.push({x:q.clientX,t:jetzt});while(DSW.hist.length>2&&jetzt-DSW.hist[0].t>150)DSW.hist.shift();let dx=q.clientX-DSW.x,dy=q.clientY-DSW.y;if(!DSW.lock){if(Math.abs(dx)<10&&Math.abs(dy)<10)return;DSW.lock=Math.abs(dx)>Math.abs(dy)*1.3?1:-1}if(DSW.lock!==1)return;let m=DSW.m;if(!m)return;let geht=DSW.f?.(dx<0?1:-1,!0);if(!geht){if(m.style.transform)DS_zurueck(m);DSW.dx=0;return}DSW.dx=dx;m.style.transition="none";m.style.willChange="transform";m.classList.add("ds-zieht");m.style.transform=`translate3d(${dx}px,0,0)`;if(DSW.titel){let hd=DS_kopf(),w0=m.clientWidth||1;if(hd){hd.style.transition="none";hd.style.transform=`translate3d(${dx*.5}px,0,0)`;hd.style.opacity=String(Math.max(0,1-Math.abs(dx)/(w0*.5)))}}},DS_zurueck=(m)=>{m.classList.remove("ds-zieht");DS_kopfReset(DS_kopf(),!0);m.style.transition=`transform .32s ${DS_EZ}`;m.style.transform="translate3d(0,0,0)";m.style.opacity="";setTimeout(()=>{m.style.transition="";m.style.transform="";m.style.willChange=""},340)},DS_ende=(ev)=>{let m=DSW.m;if(!DSW.ok||DSW.lock!==1||!m){return}let q=ev.changedTouches?.[0];if(q)DSW.hist.push({x:q.clientX,t:performance.now()});let dx=q?q.clientX-DSW.x:DSW.dx,w=m.clientWidth||1,dir=dx<0?1:-1,v=DS_v(),va=Math.abs(v),schwung=va>.35&&Math.sign(v)===Math.sign(dx)&&Math.abs(dx)>30,zurueckSchwung=va>.35&&Math.sign(v)!==Math.sign(dx);if(!DSW.dx||zurueckSchwung||!(Math.abs(dx)>w*.35||schwung)||!DSW.f?.(dir,!0)){DS_zurueck(m);return}if(DS_ruhig()){m.style.transform="";m.style.transition="";DSW.f(dir);return}let rest=Math.max(0,w-Math.abs(dx)),dauer=Math.round(Math.min(420,Math.max(240,2.3*rest/Math.max(va,.7)))),r=m.getBoundingClientRect(),cs=getComputedStyle(m),st=m.scrollTop,k=document.createElement("div");for(let c0 of m.childNodes)k.appendChild(c0.cloneNode(!0));k.className="ds-klon";k.setAttribute("aria-hidden","true");k.inert=!0;Object.assign(k.style,{display:cs.display,flexDirection:cs.flexDirection,gap:cs.gap,padding:cs.padding,boxSizing:"border-box",position:"fixed",left:r.left+"px",top:r.top+"px",width:r.width+"px",height:r.height+"px",margin:"0",overflow:"hidden",zIndex:"40",pointerEvents:"none",background:getComputedStyle(document.body).backgroundColor,transform:`translate3d(${dx}px,0,0)`,willChange:"transform"});document.body.appendChild(k);k.scrollTop=st;setTimeout(()=>k.remove(),dauer+400);let L=document.querySelector(".links");L?.classList.add("ds-clip");document.documentElement.style.setProperty("--ds-x",dir*w+"px");document.body.classList.add("ds-kommt");m.classList.remove("ds-zieht");m.style.transition="none";m.style.transform="";m.style.willChange="";let h1=document.querySelector(".links header h1"),t0=h1?.textContent,hd=DSW.titel?DS_kopf():null,hk=null,hx=0,ho=1;if(hd){let hr=hd.getBoundingClientRect();hx=dx*.5;ho=Math.max(0,1-Math.abs(dx)/(w*.5));hk=hd.cloneNode(!0);hk.className="ds-kopfklon";hk.setAttribute("aria-hidden","true");hk.inert=!0;Object.assign(hk.style,{position:"fixed",left:hr.left+"px",top:hr.top+"px",width:hr.width+"px",margin:"0",zIndex:"41",pointerEvents:"none",transform:`translate3d(${hx}px,0,0)`,opacity:String(ho)});document.body.appendChild(hk);setTimeout(()=>hk.remove(),dauer+400);hd.style.transition="none";hd.style.transform=`translate3d(${dir*w*.5}px,0,0)`;hd.style.opacity="0"}DSW.lock=0;DSW.f(dir);requestAnimationFrame(()=>{let neu=document.querySelector("main"),opt={duration:dauer,easing:DS_EZ,fill:"both"};document.body.classList.remove("ds-kommt");try{if(neu){neu.classList.add("ds-zieht");neu.style.willChange="transform";neu.animate([{transform:`translate3d(${dir*w}px,0,0)`},{transform:"translate3d(0,0,0)"}],opt)}k.animate([{transform:`translate3d(${dx}px,0,0)`},{transform:`translate3d(${-dir*w}px,0,0)`}],opt)}catch{k.remove()}if(hd)try{let hd2=DS_kopf()||hd;hd2.style.transition="none";hd2.style.transform="";hd2.style.opacity="";hd2.animate([{transform:`translate3d(${dir*w*.5}px,0,0)`,opacity:0},{transform:"translate3d(0,0,0)",opacity:1}],{duration:dauer,easing:DS_EZ,fill:"both"});hk.animate([{transform:`translate3d(${hx}px,0,0)`,opacity:ho},{transform:`translate3d(${-dir*w*.5}px,0,0)`,opacity:0}],{duration:Math.round(dauer*.7),easing:DS_EZ,fill:"forwards"})}catch{hk?.remove();DS_kopfReset(DS_kopf())}let h2=document.querySelector(".links header h1");if(!hd&&h2&&h2.textContent!==t0)try{h2.animate([{opacity:0,transform:`translate3d(${dir*24}px,0,0)`},{opacity:1,transform:"none"}],{duration:Math.min(300,dauer),easing:DS_EZ})}catch{}setTimeout(()=>{k.remove();hk?.remove();let hd3=DS_kopf();if(hd3){hd3.getAnimations?.().forEach((x)=>x.cancel());DS_kopfReset(hd3)}document.querySelector(".links")?.classList.remove("ds-clip");if(neu){neu.classList.remove("ds-zieht");neu.getAnimations?.().forEach((x)=>x.cancel());neu.style.transition="";neu.style.transform="";neu.style.willChange=""}},dauer+40)})};var DF_VERSION="v113",DP_KEY="doku-fix-dienstplan",
 DP_lesen=()=>{try{let x=JSON.parse(localStorage.getItem(DP_KEY)??"{}");return x&&typeof x==="object"?x:{}}catch{return{}}},
 DP_schreiben=(x)=>{try{localStorage.setItem(DP_KEY,JSON.stringify(x))}catch{}try{DP_hbLernen(x)}catch{}},
 DP_min=(t)=>{let m=/^(\d{1,2}):(\d{2})/.exec(t??"");return m?+m[1]*60+ +m[2]:null},
