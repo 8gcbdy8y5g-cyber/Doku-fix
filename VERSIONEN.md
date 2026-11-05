@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v102 | 05.11.2026 | 69e652d | Dienstplan: Die Feierabend-Zeile geht über die volle Breite bis unter die Uhrzeiten und hat links keine eigene Uhrzeit mehr, damit sie als Tagesende und nicht als Termin erscheint. |
 | v101 | 05.11.2026 | 6bb04d2 | Dienstplan: Nach dem letzten Patienten steht eine schmale Zeile „Feierabend um 19:00“ mit der Restzeit bis Arbeitsende und der Zahl der Patienten, die heute noch kommen (Ende der Arbeitszeit aus dem Plan, sonst Ende des letzten Termins); danach „Schönen Feierabend!“. |
 | v100 | 05.11.2026 | 9001119 | Dienstplan: Beim laufenden Termin steht rechts neben dem Fortschrittsbalken die Restzeit („noch 12 min · bis 11:20“); in den letzten 5 Minuten werden Balken und Zahl orange. |
 | v99 | 05.11.2026 | b91b3f8 | Erstbefund: In jedem ausführlichen Schritt steht oben „Zum Kurzbefund“ (vorher nur im Schritt Diagnose); ein neuer Befund bleibt nach der Diagnose im Kurzbefund. Aus vorhandener Doku: Laufen zwei Verordnungen gleichzeitig (z. B. MT und KGG), landen Einheiten, Diagnose und Rezeptzählung bei der passenden Behandlung, fehlt sie, wird sie als weitere Diagnose angelegt. Dienstplan-Karte zeigt beim MT-Termin die MT-Behandlung, beim KGG-Termin die KGG-Behandlung. Import aus der Karte öffnet als Blatt über die ganze Breite. |
