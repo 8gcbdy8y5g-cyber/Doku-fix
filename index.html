@@ -2964,6 +2964,1125 @@ function WW_Bericht({patient:e,mutiere:n,loeschen:t}){
 }
 
 </script>
+<style id="hb-css">/* Doku-Fix · Hausbesuche: Tour-Karte und Fahrtkosten (Vollbild über der App, W&W-Farben) */
+#hb-ov{position:fixed;inset:0;z-index:1200;background:var(--grund,#f3f5ee);color:var(--schrift,#1a1a1a);font-family:var(--ww-font,-apple-system,system-ui,sans-serif);font-variant-numeric:tabular-nums;overflow:hidden;
+  --hb-land:#F4F3EF;--hb-gruen:#D5EBC9;--hb-wald:#C3E1B4;--hb-wasser:#AAD3F2;--hb-strasse:#FFFFFF;--hb-rand:#D8D6CF;--hb-haupt:#FFE7A3;--hb-haupt-rand:#E8C770;
+  --hb-text:#4A4A4F;--hb-halo:rgba(255,255,255,.9);--hb-ort:#7A7A80;--hb-route:#4f6d10;--hb-route-rand:#ffffff;
+  --hb-kg:#0A6FD8;--hb-zns:#8A4FD8;--hb-mt:#0F9D8F;--hb-kgg:#D6336C;--hb-ok:#248A3D;--hb-ok-weich:#E6F4EA;--hb-knapp:#B25600;--hb-knapp-weich:#FFF1E0;
+  --hb-glas:rgba(255,255,255,.84);--hb-schatten:0 8px 30px rgba(0,0,0,.14),0 1px 3px rgba(0,0,0,.08)}
+html[data-theme="dark"] #hb-ov{--hb-land:#222326;--hb-gruen:#233127;--hb-wald:#1F2D22;--hb-wasser:#1B2B3D;--hb-strasse:#3A3C41;--hb-rand:#2B2C30;--hb-haupt:#5C5440;--hb-haupt-rand:#3E3828;
+  --hb-text:#C8C8CC;--hb-halo:rgba(20,20,22,.85);--hb-ort:#9A9AA0;--hb-route:#ddf6a2;--hb-route-rand:#1a1a1a;
+  --hb-kg:#64A8FF;--hb-zns:#BF8CFF;--hb-mt:#4FD1C5;--hb-kgg:#FF7AA2;--hb-ok:#30D158;--hb-ok-weich:#12301B;--hb-knapp:#FF9F0A;--hb-knapp-weich:#3A2A12;
+  --hb-glas:rgba(33,33,33,.84);--hb-schatten:0 8px 30px rgba(0,0,0,.5),0 1px 3px rgba(0,0,0,.4)}
+html.hb-offen,html.hb-offen body{overflow:hidden}
+#hb-ov *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+#hb-ov button{font:inherit;color:inherit;cursor:pointer}
+#hb-ov button:focus-visible,#hb-ov input:focus-visible{outline:2px solid var(--tape);outline-offset:2px}
+#hb-ov h2{margin:0;font-weight:900;text-transform:uppercase;letter-spacing:-.01em;font-size:1.75rem;line-height:1.05}
+#hb-ov h3{margin:22px 0 8px;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--schrift2)}
+
+/* Tour: Karte */
+.hb-tour{background:var(--hb-land)!important}
+.hb-karte{position:absolute;inset:0;width:100%;height:100%;touch-action:none;display:block}
+.hb-oben{position:absolute;top:calc(10px + env(safe-area-inset-top,0px));left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));display:flex;align-items:center;gap:8px;pointer-events:none;z-index:3}
+.hb-oben>*{pointer-events:auto}
+.hb-platz{width:48px;flex:none}
+.hb-rund{width:48px;height:48px;flex:none;border:0;border-radius:50%;background:var(--hb-glas);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);box-shadow:var(--hb-schatten);display:grid;place-items:center;color:var(--schrift)!important}
+.hb-datum{flex:1;min-width:0;max-width:340px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;background:var(--hb-glas);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-radius:999px;box-shadow:var(--hb-schatten);padding:4px}
+.hb-datum button{width:40px;height:40px;border:0;background:none;border-radius:50%;display:grid;place-items:center;color:var(--schrift)!important;flex:none}
+.hb-datum button:disabled{opacity:.3;cursor:default}
+.hb-tag{min-width:0;text-align:center;font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hb-tag small{display:block;font-size:10.5px;font-weight:600;color:var(--schrift2);letter-spacing:.06em}
+.hb-knoepfe{position:absolute;right:max(12px,env(safe-area-inset-right,0px));top:calc(70px + env(safe-area-inset-top,0px));display:flex;flex-direction:column;background:var(--hb-glas);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-radius:14px;box-shadow:var(--hb-schatten);overflow:hidden;z-index:3}
+.hb-knoepfe button{width:44px;height:44px;border:0;background:none;display:grid;place-items:center;color:var(--schrift)!important}
+.hb-knoepfe button+button{border-top:1px solid var(--linie)}
+
+/* Tour: Blatt */
+.hb-blatt{position:absolute;left:0;right:0;bottom:0;height:92%;background:var(--flaeche);border-radius:22px 22px 0 0;box-shadow:0 -4px 24px rgba(0,0,0,.14);z-index:4;display:flex;flex-direction:column;transform:translateY(var(--y,50%));will-change:transform}
+.hb-blatt.gleitet{transition:transform .38s cubic-bezier(.2,.8,.2,1)}
+.hb-griff{flex:none;padding:8px 0 2px;display:grid;place-items:center;touch-action:none;border:0;background:none;width:100%}
+.hb-griff::before{content:"";width:36px;height:5px;border-radius:3px;background:var(--linie)}
+.hb-inhalt{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:4px max(16px,env(safe-area-inset-right,0px)) calc(28px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.hb-kopf{padding-bottom:12px;touch-action:none;display:flex;flex-direction:column;gap:4px}
+.hb-kopf p{margin:0;color:var(--schrift2);font-size:15px}
+.hb-zahlen{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:10px}
+.hb-zahl{background:var(--seite);border-radius:14px;padding:9px 11px 10px;min-width:0}
+.hb-zahl small{display:block;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--schrift2)}
+.hb-zahl b{display:block;font-size:22px;font-weight:800;letter-spacing:-.02em;margin-top:2px;white-space:nowrap}
+.hb-zahl b span{font-size:13px;font-weight:600;color:var(--schrift2);margin-left:3px}
+.hb-fk-zeile{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;border:0;border-radius:14px;background:var(--chip);padding:11px 14px;margin-bottom:12px;text-align:left;font-size:14px}
+.hb-fk-zeile b{white-space:nowrap;color:var(--tape)}
+.hb-ablauf{list-style:none;margin:0;padding:0}
+.hb-halt{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:0 12px;align-items:center;padding:10px 8px;margin:0 -8px;width:calc(100% + 16px);border:0;border-radius:14px;background:none;text-align:left}
+.hb-halt:active,.hb-halt.an{background:var(--chip)}
+.hb-nr{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:15px;color:#fff;justify-self:center;box-shadow:0 0 0 2px var(--flaeche)}
+.hb-nr.hb-praxis{background:var(--schrift);color:var(--flaeche);border-radius:9px}
+.hb-nr.hb-praxis svg{width:16px;height:16px}
+.hb-wer{min-width:0}
+.hb-wer b{display:block;font-size:17px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hb-wer>span{display:block;font-size:14px;color:var(--schrift2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hb-fehlt{color:var(--hb-knapp);font-weight:700}
+.hb-kz{display:inline-block;font-size:11px;font-weight:800;padding:1px 6px;border-radius:6px;margin-left:6px;vertical-align:2px;color:var(--a);background:color-mix(in srgb,var(--a) 16%,transparent)}
+.hb-zeit{text-align:right;font-size:17px;font-weight:800}
+.hb-zeit small{display:block;font-size:12px;font-weight:600;color:var(--schrift2)}
+.hb-fahrt{display:grid;grid-template-columns:34px minmax(0,1fr);gap:0 12px;align-items:center;min-height:34px}
+.hb-fahrt::before{content:"";justify-self:center;height:100%;min-height:34px;border-left:3px dotted color-mix(in srgb,var(--hb-route) 60%,transparent)}
+.hb-fahrt div{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-size:14px;color:var(--schrift2);padding:4px 0}
+.hb-fahrt svg{vertical-align:-2px}
+.hb-luecke{font-size:12px;font-weight:700;padding:3px 8px;border-radius:999px;white-space:nowrap}
+.hb-luecke.ok{color:var(--hb-ok);background:var(--hb-ok-weich)}
+.hb-luecke.knapp{color:var(--hb-knapp);background:var(--hb-knapp-weich)}
+.hb-praxisblock{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:0 12px;align-items:center;padding:10px 0;color:var(--schrift2);font-size:14px}
+.hb-praxisblock i{justify-self:center;width:8px;height:8px;border-radius:50%;background:var(--linie)}
+.hb-leer{text-align:center;padding:28px 8px;color:var(--schrift2);list-style:none}
+.hb-leer b{display:block;color:var(--schrift);font-size:17px;margin-bottom:4px}
+.hb-fuss{margin:18px 0 0;padding-top:12px;border-top:1px solid var(--linie);font-size:13px;color:var(--schrift2);line-height:1.45}
+.hb-aktion{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:4px 0 10px 46px}
+.hb-navi{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 15px;font-size:15px;border-radius:999px;background:var(--ww-fill,var(--tape));color:var(--ww-on-fill,var(--tape-auf))!important;font-weight:800;text-decoration:none}
+.hb-mini{min-height:44px;padding:0 12px;border:1px solid var(--linie);border-radius:999px;background:var(--flaeche);font-size:14px;font-weight:600}
+.hb-aktion small{flex-basis:100%;font-size:12px;color:var(--schrift2)}
+.hb-adr{grid-column:2/-1;margin:8px 0 4px;display:flex;flex-direction:column;gap:6px}
+.hb-ablauf .hb-adr{padding-left:46px}
+.hb-adr input,.hb-kmfeld input,.hb-opt input,.hb-abr input{width:100%;min-height:44px;border:1px solid var(--feld-rand,var(--linie));border-radius:12px;background:var(--feld,var(--flaeche));padding:0 12px;font:inherit;font-size:16px;color:var(--schrift)}
+.hb-vorschl{display:flex;flex-wrap:wrap;gap:6px}
+.hb-vorschl:empty{display:none}
+.hb-vorschl button{border:0;background:var(--chip);color:var(--tape)!important;border-radius:999px;padding:7px 12px;font-size:14px;font-weight:700}
+.hb-adr small{font-size:13px;color:var(--schrift2)}
+.hb-adr small.gut{color:var(--hb-ok);font-weight:700}
+.hb-adr small.schlecht{color:var(--hb-knapp);font-weight:700}
+
+@media (min-width:760px){
+  .hb-blatt{left:max(12px,env(safe-area-inset-left,0px));right:auto;top:calc(12px + env(safe-area-inset-top,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));height:auto;width:370px;border-radius:22px;transform:none!important;box-shadow:var(--hb-schatten)}
+  .hb-griff{display:none}
+  .hb-inhalt{padding:72px 18px 24px}
+  .hb-oben{left:calc(394px + env(safe-area-inset-left,0px));z-index:5}
+  .hb-oben .hb-zu{position:fixed;left:calc(24px + env(safe-area-inset-left,0px));top:calc(22px + env(safe-area-inset-top,0px));box-shadow:none;background:var(--seite)}
+  .hb-oben .hb-platz{display:none}
+}
+
+/* Fahrtkosten */
+.hb-fk-seite{overflow-y:auto!important;-webkit-overflow-scrolling:touch}
+.hb-leiste{position:sticky;top:0;z-index:2;background:var(--grund);padding:calc(8px + env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) 6px max(8px,env(safe-area-inset-left,0px))}
+.hb-zurueck{display:inline-flex;align-items:center;gap:2px;border:0;background:none;color:var(--tape)!important;font-size:17px;font-weight:600;min-height:44px;padding:0 8px 0 0}
+.hb-seite{max-width:680px;margin:0 auto;padding:4px max(16px,env(safe-area-inset-right,0px)) calc(40px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column}
+.hb-monat{display:flex;align-items:center;justify-content:space-between;margin:14px 0 12px;background:var(--flaeche);border-radius:999px;padding:4px}
+.hb-monat b{font-size:17px;font-weight:700}
+.hb-monat button{width:44px;height:40px;border:0;background:none;border-radius:999px;display:grid;place-items:center;color:var(--tape)!important}
+.hb-warn{margin:4px 0 10px;padding:10px 12px;border-radius:14px;background:var(--hb-knapp-weich);color:var(--hb-knapp);font-size:14px;font-weight:600;line-height:1.4}
+.hb-liste{list-style:none;margin:6px 0 14px;padding:0;background:var(--flaeche);border-radius:20px;overflow:hidden}
+.hb-z+.hb-z{border-top:1px solid var(--linie)}
+.hb-zk{width:100%;display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:12px;align-items:center;border:0;background:none;padding:12px 16px;text-align:left}
+.hb-z.auf .hb-zk{background:var(--chip)}
+.hb-zd b{display:block;font-size:16px;font-weight:800}
+.hb-zd small,.hb-zn small,.hb-zkm small{display:block;font-size:12px;font-weight:600;color:var(--schrift2)}
+.hb-zn{min-width:0;font-size:15px;line-height:1.3;overflow-wrap:anywhere}
+.hb-zkm{text-align:right;font-size:16px;font-weight:800;white-space:nowrap}
+.hb-zkm.offen{color:var(--hb-knapp)}
+.hb-zx{padding:4px 16px 14px;background:var(--chip);display:flex;flex-direction:column;gap:8px}
+.hb-kmfeld{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600;color:var(--schrift2)}
+.hb-zx-kn{display:flex;flex-wrap:wrap;gap:8px}
+.hb-knopf{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:46px;padding:0 18px;border:0;border-radius:999px;background:var(--ww-fill,var(--tape));color:var(--ww-on-fill,var(--tape-auf))!important;font-weight:800;letter-spacing:.01em;margin-top:8px}
+.hb-zx .hb-knopf{margin-top:0}
+.hb-knopf.zwei{background:var(--flaeche);color:var(--schrift)!important;border:1px solid var(--linie)}
+.hb-knopf.weg{background:none;color:var(--warn,#c4001a)!important;border:1px solid var(--linie)}
+.hb-knopf.weg.sicher{background:var(--warn,#c4001a);color:#fff!important}
+.hb-knopf:disabled{opacity:.45;cursor:default}
+.hb-link{border:0;background:none;padding:0;color:var(--tape)!important;font-weight:700;text-decoration:underline}
+.hb-hinw{margin:6px 2px;font-size:13px;color:var(--schrift2);line-height:1.45}
+.hb-gruppe{background:var(--flaeche);border-radius:20px;overflow:hidden}
+.hb-opt{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;width:100%;border:0;background:none;text-align:left;flex-wrap:wrap}
+.hb-opt+.hb-opt,.hb-gruppe>.hb-adrliste{border-top:1px solid var(--linie)}
+.hb-opt span{font-size:15px;font-weight:600;display:flex;flex-direction:column;gap:2px;min-width:0}
+.hb-opt span small{font-size:12.5px;font-weight:500;color:var(--schrift2)}
+label.hb-opt input{flex:1 1 220px}
+.hb-opt b{color:var(--schrift2);font-size:20px;font-weight:400}
+.hb-innen{padding:0 16px 12px}
+.hb-adrliste{list-style:none;margin:0;padding:4px 16px 8px}
+.hb-adrliste li{padding:12px 0;display:flex;flex-direction:column;gap:6px}
+.hb-adrliste li+li{border-top:1px solid var(--linie)}
+.hb-adrliste .hb-adr{margin:0}
+.hb-abr{display:flex;flex-direction:column;gap:4px;font-size:12.5px;font-weight:600;color:var(--schrift2)}
+.hb-add{background:var(--flaeche);border-radius:20px;padding:4px 16px 16px;margin:4px 0;display:flex;flex-direction:column;gap:8px}
+.hb-add h3{margin-top:12px!important}
+.hb-chips{display:flex;flex-wrap:wrap;gap:8px}
+.hb-chips button{border:1px solid var(--linie);background:var(--flaeche);border-radius:999px;padding:8px 14px;font-size:14px;font-weight:600;display:inline-flex;align-items:center;gap:6px}
+.hb-chips button.an{background:var(--ww-fill,var(--tape));border-color:transparent;color:var(--ww-on-fill,var(--tape-auf))!important}
+.hb-chips i{font-style:normal;font-weight:800;font-size:12px;width:18px;height:18px;border-radius:50%;display:grid;place-items:center;background:rgba(0,0,0,.14)}
+.hb-fk-seite .hb-zahlen{margin-bottom:6px}
+
+/* Dienstplan: Hausbesuche als Knopf zur Tour */
+button.dp-chip-tour{border:0;font:inherit;cursor:pointer;border-radius:999px!important;padding:7px 14px!important;line-height:1.2;background:var(--ww-fill,var(--tape))!important;color:var(--ww-on-fill,var(--tape-auf))!important;display:inline-flex;align-items:center;gap:5px}
+button.dp-chip-tour svg{flex:none}
+button.dp-chip-tour b{color:inherit!important}
+.mh-fk{--f:var(--mh-fk,#0F9D8F)}
+@media (prefers-reduced-motion:reduce){.hb-blatt.gleitet{transition:none}}
+.hb-zuord{display:flex;flex-direction:column;gap:6px;margin:8px 0 2px;padding-left:46px}
+.hb-zuord small{font-size:12.5px;font-weight:600;color:var(--schrift2)}
+.hb-zuord .hb-vorschl button{display:inline-flex;flex-direction:column;align-items:flex-start;line-height:1.2;border-radius:14px;padding:8px 12px}
+.hb-zuord .hb-vorschl i{font-style:normal;font-weight:500;font-size:12px;color:var(--schrift2)}
+.hb-adrliste b small{display:block;font-size:12px;font-weight:600;color:var(--schrift2)}
+.hb-fehltbox{background:var(--hb-knapp-weich);border-radius:20px;padding:14px 16px;margin-top:8px;display:flex;flex-direction:column;gap:8px}
+.hb-fehltbox>b{color:var(--hb-knapp);font-size:15px}
+.hb-fehltbox .hb-abr span{color:var(--schrift)}
+/* Gestaltungswahl */
+.hb-seg{display:inline-grid;grid-auto-flow:column;gap:3px;background:var(--seite);border-radius:12px;padding:3px}
+.hb-seg button{border:0;border-radius:9px;background:none;padding:8px 12px;font-size:13px;font-weight:700;color:var(--schrift2)!important}
+.hb-seg button[aria-selected="true"]{background:var(--flaeche);color:var(--schrift)!important;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+#hb-ov h2 wbr{display:inline}
+
+/* B · Zeitstrahl: Karten wie im Dienstplan, Uhrzeit links */
+#hb-ov[data-stil="b"] .hb-kopf h2{font-size:1.35rem}
+#hb-ov[data-stil="b"] .hb-zahlen{display:flex;flex-wrap:wrap;gap:6px}
+#hb-ov[data-stil="b"] .hb-zahl{display:flex;align-items:baseline;gap:5px;background:none;border:1px solid var(--linie);border-radius:999px;padding:6px 10px}
+#hb-ov[data-stil="b"] .hb-zahl small{font-size:9.5px}
+#hb-ov[data-stil="b"] .hb-zahl b{font-size:16px;margin:0}
+#hb-ov[data-stil="b"] .hb-zahl b span{font-size:12px}
+#hb-ov[data-stil="b"] .hb-ablauf{display:flex;flex-direction:column}
+#hb-ov[data-stil="b"] .hb-halt{grid-template-columns:84px minmax(0,1fr) 28px;margin:0;width:100%;padding:12px 12px 12px 4px;background:var(--seite);border-radius:18px}
+#hb-ov[data-stil="b"] .hb-halt.an{background:var(--seite);box-shadow:inset 0 0 0 2px var(--tape)}
+#hb-ov[data-stil="b"] .hb-zeit{order:-1;text-align:left;padding-left:12px;font-size:18px;white-space:nowrap}
+#hb-ov[data-stil="b"] .hb-nr{order:1;justify-self:end;width:26px;height:26px;font-size:13px;box-shadow:none}
+#hb-ov[data-stil="b"] .hb-nr.hb-praxis svg{width:14px;height:14px}
+#hb-ov[data-stil="b"] .hb-fahrt{grid-template-columns:84px minmax(0,1fr);min-height:30px}
+#hb-ov[data-stil="b"] .hb-fahrt::before{min-height:30px}
+#hb-ov[data-stil="b"] .hb-praxisblock{grid-template-columns:84px minmax(0,1fr) auto;padding:8px 0}
+#hb-ov[data-stil="b"] .hb-aktion,#hb-ov[data-stil="b"] .hb-ablauf .hb-adr,#hb-ov[data-stil="b"] .hb-zuord{padding-left:84px}
+#hb-ov[data-stil="b"] .hb-fk-zeile{background:none;border:1px solid var(--linie)}
+#hb-ov[data-stil="b"].hb-fk-seite .hb-liste{background:none;display:flex;flex-direction:column;gap:8px;border-radius:0}
+#hb-ov[data-stil="b"].hb-fk-seite .hb-z{background:var(--flaeche);border-radius:18px;overflow:hidden;border:0!important}
+#hb-ov[data-stil="b"].hb-fk-seite .hb-zk{grid-template-columns:64px minmax(0,1fr) auto}
+#hb-ov[data-stil="b"].hb-fk-seite .hb-zd{border-right:2px solid var(--linie);padding-right:8px}
+#hb-ov[data-stil="b"].hb-fk-seite .hb-monat{background:none;padding:0}
+
+/* C · Kacheln: Karte groß, Stopps als Kacheln zum Wischen, Summe als lindgrüner Block */
+#hb-ov[data-stil^="c"] .hb-blatt{height:auto;max-height:70%;background:none;box-shadow:none;transform:none!important;border-radius:0}
+#hb-ov[data-stil^="c"] .hb-griff,#hb-ov[data-stil^="c"] .hb-fuss{display:none}
+#hb-ov[data-stil^="c"] .hb-inhalt{overflow-y:auto;padding:0 0 calc(12px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:8px}
+#hb-ov[data-stil^="c"] .hb-kopf{margin:0 max(12px,env(safe-area-inset-left,0px));padding:12px 16px;border-radius:20px;background:var(--ww-fill,var(--tape));color:var(--ww-on-fill,var(--tape-auf));display:grid;grid-template-columns:1fr auto;align-items:center}
+#hb-ov[data-stil^="c"] .hb-kopf h2{font-size:1.15rem}
+#hb-ov[data-stil^="c"] .hb-kopf p{color:inherit;opacity:.75;font-size:13px;grid-column:1/-1}
+#hb-ov[data-stil^="c"].hb-tour .hb-zahlen{margin:0 max(12px,env(safe-area-inset-left,0px))}
+#hb-ov[data-stil^="c"].hb-tour .hb-zahlen{display:flex;gap:6px;flex-wrap:wrap}
+#hb-ov[data-stil^="c"].hb-tour .hb-zahl{background:var(--flaeche);display:flex;align-items:baseline;gap:5px;border-radius:999px;padding:7px 11px}
+#hb-ov[data-stil^="c"].hb-tour .hb-zahl small{font-size:9.5px}
+#hb-ov[data-stil^="c"].hb-tour .hb-zahl b{font-size:15px;margin:0}
+#hb-ov[data-stil^="c"] .hb-fk{margin:0 max(12px,env(safe-area-inset-left,0px))}
+#hb-ov[data-stil^="c"] .hb-fk-zeile{margin:0;background:var(--flaeche);padding:7px 14px;font-size:12.5px}
+#hb-ov[data-stil^="c"] .hb-ablauf{display:flex;align-items:stretch;overflow-x:auto;scroll-snap-type:x mandatory;gap:8px;padding:0 max(12px,env(safe-area-inset-left,0px)) 2px;scrollbar-width:none}
+#hb-ov[data-stil^="c"] .hb-ablauf::-webkit-scrollbar{display:none}
+#hb-ov[data-stil^="c"] .hb-ablauf>li{flex:none;scroll-snap-align:start;display:flex;flex-direction:column;gap:6px}
+#hb-ov[data-stil^="c"] .hb-halt{width:236px;height:100%;min-height:92px;margin:0;align-content:start;grid-template-columns:34px minmax(0,1fr);row-gap:6px;background:var(--flaeche);border-radius:20px;padding:12px}
+#hb-ov[data-stil^="c"] .hb-halt.an{box-shadow:inset 0 0 0 2px var(--tape)}
+#hb-ov[data-stil^="c"] .hb-zeit{grid-column:2;text-align:left;font-size:15px;display:flex;gap:6px;align-items:baseline}
+#hb-ov[data-stil^="c"] .hb-zeit small{display:inline}
+#hb-ov[data-stil^="c"] .hb-fahrt{display:flex;align-items:center;min-height:0;width:96px}
+#hb-ov[data-stil^="c"] .hb-fahrt::before{display:none}
+#hb-ov[data-stil^="c"] .hb-fahrt div{flex-direction:column;align-items:flex-start;gap:6px;background:var(--seite);border-radius:16px;padding:10px;font-size:12.5px;line-height:1.3;height:100%;justify-content:center}
+#hb-ov[data-stil^="c"] .hb-luecke{white-space:normal;font-size:11px}
+#hb-ov[data-stil^="c"] .hb-praxisblock{width:120px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;background:var(--seite);border-radius:16px;padding:10px 12px;font-size:12.5px}
+#hb-ov[data-stil^="c"] .hb-praxisblock i{display:none}
+#hb-ov[data-stil^="c"] .hb-aktion,#hb-ov[data-stil^="c"] .hb-ablauf .hb-adr,#hb-ov[data-stil^="c"] .hb-zuord{padding-left:0;width:236px}
+#hb-ov[data-stil^="c"] .hb-leer{width:100%;background:var(--flaeche);border-radius:20px}
+#hb-ov[data-stil^="c"].hb-fk-seite .hb-zahlen{grid-template-columns:1fr 1fr}
+#hb-ov[data-stil^="c"].hb-fk-seite .hb-zahl:first-child{grid-column:1/-1;background:var(--ww-fill,var(--tape));color:var(--ww-on-fill,var(--tape-auf));padding:16px 18px}
+#hb-ov[data-stil^="c"].hb-fk-seite .hb-zahl:first-child small,#hb-ov[data-stil^="c"].hb-fk-seite .hb-zahl:first-child b span{color:inherit;opacity:.7}
+#hb-ov[data-stil^="c"].hb-fk-seite .hb-zahl:first-child b{font-size:48px}
+#hb-ov[data-stil^="c"].hb-fk-seite .hb-zkm{background:var(--chip);border-radius:999px;padding:6px 12px;color:var(--tape)}
+#hb-ov[data-stil^="c"].hb-fk-seite .hb-zkm small{color:var(--schrift2)}
+@media (min-width:760px){
+  #hb-ov[data-stil^="c"] .hb-blatt{width:auto;right:max(12px,env(safe-area-inset-right,0px));top:auto;max-height:60%}
+  #hb-ov[data-stil^="c"] .hb-inhalt{padding-top:0}
+  #hb-ov[data-stil^="c"] .hb-kopf,#hb-ov[data-stil^="c"].hb-tour .hb-zahlen,#hb-ov[data-stil^="c"] .hb-fk{margin:0;max-width:520px}
+  #hb-ov[data-stil^="c"] .hb-ablauf{padding:0}
+}
+.hb-hin{display:none!important}
+/* C2 · Banner oben, Kacheln unten */
+#hb-ov[data-stil="c2"] .hb-blatt{will-change:auto}
+#hb-ov[data-stil="c2"] .hb-kopf{position:fixed;z-index:4;top:calc(68px + env(safe-area-inset-top,0px));left:max(12px,env(safe-area-inset-left,0px));right:max(66px,calc(env(safe-area-inset-right,0px) + 66px));margin:0;border-radius:20px 20px 0 0;padding:10px 14px 2px;display:block}
+#hb-ov[data-stil="c2"] .hb-kopf h2{display:none}
+#hb-ov[data-stil="c2"] .hb-kopf p{font-weight:700;opacity:.8;font-size:13px}
+#hb-ov[data-stil="c2"].hb-tour .hb-zahlen{position:fixed;z-index:4;top:calc(68px + 27px + env(safe-area-inset-top,0px));left:max(12px,env(safe-area-inset-left,0px));right:max(66px,calc(env(safe-area-inset-right,0px) + 66px));margin:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;background:var(--ww-fill,var(--tape));border-radius:0 0 20px 20px;padding:0 6px 10px;box-shadow:var(--hb-schatten)}
+#hb-ov[data-stil="c2"].hb-tour .hb-zahl{background:none;display:block;padding:2px 8px;border-radius:0;color:var(--ww-on-fill,var(--tape-auf))}
+#hb-ov[data-stil="c2"].hb-tour .hb-zahl small{color:inherit;opacity:.6;font-size:9.5px}
+#hb-ov[data-stil="c2"].hb-tour .hb-zahl b{font-size:22px}
+#hb-ov[data-stil="c2"].hb-tour .hb-zahl b span{color:inherit;opacity:.6}
+#hb-ov[data-stil="c2"] .hb-halt{width:200px;min-height:100px;grid-template-columns:30px minmax(0,1fr)}
+#hb-ov[data-stil="c2"] .hb-zeit{grid-row:1;grid-column:2;font-size:22px}
+#hb-ov[data-stil="c2"] .hb-nr{grid-row:1;grid-column:1;width:28px;height:28px;font-size:14px}
+#hb-ov[data-stil="c2"] .hb-wer{grid-column:1/-1}
+#hb-ov[data-stil="c2"] .hb-fahrt{width:84px}
+/* C3 · große Karten, eine pro Patient, mit Anfahrt */
+#hb-ov[data-stil="c3"] .hb-hin{display:block!important;margin-top:6px;font-size:13px!important;color:var(--schrift2);white-space:normal!important}
+#hb-ov[data-stil="c3"] .hb-hin svg{vertical-align:-2px}
+#hb-ov[data-stil="c3"] .hb-fahrt,#hb-ov[data-stil="c3"] .hb-praxisblock{display:none!important}
+#hb-ov[data-stil="c3"] .hb-kopf{display:flex;align-items:baseline;gap:10px}
+#hb-ov[data-stil="c3"] .hb-kopf p{grid-column:auto}
+#hb-ov[data-stil="c3"] .hb-ablauf>li{width:calc(100vw - 48px);max-width:420px}
+#hb-ov[data-stil="c3"] .hb-halt{width:100%;min-height:132px;grid-template-columns:40px minmax(0,1fr) auto;row-gap:0;padding:14px}
+#hb-ov[data-stil="c3"] .hb-nr{width:36px;height:36px;font-size:17px}
+#hb-ov[data-stil="c3"] .hb-zeit{grid-column:3;grid-row:1;display:block;text-align:right;font-size:22px}
+#hb-ov[data-stil="c3"] .hb-zeit small{display:block}
+#hb-ov[data-stil="c3"] .hb-wer b{font-size:19px}
+#hb-ov[data-stil="c3"] .hb-aktion,#hb-ov[data-stil="c3"] .hb-ablauf .hb-adr,#hb-ov[data-stil="c3"] .hb-zuord{width:100%}
+@media (min-width:760px){
+  #hb-ov[data-stil="c"] .hb-halt{width:260px}
+  #hb-ov[data-stil="c2"] .hb-kopf,#hb-ov[data-stil="c2"].hb-tour .hb-zahlen{right:auto;width:400px}
+  #hb-ov[data-stil="c2"] .hb-blatt{max-height:40%}
+  #hb-ov[data-stil="c2"] .hb-fk{max-width:400px}
+  #hb-ov[data-stil="c3"] .hb-blatt{left:auto;right:max(12px,env(safe-area-inset-right,0px));top:calc(70px + env(safe-area-inset-top,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));width:380px;max-height:none}
+  #hb-ov[data-stil="c3"] .hb-inhalt{padding:0 0 12px}
+  #hb-ov[data-stil="c3"] .hb-ablauf{flex-direction:column;overflow-x:visible;scroll-snap-type:none;padding:0}
+  #hb-ov[data-stil="c3"] .hb-ablauf>li{width:100%;max-width:none}
+  #hb-ov[data-stil="c3"] .hb-kopf,#hb-ov[data-stil="c3"] .hb-zahlen,#hb-ov[data-stil="c3"] .hb-fk{max-width:none}
+  #hb-ov[data-stil="c3"] .hb-knoepfe{right:calc(404px + env(safe-area-inset-right,0px))}
+  #hb-ov[data-stil="c3"] .hb-oben{left:calc(70px + env(safe-area-inset-left,0px));right:calc(404px + env(safe-area-inset-right,0px))}
+  #hb-ov[data-stil^="c"] .hb-oben .hb-zu{position:static;box-shadow:var(--hb-schatten);background:var(--hb-glas)}
+  #hb-ov[data-stil^="c"] .hb-oben{left:max(12px,env(safe-area-inset-left,0px))}
+}
+#hb-ov[data-stil="c2"] .hb-zeit{white-space:nowrap;font-size:20px}
+#hb-ov[data-stil="c3"] .hb-halt{min-height:108px}
+@media (min-width:760px){
+  #hb-ov[data-stil="c2"] .hb-fahrt,#hb-ov[data-stil="c"] .hb-fahrt{width:112px}
+  #hb-ov[data-stil="c3"] .hb-halt{min-height:0}
+}
+/* Kartenstile */
+html[data-theme] #hb-ov[data-karte="k2"],#hb-ov[data-karte="k2"]{--hb-land:#F4F3EF;--hb-gruen:#D5EBC9;--hb-wald:#C3E1B4;--hb-wasser:#AAD3F2;--hb-strasse:#FFFFFF;--hb-rand:#D8D6CF;--hb-haupt:#FFE7A3;--hb-haupt-rand:#E8C770;--hb-text:#4A4A4F;--hb-halo:rgba(255,255,255,.92);--hb-ort:#7A7A80;--hb-route:#0A84FF;--hb-route-rand:#FFFFFF}
+html #hb-ov[data-karte="k3"]{--hb-land:#ECECEA;--hb-gruen:#E4E6E0;--hb-wald:#E4E6E0;--hb-wasser:#D9E0E6;--hb-strasse:#FFFFFF;--hb-rand:#ECECEA;--hb-haupt:#FFFFFF;--hb-haupt-rand:#DCDCD8;--hb-text:#8A8A8E;--hb-halo:rgba(236,236,234,.9);--hb-ort:#9A9A9E;--hb-route:#4f6d10;--hb-route-rand:#FFFFFF}
+html[data-theme="dark"] #hb-ov[data-karte="k3"]{--hb-land:#1E1E1E;--hb-gruen:#212320;--hb-wald:#212320;--hb-wasser:#1C2329;--hb-strasse:#303030;--hb-rand:#1E1E1E;--hb-haupt:#3C3C3C;--hb-haupt-rand:#1E1E1E;--hb-text:#7C7C7C;--hb-halo:rgba(30,30,30,.9);--hb-ort:#6A6A6A;--hb-route:#ddf6a2;--hb-route-rand:#1a1a1a}
+.hb-knoepfe button.an{color:#0A84FF!important}
+.hb-knoepfe button[aria-pressed="true"]{background:rgba(10,132,255,.14)}
+.hb-hinweis{position:absolute;z-index:6;left:50%;transform:translateX(-50%);top:calc(212px + env(safe-area-inset-top,0px));max-width:calc(100% - 32px);margin:0;padding:10px 14px;border-radius:14px;background:var(--hb-glas);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);box-shadow:var(--hb-schatten);font-size:13.5px;font-weight:600;text-align:center}
+</style><script id="hb-js">/* Doku-Fix · Hausbesuche: Tour-Karte aus dem Dienstplan und Fahrtkostenabrechnung.
+   Alles läuft offline auf dem Gerät. Die Karte (Straßennetz aus OpenStreetMap) liegt als karte.txt neben der App.
+   Speicher: doku-fix-hb-adressen, doku-fix-fahrtkosten, doku-fix-hb-routen, doku-fix-therapeut */
+(function () {
+"use strict";
+var PRAXIS = "Dr.-C.-Otto-Str. 129", SATZ = 0.30;
+var NAME = "Fahrtkosten/Hausbesuche", STIL_KEY = "doku-fix-hb-stil";
+function stil() { return "c2"; }
+var KARTE_KEY = "doku-fix-hb-karte";
+function kartenStil() { return "k2"; }
+function kachel() { return stil().charAt(0) === "c"; }
+var DP_KEY = "doku-fix-dienstplan", ADR_KEY = "doku-fix-hb-adressen", FK_KEY = "doku-fix-fahrtkosten", RT_KEY = "doku-fix-hb-routen", TH_KEY = "doku-fix-therapeut";
+var WT = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"], WK = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
+var MON = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
+
+/* ---------- Speicher ---------- */
+function lies(k, d) { try { var x = JSON.parse(localStorage.getItem(k) || "null"); return x && typeof x === "object" ? x : d; } catch (e) { return d; } }
+function schreib(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+function liesText(k) { try { return localStorage.getItem(k) || ""; } catch (e) { return ""; } }
+function plaene() { return lies(DP_KEY, {}); }
+function adressen() { return lies(ADR_KEY, {}); }
+function fahrten() { return lies(FK_KEY, {}); }
+function routen() { return lies(RT_KEY, {}); }
+
+/* ---------- Hilfen ---------- */
+function minVon(t) { var m = /^(\d{1,2}):(\d{2})/.exec(t || ""); return m ? +m[1] * 60 + +m[2] : null; }
+function uhr(m) { m = Math.round(m); return String(Math.floor(m / 60)).padStart(2, "0") + ":" + String(m % 60).padStart(2, "0"); }
+function iso(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+function heute() { return iso(new Date()); }
+function wtag(d) { return new Date(d + "T12:00:00").getDay(); }
+function kmTxt(km) { return km == null ? "offen" : km.toFixed(1).replace(".", ","); }
+function cent(km) { return km == null ? 0 : Math.round(Math.round(km * 10) * SATZ * 10); }
+function euroTxt(c) { return (c / 100).toFixed(2).replace(".", ","); }
+function datKurz(d) { return d.slice(8, 10) + "." + d.slice(5, 7) + "."; }
+function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+function schluessel(n) { return String(n || "").toLowerCase().replace(/ß/g, "ss").replace(/[^a-zäöü]/g, ""); }
+function art(kz) { kz = kz || ""; return /ZNS|PNF|KGP|Bobath/i.test(kz) ? "zns" : /KGG/i.test(kz) ? "kgg" : /MT/i.test(kz) ? "mt" : "kg"; }
+function lev(a, b) { var m = a.length, n = b.length, d = [], i, j; for (i = 0; i <= m; i++) d[i] = [i]; for (j = 1; j <= n; j++) d[0][j] = j; for (i = 1; i <= m; i++) for (j = 1; j <= n; j++) d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); return d[m][n]; }
+// Adressbuch-Eintrag zu einem Namen, mit Tippfehler-Toleranz wie in der alten Fahrtkostenabrechnung
+function adrEintrag(name) {
+  var A = adressen(), k = schluessel(name); if (!k) return null;
+  if (A[k]) return { k: k, e: A[k] };
+  // Zuordnung aus dem Dienstplan („Anna M.“ gehört zu „Müller“)
+  for (var c0 in A) if ((A[c0].alias || []).some(function (x) { return schluessel(x) === k; })) return { k: c0, e: A[c0] };
+  var best = null, bd = 99;
+  Object.keys(A).forEach(function (c) { var dd = lev(k, c), lim = Math.min(k.length, c.length) <= 4 ? 1 : 2; if (dd <= lim && dd < bd) { bd = dd; best = c; } });
+  return best ? { k: best, e: A[best], aehnlich: true } : null;
+}
+function adresseVon(e) { var a = adrEintrag(e.name); return (a && a.e.adresse) || e.adresse || ""; }
+function vorName(n) { var m = /^(\S+)\s+[A-Za-zÄÖÜäöü]\.?$/.exec(String(n || "").trim()); return m ? m[1] : ""; }
+function initial(n) { var m = /\s([A-Za-zÄÖÜäöü])\.?$/.exec(String(n || "").trim()); return m ? m[1].toUpperCase() : ""; }
+function kanon(n) { var a = adrEintrag(n); return a ? a.k : schluessel(n); }
+// Name auf der Abrechnung: eingetragener Vor- und Nachname, sonst Vorname aus dem Dienstplan plus Nachname aus der Liste
+function abrName(n) {
+  var a = adrEintrag(n); if (a && a.e.abr && a.e.abr.trim()) return a.e.abr.trim();
+  var vn = vorName(n) || (a && (a.e.alias || []).map(vorName).filter(Boolean)[0]) || "";
+  if (a && vn && a.e.name && !/\s/.test(a.e.name.trim()) && a.e.name.trim().length > 2) return vn + " " + a.e.name.trim();
+  return n;
+}
+function vollstaendig(n) { var x = abrName(n).trim(); return /^\S+(\s+\S+)*\s+\S{2,}$/.test(x) && !/\s\S\.?$/.test(x); }
+function zuordnen(dfName, key) {
+  var A = adressen(); if (!A[key]) return;
+  Object.keys(A).forEach(function (k) { if (k !== key && A[k].alias) A[k].alias = A[k].alias.filter(function (x) { return schluessel(x) !== schluessel(dfName); }); });
+  var e = A[key]; e.alias = (e.alias || []).filter(function (x) { return schluessel(x) !== schluessel(dfName); }).concat([dfName]);
+  if (!(e.abr || "").trim() && vorName(dfName) && e.name && !/\s/.test(e.name.trim())) e.abr = vorName(dfName) + " " + e.name.trim();
+  // eigener, leerer Eintrag unter dem Dienstplan-Namen ist dann überflüssig
+  var dk = schluessel(dfName); if (A[dk] && dk !== key && !(A[dk].adresse || "").trim()) delete A[dk];
+  schreib(ADR_KEY, A);
+}
+function kandidaten(dfName) {
+  var A = adressen(), i = initial(dfName), dk = schluessel(dfName); if (!i) return [];
+  return Object.keys(A).filter(function (k) { var nm = (A[k].name || k).trim(); return (A[k].adresse || "").trim() && nm.charAt(0).toUpperCase() === i && !(A[k].alias || []).some(function (x) { return schluessel(x) !== dk; }) && k !== dk; })
+    .sort(function (a, b) { return (A[a].name || a).localeCompare(A[b].name || b, "de"); }).slice(0, 10).map(function (k) { return { k: k, name: A[k].name || k, adresse: A[k].adresse }; });
+}
+function adrSetzen(name, feld, wert) {
+  var A = adressen(), t = adrEintrag(name), k = t ? t.k : schluessel(name); if (!k) return;
+  A[k] = Object.assign({ name: name }, A[k] || {}); A[k][feld] = wert; schreib(ADR_KEY, A);
+}
+
+/* ---------- Offline-Karte ---------- */
+var K = null, kP = null, legMemo = {};
+function normSt(x) {
+  x = x.toLowerCase().replace(/ß/g, "ss").replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/[^a-z0-9]/g, "");
+  return x.replace(/(strasse|strase|stasse|str)$/, "str");
+}
+function karte() {
+  if (kP) return kP;
+  kP = (async function () {
+    if (typeof DecompressionStream === "undefined") throw new Error("alt");
+    var r = await fetch("karte.txt"); if (!r.ok) throw new Error("karte " + r.status);
+    var txt = await r.text();
+    var bin = atob(txt.replace(/\s+/g, "")), raw = new Uint8Array(bin.length);
+    for (var q = 0; q < bin.length; q++) raw[q] = bin.charCodeAt(q);
+    var buf = await new Response(new Blob([raw]).stream().pipeThrough(new DecompressionStream("gzip"))).arrayBuffer();
+    var dv = new DataView(buf), kl = dv.getUint32(0, true);
+    var kopf = JSON.parse(new TextDecoder().decode(new Uint8Array(buf, 4, kl)));
+    var o = 4 + kl; o += (4 - o % 4) % 4;
+    function nimm(T, n) { var a = new T(buf, o, n); o += a.byteLength; return a; }
+    var n = kopf.n, nR = kopf.nR, m = kopf.m, k = { kopf: kopf, nR: nR, n: n };
+    k.off = nimm(Uint32Array, nR + 1); k.tg = nimm(Uint32Array, m); k.wegK = nimm(Uint32Array, kopf.nw * 3); k.wegI = nimm(Uint32Array, kopf.nwi);
+    k.flK = nimm(Uint32Array, kopf.nfk); k.AK = nimm(Uint32Array, kopf.na);
+    k.X = nimm(Int16Array, n); k.Y = nimm(Int16Array, n); k.ln = nimm(Uint16Array, m); k.flP = nimm(Int16Array, kopf.nfp);
+    k.AX = nimm(Int16Array, kopf.na); k.AY = nimm(Int16Array, kopf.na); k.wz = nimm(Uint8Array, m);
+    k.str = {}; var i = 0;
+    Object.keys(kopf.str).forEach(function (st) { var o2 = {}; kopf.str[st].split(",").forEach(function (nr) { o2[nr] = i++; }); k.str[st] = o2; });
+    k.strNamen = Object.keys(kopf.anz).map(function (s) { return [s, kopf.anz[s]]; });
+    // Gewichtung wie in der Fahrtkostenabrechnung: Hauptstraßen leicht bevorzugt; Fahrzeit aus dem Tempo je Straßenart
+    k.fak = new Float32Array(256); for (var v = 0; v < 256; v++) k.fak[v] = v >= 34 ? 0.156 : v >= 20 ? 0.18 : 0.24;
+    k.dist = new Float64Array(nR); k.stamp = new Uint32Array(nR); k.prev = new Int32Array(nR); k.runde = 0;
+    K = k; return k;
+  })();
+  kP.catch(function () { kP = null; });
+  return kP;
+}
+function geocode(addr) {
+  if (!addr || !K) return -1;
+  var teil = addr.split(",")[0].trim(), m = teil.match(/^(.+?)\s*(\d+)\s*([a-zA-Z]?)\b/);
+  if (!m) return -1;
+  var st = K.str[normSt(m[1])]; if (!st) return -1;
+  var nr = (m[2] + m[3]).toLowerCase();
+  if (st[nr] != null) return st[nr];
+  if (st[m[2]] != null) return st[m[2]];
+  var basis = parseInt(m[2], 10), best = -1, bd = 1e9;
+  Object.keys(st).forEach(function (k2) { var v = parseInt(k2, 10); if (isFinite(v) && Math.abs(v - basis) < bd) { bd = Math.abs(v - basis); best = st[k2]; } });
+  return best;
+}
+function strecke(s, t) {
+  if (s === t) return { m: 0, s: 0, pfad: [s] };
+  var key = s + ">" + t; if (legMemo[key]) return legMemo[key];
+  var k = K, dist = k.dist, stamp = k.stamp, prev = k.prev, r = ++k.runde, hk = [], hv = [];
+  function push(a, v) { var i = hk.length; hk.push(a); hv.push(v); while (i > 0) { var p = (i - 1) >> 1; if (hk[p] <= a) break; hk[i] = hk[p]; hv[i] = hv[p]; i = p; } hk[i] = a; hv[i] = v; }
+  function pop() { var v = hv[0], lk = hk.pop(), lv = hv.pop(), n = hk.length; if (n) { var i = 0; for (;;) { var a = 2 * i + 1, b = a + 1, c = i, ck = lk; if (a < n && hk[a] < ck) { c = a; ck = hk[a]; } if (b < n && hk[b] < ck) c = b; if (c === i) break; hk[i] = hk[c]; hv[i] = hv[c]; i = c; } hk[i] = lk; hv[i] = lv; } return v; }
+  stamp[s] = r; dist[s] = 0; prev[s] = -1; push(0, s);
+  var fertig = false;
+  while (hk.length) {
+    var du = hk[0], u = pop();
+    if (du > dist[u]) continue;
+    if (u === t) { fertig = true; break; }
+    for (var e = k.off[u]; e < k.off[u + 1]; e++) {
+      var v = k.tg[e], nd = du + k.ln[e] * k.fak[k.wz[e]];
+      if (stamp[v] !== r || nd < dist[v]) { stamp[v] = r; dist[v] = nd; prev[v] = e; push(nd, v); }
+    }
+  }
+  if (!fertig) return null;
+  var pfad = [], m = 0, sek = 0, x = t;
+  while (x !== s) {
+    pfad.push(x); var e2 = prev[x], l = k.ln[e2] / 4; m += l; sek += l / (k.wz[e2] / 3.6);
+    var lo = 0, hi = k.nR - 1; while (lo < hi) { var mid = (lo + hi + 1) >> 1; if (k.off[mid] <= e2) lo = mid; else hi = mid - 1; }
+    x = lo;
+  }
+  pfad.push(s); pfad.reverse();
+  var res = { m: m, s: sek * 1.08 + 20, pfad: pfad };
+  legMemo[key] = res; return res;
+}
+
+/* ---------- Touren aus dem Dienstplan ---------- */
+function hatHb(pl) { return !!(pl && Array.isArray(pl.eintraege) && pl.eintraege.some(function (x) { return x.hb && !x.frei && x.name; })); }
+function hbTage() { var P = plaene(); return Object.keys(P).filter(function (d) { return /^\d{4}-\d{2}-\d{2}$/.test(d) && hatHb(P[d]); }).sort(); }
+// Reihenfolge und Abschnitte; braucht die Karte nur für Strecken
+function tourBerechnen(datum, mitKarte) {
+  var tag = plaene()[datum]; if (!tag || !Array.isArray(tag.eintraege)) return null;
+  var E = tag.eintraege.filter(function (x) { return minVon(x.zeit) != null; }).slice().sort(function (a, b) { return minVon(a.zeit) - minVon(b.zeit); });
+  var wd = wtag(datum), pi = mitKarte ? geocode(PRAXIS) : -1, praxisK = pi >= 0 ? K.AK[pi] : -1;
+  var bl = [], cur = null, gesehen = {};
+  E.forEach(function (x, i) {
+    if (x.frei || !x.name) return;
+    if (x.hb) {
+      // Doppeltermin beim selben Patienten: nur einmal anfahren
+      var dk = schluessel(x.name); if (cur && cur.stopps.length && schluessel(cur.stopps[cur.stopps.length - 1].name) === dk) { cur.stopps[cur.stopps.length - 1] = Object.assign({}, cur.stopps[cur.stopps.length - 1], { dauer: (+cur.stopps[cur.stopps.length - 1].dauer || 0) + (+x.dauer || 0) }); return; }
+      if (!cur) { cur = { stopps: [], vorPraxis: E.slice(0, i).some(function (y) { return !y.frei && !y.hb && y.name; }) }; bl.push({ typ: "tour", t: cur }); }
+      cur.stopps.push(x);
+    } else {
+      cur = null; var last = bl[bl.length - 1], a = minVon(x.zeit), b = a + (+x.dauer || 0);
+      if (last && last.typ === "praxis") { last.bis = b; if (!gesehen[schluessel(x.name)]) last.n++; }
+      else bl.push({ typ: "praxis", von: a, bis: b, n: 1 });
+      gesehen[schluessel(x.name)] = 1;
+    }
+  });
+  var touren = [], gesamt = { m: 0, s: 0, n: 0, offen: 0 };
+  bl.forEach(function (b, bi) {
+    if (b.typ !== "tour") return;
+    var t = b.t, nachPraxis = bl.slice(bi + 1).some(function (y) { return y.typ === "praxis"; });
+    t.startPraxis = t.vorPraxis || wd === 4 || wd === 5;
+    t.endePraxis = nachPraxis || wd === 1 || wd === 2 || wd === 3;
+    t.namen = t.stopps.map(function (x) { return x.name; });
+    t.rk = (t.startPraxis ? "P" : "") + "|" + t.namen.map(kanon).join(">") + "|" + (t.endePraxis ? "P" : "");
+    t.punkte = []; t.wege = [];
+    if (t.startPraxis) t.punkte.push({ praxis: true });
+    t.stopps.forEach(function (x) { t.punkte.push({ e: x, adresse: adresseVon(x) }); });
+    if (t.endePraxis) t.punkte.push({ praxis: true });
+    if (mitKarte) {
+      t.m = 0; t.s = 0; t.fehlt = 0;
+      t.punkte.forEach(function (p) {
+        if (p.praxis) { p.gi = pi; p.k = praxisK; } else { p.gi = geocode(p.adresse); p.k = p.gi >= 0 ? K.AK[p.gi] : -1; if (p.gi < 0) t.fehlt++; }
+        if (p.gi >= 0) { p.x = K.AX[p.gi]; p.y = K.AY[p.gi]; }
+      });
+      for (var i = 0; i < t.punkte.length - 1; i++) {
+        var a = t.punkte[i], c = t.punkte[i + 1], r = a.k >= 0 && c.k >= 0 ? strecke(a.k, c.k) : null;
+        var aEnde = a.praxis ? null : minVon(a.e.zeit) + (+a.e.dauer || 0), cStart = c.praxis ? null : minVon(c.e.zeit);
+        t.wege.push({ r: r, luecke: aEnde != null && cStart != null ? cStart - aEnde : null });
+        if (r) { t.m += r.m; t.s += r.s; }
+      }
+      t.km = t.fehlt ? null : Math.round(t.m / 100) / 10;
+      gesamt.m += t.m; gesamt.s += t.s; gesamt.offen += t.fehlt;
+    }
+    gesamt.n += t.stopps.length;
+    touren.push(t);
+  });
+  touren.forEach(function (t, i) { t.teil = touren.length > 1 ? i + 1 : 0; });
+  return { datum: datum, wd: wd, bloecke: bl, touren: touren, gesamt: gesamt, praxis: pi >= 0 ? { x: K.AX[pi], y: K.AY[pi] } : null };
+}
+
+/* ---------- Fahrtkosten: aus den Touren eintragen ---------- */
+function fkSchluessel(d, teil) { return d + "#" + (teil || 0); }
+// Trägt die Touren eines Tages ein. Von Hand korrigierte km bleiben, solange die Patienten gleich sind.
+function tagEintragen(T) {
+  var F = fahrten(), R = routen(), ge = false, bleiben = {};
+  T.touren.forEach(function (t) {
+    var k = fkSchluessel(T.datum, t.teil), alt = F[k], gleich = alt && alt.namen && alt.namen.join("|") === t.namen.join("|");
+    bleiben[k] = 1;
+    if (alt && alt.korr && gleich) return;
+    var km = R[t.rk] != null ? R[t.rk] : t.km;
+    var neu = { datum: T.datum, teil: t.teil, namen: t.namen, km: km, kmKarte: t.km, rk: t.rk, quelle: "tour", korr: R[t.rk] != null, start: t.startPraxis, ende: t.endePraxis };
+    if (!alt || JSON.stringify(Object.assign({}, alt, { stand: 0 })) !== JSON.stringify(Object.assign({}, neu, { stand: 0 }))) { neu.stand = new Date().toISOString(); F[k] = neu; ge = true; }
+  });
+  Object.keys(F).forEach(function (k) { if (k.indexOf(T.datum + "#") === 0 && F[k].quelle === "tour" && !bleiben[k]) { delete F[k]; ge = true; } });
+  if (ge) schreib(FK_KEY, F);
+  return ge;
+}
+// Alle Tage bis heute mit Hausbesuchen, die noch nicht (oder anders) eingetragen sind
+function offeneTage() {
+  var F = fahrten(), h = heute();
+  return hbTage().filter(function (d) {
+    if (d > h) return false;
+    var T = tourBerechnen(d, false); if (!T) return false;
+    return T.touren.some(function (t) { var e = F[fkSchluessel(d, t.teil)]; return !e || e.namen.join("|") !== t.namen.join("|") || (e.km == null && !e.korr); });
+  });
+}
+var syncLauf = null;
+function sync() {
+  if (syncLauf) return syncLauf;
+  var tage = offeneTage(); if (!tage.length) return Promise.resolve(0);
+  syncLauf = karte().then(function () { var n = 0; tage.forEach(function (d) { var T = tourBerechnen(d, true); if (T && tagEintragen(T)) n++; }); return n; })
+    .catch(function () { return 0; }).then(function (n) { syncLauf = null; return n; });
+  return syncLauf;
+}
+function monatsListe(ym) {
+  var F = fahrten();
+  return Object.keys(F).map(function (k) { return Object.assign({ key: k }, F[k]); }).filter(function (e) { return e.datum && e.datum.slice(0, 7) === ym; })
+    .sort(function (a, b) { return a.datum < b.datum ? -1 : a.datum > b.datum ? 1 : (a.teil || 0) - (b.teil || 0); });
+}
+function summe(L) { var z = L.reduce(function (s, e) { return s + (e.km == null ? 0 : Math.round(e.km * 10)); }, 0); return { km: z / 10, cent: Math.round(z * SATZ * 10), offen: L.filter(function (e) { return e.km == null; }).length }; }
+function monatsKm(ym) { return summe(monatsListe(ym || heute().slice(0, 7))); }
+
+/* ---------- Oberfläche: Grundgerüst ---------- */
+var OV = null;
+var IC = {
+  zur: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>',
+  li: '<svg width="11" height="18" viewBox="0 0 12 20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2 2 10l8 8"/></svg>',
+  re: '<svg width="11" height="18" viewBox="0 0 12 20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2 2 8 8-8 8"/></svg>',
+  ganz: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>',
+  haus: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/></svg>',
+  auto: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17h14M6 17l1.5-5.5A2 2 0 0 1 9.4 10h5.2a2 2 0 0 1 1.9 1.5L18 17"/><circle cx="8" cy="17" r="1.6"/><circle cx="16" cy="17" r="1.6"/></svg>',
+  navi: '<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor" aria-hidden="true"><path d="M21.3 2.7a1 1 0 0 0-1.1-.2l-17 7.4a1 1 0 0 0 .1 1.9l7.1 2 2 7.1a1 1 0 0 0 1.9.1l7.4-17a1 1 0 0 0-.4-1.3z"/></svg>',
+  ort: '<svg viewBox="0 0 24 24" width="19" height="19" fill="currentColor" aria-hidden="true"><path d="M21.3 2.7a1 1 0 0 0-1.1-.2l-17 7.4a1 1 0 0 0 .1 1.9l7.1 2 2 7.1a1 1 0 0 0 1.9.1l7.4-17a1 1 0 0 0-.4-1.3z"/></svg>',
+  karte: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg>'
+};
+function oeffnen(titel, zurueck) {
+  schliessen(true);
+  var o = document.createElement("div"); o.id = "hb-ov"; o.setAttribute("role", "dialog"); o.setAttribute("aria-label", titel); o.setAttribute("data-stil", stil()); o.setAttribute("data-karte", kartenStil());
+  document.body.appendChild(o); document.documentElement.classList.add("hb-offen");
+  OV = { el: o, zurueck: zurueck };
+  var k0 = function (ev) { if (ev.key === "Escape") schliessen(); }; window.addEventListener("keydown", k0); OV.k0 = k0;
+  return o;
+}
+function schliessen(still) {
+  if (!OV) return; var o = OV; OV = null;
+  window.removeEventListener("keydown", o.k0); if (o.aufraeumen) o.aufraeumen();
+  o.el.remove(); document.documentElement.classList.remove("hb-offen");
+  if (!still) try { window.dispatchEvent(new Event("doku-fix-hb")); } catch (e) {}
+}
+
+/* ---------- Tour-Ansicht mit Karte ---------- */
+function tourOeffnen(datum, zurueck) {
+  var o = oeffnen("Hausbesuchs-Tour", zurueck || "Dienstplan");
+  o.classList.add("hb-tour");
+  o.innerHTML =
+    '<canvas class="hb-karte" aria-label="Karte mit der Route"></canvas>' +
+    '<div class="hb-oben"><button type="button" class="hb-rund hb-zu" aria-label="Zurück zum ' + esc(OV.zurueck) + '">' + IC.zur + '</button>' +
+    '<div class="hb-datum"><button type="button" class="hb-vor" data-r="-1" aria-label="Vorheriger Hausbesuchstag">' + IC.li + '</button><b class="hb-tag"></b><button type="button" class="hb-vor" data-r="1" aria-label="Nächster Hausbesuchstag">' + IC.re + '</button></div><span class="hb-platz"></span></div>' +
+    '<div class="hb-knoepfe"><button type="button" data-k="ganz" aria-label="Ganze Route zeigen">' + IC.ganz + '</button><button type="button" data-k="praxis" aria-label="Praxis zeigen">' + IC.haus + '</button><button type="button" data-k="ort" aria-label="Mein Standort" aria-pressed="false">' + IC.ort + '</button></div><p class="hb-hinweis" hidden></p>' +
+    '<section class="hb-blatt"><button type="button" class="hb-griff" aria-label="Liste größer oder kleiner"></button><div class="hb-inhalt">' +
+    '<div class="hb-kopf"><h2>Hausbesuche</h2><p class="hb-unter">Karte wird geladen …</p></div><div class="hb-zahlen"></div><div class="hb-fk"></div><ol class="hb-ablauf"></ol>' +
+    '<p class="hb-fuss">Reihenfolge und Uhrzeiten kommen aus dem Dienstplan. Strecke und Fahrzeit rechnet Doku-Fix auf der Offline-Karte aus (OpenStreetMap). Adressen bleiben auf diesem Gerät.</p></div></section>';
+  var S = { datum: datum, T: null, wahl: null, offen: null, ans: { s: 0.1, x: 0, y: 0 }, nadeln: [] };
+  OV.S = S;
+  var $ = function (s) { return o.querySelector(s); };
+  $(".hb-zu").onclick = function () { schliessen(); };
+  var cv = $(".hb-karte"), cx = cv.getContext("2d"), DPR = 1, BW = 0, BH = 0, FA = {}, PF = null, blatt = $(".hb-blatt"), STUFE = 1;
+
+  function farben() { var cs = getComputedStyle(o); ["hb-land", "hb-gruen", "hb-wald", "hb-wasser", "hb-strasse", "hb-rand", "hb-haupt", "hb-haupt-rand", "hb-text", "hb-halo", "hb-ort", "hb-route", "hb-route-rand", "schrift", "flaeche", "hb-kg", "hb-zns", "hb-mt", "hb-kgg"].forEach(function (n) { FA[n] = cs.getPropertyValue("--" + n).trim(); }); }
+  function groesse() { DPR = Math.min(window.devicePixelRatio || 1, 3); BW = o.clientWidth; BH = o.clientHeight; cv.width = Math.round(BW * DPR); cv.height = Math.round(BH * DPR); malen(); }
+  var geplant = false; function malen() { if (geplant) return; geplant = true; requestAnimationFrame(function () { geplant = false; zeichne(); }); }
+  function welt(px, py) { return { x: S.ans.x + (px - BW / 2) / S.ans.s, y: S.ans.y + (py - BH / 2) / S.ans.s }; }
+  function schirm(x, y) { return { x: (x - S.ans.x) * S.ans.s + BW / 2, y: (y - S.ans.y) * S.ans.s + BH / 2 }; }
+  function pfade() {
+    if (K.pf) { PF = K.pf; return; }
+    var kl = []; for (var c = 0; c < 8; c++) kl.push(new Path2D());
+    var p0 = 0, lab = [];
+    for (var w = 0; w < K.kopf.nw; w++) {
+      var klasse = K.wegK[w * 3], ni = K.wegK[w * 3 + 1], len = K.wegK[w * 3 + 2], p = kl[klasse], a0 = K.wegI[p0], best = 0, bi = p0;
+      p.moveTo(K.X[a0], K.Y[a0]);
+      for (var i = 1; i < len; i++) { var a = K.wegI[p0 + i], b = K.wegI[p0 + i - 1]; p.lineTo(K.X[a], K.Y[a]); var dx = K.X[a] - K.X[b], dy = K.Y[a] - K.Y[b], d = dx * dx + dy * dy; if (d > best) { best = d; bi = p0 + i; } }
+      if (ni && best > 1600) { var A = K.wegI[bi - 1], B = K.wegI[bi]; lab.push({ n: ni, x: (K.X[A] + K.X[B]) / 2, y: (K.Y[A] + K.Y[B]) / 2, w: Math.atan2(K.Y[B] - K.Y[A], K.X[B] - K.X[A]), l: Math.sqrt(best), k: klasse }); }
+      p0 += len;
+    }
+    lab.sort(function (a, b) { return a.k - b.k || b.l - a.l; });
+    var fl = [new Path2D(), new Path2D(), new Path2D()], q = 0, pp = 0;
+    while (q < K.flK.length) { var at = K.flK[q++], ringe = K.flK[q++]; for (var r = 0; r < ringe; r++) { var n = K.flK[q++]; for (var j = 0; j < n; j++) { var x = K.flP[pp++], y = K.flP[pp++]; if (j) fl[at].lineTo(x, y); else fl[at].moveTo(x, y); } fl[at].closePath(); } }
+    K.pf = PF = { kl: kl, fl: fl, lab: lab };
+  }
+  function zeichne() {
+    var c = cx, s = S.ans.s;
+    c.setTransform(1, 0, 0, 1, 0, 0); c.fillStyle = FA["hb-land"]; c.fillRect(0, 0, cv.width, cv.height);
+    if (!PF) return;
+    c.setTransform(DPR * s, 0, 0, DPR * s, DPR * (BW / 2 - S.ans.x * s), DPR * (BH / 2 - S.ans.y * s));
+    c.fillStyle = FA["hb-gruen"]; c.fill(PF.fl[0], "evenodd"); c.fillStyle = FA["hb-wald"]; c.fill(PF.fl[1], "evenodd"); c.fillStyle = FA["hb-wasser"]; c.fill(PF.fl[2], "evenodd");
+    c.lineCap = "round"; c.lineJoin = "round";
+    var z = Math.max(0, Math.min(1, (Math.log(s) - Math.log(0.04)) / (Math.log(1.2) - Math.log(0.04))));
+    var br = [2 + 9 * z, 1.8 + 8 * z, 1.6 + 8 * z, 1.4 + 7 * z, 1.1 + 6 * z, 0.6 + 6 * z, 0.4 + 4 * z, 0.3 + 3 * z], zg = [1, 1, 1, 1, 1, s > 0.07, s > 0.18, s > 0.3];
+    if (s > 0.12) for (var k2 = 7; k2 >= 0; k2--) { if (!zg[k2]) continue; c.strokeStyle = k2 <= 2 ? FA["hb-haupt-rand"] : FA["hb-rand"]; c.lineWidth = (br[k2] + 1.6) / s; c.stroke(PF.kl[k2]); }
+    for (var k3 = 7; k3 >= 0; k3--) { if (!zg[k3]) continue; c.strokeStyle = k3 <= 2 ? FA["hb-haupt"] : FA["hb-strasse"]; c.lineWidth = br[k3] / s; c.stroke(PF.kl[k3]); }
+    if (S.T) S.T.touren.forEach(function (t) { t.wege.forEach(function (w) {
+      if (!w.r) return; if (!w.p2d) { var p = new Path2D(), pf = w.r.pfad; p.moveTo(K.X[pf[0]], K.Y[pf[0]]); for (var j = 1; j < pf.length; j++) p.lineTo(K.X[pf[j]], K.Y[pf[j]]); w.p2d = p; }
+      c.strokeStyle = FA["hb-route-rand"]; c.lineWidth = 9 / s; c.stroke(w.p2d); c.strokeStyle = FA["hb-route"]; c.lineWidth = 5.5 / s; c.stroke(w.p2d);
+    }); });
+    c.setTransform(DPR, 0, 0, DPR, 0, 0);
+    if (S.T) pfeile(); schrift(); standortMalen(); if (S.T) nadeln();
+  }
+  function pfeile() {
+    var c = cx; c.strokeStyle = FA["hb-route-rand"]; c.lineWidth = 1.8; c.lineCap = "round"; c.lineJoin = "round";
+    S.T.touren.forEach(function (t) { t.wege.forEach(function (w) {
+      if (!w.r) return; var pf = w.r.pfad, rest = 40;
+      for (var j = 1; j < pf.length; j++) {
+        var a = schirm(K.X[pf[j - 1]], K.Y[pf[j - 1]]), b = schirm(K.X[pf[j]], K.Y[pf[j]]), dx = b.x - a.x, dy = b.y - a.y, l = Math.hypot(dx, dy), pos = rest;
+        while (pos < l) { var f = pos / l, x = a.x + dx * f, y = a.y + dy * f, ux = dx / l, uy = dy / l; if (x > -10 && y > -10 && x < BW + 10 && y < BH + 10) { c.beginPath(); c.moveTo(x - ux * 3 - uy * 3, y - uy * 3 + ux * 3); c.lineTo(x, y); c.lineTo(x - ux * 3 + uy * 3, y - uy * 3 - ux * 3); c.stroke(); } pos += 70; }
+        rest = pos - l;
+      }
+    }); });
+  }
+  function schrift() {
+    var c = cx, s = S.ans.s, boxen = [], fam = getComputedStyle(o).fontFamily;
+    function frei(b) { for (var i = 0; i < boxen.length; i++) { var q = boxen[i]; if (b[0] < q[2] && b[2] > q[0] && b[1] < q[3] && b[3] > q[1]) return false; } return true; }
+    c.textAlign = "center"; c.textBaseline = "middle"; c.lineJoin = "round";
+    if (s < 0.25) {
+      c.font = "600 12px " + fam;
+      K.kopf.orte.forEach(function (q) {
+        if (q[1] === "city" || q[1] === "town") return;
+        var p = schirm(q[2], q[3]); if (p.x < -40 || p.y < -20 || p.x > BW + 40 || p.y > BH + 20) return;
+        var t = q[0].toUpperCase(), w = c.measureText(t).width, b = [p.x - w / 2 - 4, p.y - 9, p.x + w / 2 + 4, p.y + 9]; if (!frei(b)) return; boxen.push(b);
+        c.strokeStyle = FA["hb-halo"]; c.lineWidth = 3; c.strokeText(t, p.x, p.y); c.fillStyle = FA["hb-ort"]; c.fillText(t, p.x, p.y);
+      });
+    }
+    if (s < 0.22) return;
+    c.font = "500 11.5px " + fam;
+    var ges = {}, n = 0;
+    for (var i = 0; i < PF.lab.length && n < 70; i++) {
+      var L = PF.lab[i]; if (L.k >= 5 && s < 0.45) continue;
+      var p = schirm(L.x, L.y); if (p.x < 0 || p.y < 0 || p.x > BW || p.y > BH) continue;
+      var name = K.kopf.namen[L.n - 1], wd = c.measureText(name).width; if (L.l * s < wd + 16) continue;
+      var gk = L.n + ":" + Math.round(p.x / 220) + ":" + Math.round(p.y / 220); if (ges[gk]) continue;
+      var r = Math.max(wd, 14) / 2 + 3, b = [p.x - r, p.y - r, p.x + r, p.y + r]; if (!frei(b)) continue;
+      boxen.push(b); ges[gk] = 1; n++;
+      var w2 = L.w; if (w2 > Math.PI / 2) w2 -= Math.PI; if (w2 < -Math.PI / 2) w2 += Math.PI;
+      c.save(); c.translate(p.x, p.y); c.rotate(w2); c.strokeStyle = FA["hb-halo"]; c.lineWidth = 3; c.strokeText(name, 0, 0); c.fillStyle = FA["hb-text"]; c.fillText(name, 0, 0); c.restore();
+    }
+  }
+  function rr(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+  function nadeln() {
+    var c = cx, fam = getComputedStyle(o).fontFamily, T = S.T;
+    if (T.praxis) {
+      var p = schirm(T.praxis.x, T.praxis.y), g = S.wahl === "p" ? 1.2 : 1;
+      c.save(); c.translate(p.x, p.y); c.scale(g, g); c.shadowColor = "rgba(0,0,0,.3)"; c.shadowBlur = 6; c.shadowOffsetY = 2;
+      c.fillStyle = FA["schrift"]; rr(c, -14, -14, 28, 28, 8); c.fill(); c.shadowColor = "transparent"; c.strokeStyle = FA["flaeche"]; c.lineWidth = 2; c.stroke();
+      c.lineWidth = 2.2; c.lineCap = "round"; c.lineJoin = "round"; c.beginPath(); c.moveTo(-7, -1); c.lineTo(0, -7); c.lineTo(7, -1); c.moveTo(-5, -2.5); c.lineTo(-5, 7); c.lineTo(5, 7); c.lineTo(5, -2.5); c.stroke(); c.restore();
+    }
+    var L = [];
+    T.touren.forEach(function (t, ti) { t.punkte.forEach(function (p) { if (!p.praxis && p.gi >= 0) L.push({ p: p, id: t.stopps.indexOf(p.e) + "@" + ti }); }); });
+    L.sort(function (a, b) { return (S.wahl === a.id) - (S.wahl === b.id); });
+    var bel = L.map(function (a) { var q = schirm(a.p.x, a.p.y); return [q.x - 15, q.y - 15, q.x + 15, q.y + 15]; });
+    if (T.praxis) { var pq = schirm(T.praxis.x, T.praxis.y); bel.push([pq.x - 15, pq.y - 15, pq.x + 15, pq.y + 15]); }
+    function kol(b, ich) { for (var i = 0; i < bel.length; i++) { if (i === ich) continue; var q = bel[i]; if (b[0] < q[2] && b[2] > q[0] && b[1] < q[3] && b[3] > q[1]) return true; } return false; }
+    L.forEach(function (a, ai) {
+      var q = schirm(a.p.x, a.p.y), gw = S.wahl === a.id, r = gw ? 17 : 14, text = a.p.e.zeit + " · " + a.p.e.name;
+      c.font = "600 12.5px " + fam; var tw = c.measureText(text).width;
+      var re = [q.x + r - 4, q.y - 11, q.x + r + tw + 18, q.y + 11], li = [q.x - r - tw - 18, q.y - 11, q.x - r + 4, q.y + 11], b = null;
+      var rOk = re[2] < BW - 6 && !kol(re, ai), lOk = li[0] > 6 && !kol(li, ai);
+      if (rOk) b = re; else if (lOk) b = li; else if (gw) b = re[2] < BW - 6 ? re : li;
+      if (b) {
+        bel.push(b); c.shadowColor = "rgba(0,0,0,.18)"; c.shadowBlur = 8; c.shadowOffsetY = 2;
+        c.fillStyle = FA["flaeche"]; rr(c, b[0], b[1], b[2] - b[0], 22, 11); c.fill(); c.shadowColor = "transparent";
+        c.fillStyle = FA["schrift"]; c.textAlign = "left"; c.textBaseline = "middle"; c.fillText(text, b === re ? q.x + r + 8 : b[0] + 10, q.y + 0.5);
+      }
+      c.shadowColor = "rgba(0,0,0,.3)"; c.shadowBlur = 6; c.shadowOffsetY = 2;
+      c.fillStyle = FA["hb-" + art(a.p.e.kz)]; c.beginPath(); c.arc(q.x, q.y, r, 0, 7); c.fill(); c.shadowColor = "transparent";
+      c.strokeStyle = FA["flaeche"]; c.lineWidth = 2.5; c.stroke();
+      c.fillStyle = "#fff"; c.font = "700 " + (gw ? 16 : 14) + "px " + fam; c.textAlign = "center"; c.fillText(String(a.p.nr), q.x, q.y + 0.5);
+      a.sx = q.x; a.sy = q.y; a.r = r;
+    });
+    S.nadeln = L;
+  }
+  // Ansicht
+  function frei() {
+    if (kachel()) {
+      // freie Fläche aus dem, was gerade über der Karte liegt
+      var R = o.getBoundingClientRect(), F = { l: 20, t: 0, r: BW - 64, b: BH - 20 };
+      [".hb-oben", ".hb-kopf", ".hb-zahlen"].forEach(function (s0) { var el = o.querySelector(s0); if (!el) return; var q = el.getBoundingClientRect(); if (q.height && q.top - R.top < BH * 0.4 && getComputedStyle(el).position === "fixed" || s0 === ".hb-oben") F.t = Math.max(F.t, q.bottom - R.top + 20); });
+      var b0 = blatt.getBoundingClientRect();
+      if (b0.width > BW * 0.6) F.b = Math.min(F.b, b0.top - R.top - 16); else if (b0.left - R.left > BW / 2) F.r = Math.min(F.r, b0.left - R.left - 20); else F.l = Math.max(F.l, b0.right - R.left + 20);
+      var kn = o.querySelector(".hb-knoepfe").getBoundingClientRect(); if (kn.left - R.left < F.r) F.r = Math.min(F.r, kn.left - R.left - 10);
+      F.r -= 110; // Platz für die Namensschilder rechts der Nadeln
+      return F;
+    }
+    var o2 = o.querySelector(".hb-oben").getBoundingClientRect().bottom - o.getBoundingClientRect().top; if (BW >= 760) return { l: 400, t: o2 + 20, r: BW - 70, b: BH - 50 }; return { l: 20, t: o2 + 50, r: BW - 64, b: BH - blattH() - 30 }; }
+  var anim = 0;
+  function fliege(z, d) {
+    var a = { s: S.ans.s, x: S.ans.x, y: S.ans.y }, t0 = performance.now();
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) d = 0;
+    cancelAnimationFrame(anim);
+    (function sch(t) { var f = d ? Math.min(1, (t - t0) / d) : 1, e = 1 - Math.pow(1 - f, 3); S.ans.s = Math.exp(Math.log(a.s) + (Math.log(z.s) - Math.log(a.s)) * e); S.ans.x = a.x + (z.x - a.x) * e; S.ans.y = a.y + (z.y - a.y) * e; zeichne(); if (f < 1) anim = requestAnimationFrame(sch); })(t0);
+  }
+  function ziel(x0, y0, x1, y1) {
+    var F = frei(), w = Math.max(x1 - x0, 300), h = Math.max(y1 - y0, 300), s = Math.max(0.02, Math.min(2.5, Math.min((F.r - F.l - 70) / w, (F.b - F.t - 40) / h)));
+    return { s: s, x: (x0 + x1) / 2 - ((F.l + F.r) / 2 - BW / 2) / s, y: (y0 + y1) / 2 - ((F.t + F.b) / 2 - BH / 2) / s };
+  }
+  function ganz(d) {
+    var x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; function rein(x, y) { if (x == null) return; x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); }
+    if (S.T) S.T.touren.forEach(function (t) { t.punkte.forEach(function (p) { rein(p.x, p.y); }); t.wege.forEach(function (w) { if (w.r) w.r.pfad.forEach(function (n) { rein(K.X[n], K.Y[n]); }); }); });
+    if (x0 > x1 && S.T && S.T.praxis) { rein(S.T.praxis.x - 1500, S.T.praxis.y - 1500); rein(S.T.praxis.x + 1500, S.T.praxis.y + 1500); }
+    if (x0 <= x1) fliege(ziel(x0, y0, x1, y1), d == null ? 500 : d);
+  }
+  function zeige(p) { if (p && p.x != null) fliege(ziel(p.x - 350, p.y - 350, p.x + 350, p.y + 350), 450); }
+  // Gesten
+  var zg = {}, st = null, letzter = 0;
+  cv.addEventListener("pointerdown", function () { if (S.folgen) { S.folgen = false; ortKnopf(); } });
+  cv.addEventListener("pointerdown", function (e) { try { cv.setPointerCapture(e.pointerId); } catch (x) {} zg[e.pointerId] = { x: e.clientX, y: e.clientY }; st = { ans: Object.assign({}, S.ans), z: JSON.parse(JSON.stringify(zg)), t: performance.now(), x: e.clientX, y: e.clientY }; cancelAnimationFrame(anim); });
+  cv.addEventListener("pointermove", function (e) {
+    if (!zg[e.pointerId] || !st) return; zg[e.pointerId] = { x: e.clientX, y: e.clientY };
+    var ids = Object.keys(zg), R0 = cv.getBoundingClientRect();
+    if (ids.length === 1) { var a = st.z[ids[0]]; if (!a) return; var b = zg[ids[0]]; S.ans.x = st.ans.x - (b.x - a.x) / S.ans.s; S.ans.y = st.ans.y - (b.y - a.y) / S.ans.s; }
+    else { var a0 = st.z[ids[0]], a1 = st.z[ids[1]], b0 = zg[ids[0]], b1 = zg[ids[1]]; if (!a0 || !a1) return;
+      var s = Math.max(0.02, Math.min(4, st.ans.s * Math.hypot(b0.x - b1.x, b0.y - b1.y) / Math.max(1, Math.hypot(a0.x - a1.x, a0.y - a1.y))));
+      var m0 = { x: (a0.x + a1.x) / 2 - R0.left, y: (a0.y + a1.y) / 2 - R0.top }, m1 = { x: (b0.x + b1.x) / 2 - R0.left, y: (b0.y + b1.y) / 2 - R0.top };
+      var wx = st.ans.x + (m0.x - BW / 2) / st.ans.s, wy = st.ans.y + (m0.y - BH / 2) / st.ans.s; S.ans.s = s; S.ans.x = wx - (m1.x - BW / 2) / s; S.ans.y = wy - (m1.y - BH / 2) / s; }
+    malen();
+  });
+  function ende(e) {
+    if (!zg[e.pointerId]) return;
+    var kurz = st && performance.now() - st.t < 250 && Math.hypot(e.clientX - st.x, e.clientY - st.y) < 6 && Object.keys(zg).length === 1;
+    delete zg[e.pointerId]; st = Object.keys(zg).length ? { ans: Object.assign({}, S.ans), z: JSON.parse(JSON.stringify(zg)), t: 0 } : null;
+    if (kurz) { var R0 = cv.getBoundingClientRect(); tipp(e.clientX - R0.left, e.clientY - R0.top); }
+  }
+  cv.addEventListener("pointerup", ende); cv.addEventListener("pointercancel", ende);
+  function tipp(x, y) {
+    for (var i = S.nadeln.length - 1; i >= 0; i--) { var n = S.nadeln[i]; if (Math.hypot(n.sx - x, n.sy - y) < n.r + 8) { S.wahl = n.id; S.offen = null; liste(); var el = o.querySelector('[data-wahl="' + n.id + '"]'); if (el) el.scrollIntoView({ block: "nearest", behavior: "smooth" }); malen(); return; } }
+    if (S.T && S.T.praxis) { var q = schirm(S.T.praxis.x, S.T.praxis.y); if (Math.hypot(q.x - x, q.y - y) < 22) { S.wahl = "p"; liste(); malen(); return; } }
+    var j = performance.now(); if (j - letzter < 300) { var w = welt(x, y), s = Math.min(4, S.ans.s * 2); fliege({ s: s, x: w.x - (x - BW / 2) / s, y: w.y - (y - BH / 2) / s }, 250); } letzter = j;
+  }
+  cv.addEventListener("wheel", function (e) { e.preventDefault(); var R0 = cv.getBoundingClientRect(), px = e.clientX - R0.left, py = e.clientY - R0.top, w = welt(px, py), s = Math.max(0.02, Math.min(4, S.ans.s * Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0022)))); S.ans.s = s; S.ans.x = w.x - (px - BW / 2) / s; S.ans.y = w.y - (py - BH / 2) / s; malen(); }, { passive: false });
+  // Blatt
+  function stufen() { var H = o.clientHeight; return [Math.min(222, H * 0.32), H * 0.5, H * 0.9]; }
+  function blattH() { return BW >= 760 ? 0 : kachel() ? blatt.offsetHeight : stufen()[STUFE]; }
+  function setze(h, gl) { if (kachel()) { blatt.style.setProperty("--y", "0px"); return; } var H = blatt.offsetHeight || o.clientHeight * 0.92; blatt.classList.toggle("gleitet", !!gl); blatt.style.setProperty("--y", Math.max(0, H - h) + "px"); }
+  function stufe(n) { STUFE = n; setze(stufen()[n], true); }
+  (function () {
+    var zug = null;
+    function los(e) { if (BW >= 760 || e.target.closest("button:not(.hb-griff),input,a")) return; zug = { y: e.clientY, h: stufen()[STUFE], t: performance.now() }; blatt.classList.remove("gleitet"); try { e.target.setPointerCapture(e.pointerId); } catch (x) {} }
+    function zieh(e) { if (zug) setze(Math.max(120, zug.h - (e.clientY - zug.y)), false); }
+    function aus(e) {
+      if (!zug) return; var dy = e.clientY - zug.y, v = dy / Math.max(1, performance.now() - zug.t), h = zug.h - dy, H = stufen(); zug = null;
+      if (Math.abs(dy) < 5) { stufe(STUFE === 0 ? 1 : STUFE === 1 ? 2 : 1); return; }
+      var n = 0, bd = 1e9; H.forEach(function (x, i) { if (Math.abs(x - h) < bd) { bd = Math.abs(x - h); n = i; } });
+      if (v > 0.6) n = Math.max(0, STUFE - 1); else if (v < -0.6) n = Math.min(2, STUFE + 1); stufe(n);
+    }
+    [$(".hb-griff"), $(".hb-kopf")].forEach(function (el) { el.addEventListener("pointerdown", los); el.addEventListener("pointermove", zieh); el.addEventListener("pointerup", aus); el.addEventListener("pointercancel", aus); });
+  })();
+  // Liste
+  function liste() {
+    var T = S.T, d = new Date(S.datum + "T12:00:00"), tage = hbTage(), ti = tage.indexOf(S.datum);
+    $(".hb-tag").innerHTML = esc((o.clientWidth >= 520 ? WT[d.getDay()] : WK[d.getDay()]) + ", " + d.getDate() + ". " + MON[d.getMonth()]) + "<small>" + (S.datum === heute() ? "HEUTE" : d.getFullYear()) + "</small>";
+    o.querySelector('.hb-vor[data-r="-1"]').disabled = !tage.some(function (x) { return x < S.datum; });
+    o.querySelector('.hb-vor[data-r="1"]').disabled = !tage.some(function (x) { return x > S.datum; });
+    if (!S.geladen) { $(".hb-unter").textContent = "Karte wird geladen …"; return; }
+    if (!T || !T.touren.length) {
+      $(".hb-unter").textContent = "Keine Hausbesuche an diesem Tag"; $(".hb-zahlen").innerHTML = ""; $(".hb-fk").innerHTML = "";
+      $(".hb-ablauf").innerHTML = '<li class="hb-leer"><b>Keine Hausbesuche</b>Im Dienstplan ist an diesem Tag kein Termin als Hausbesuch markiert.</li>'; return;
+    }
+    var g = T.gesamt, eT = T.touren[0], lT = T.touren[T.touren.length - 1], lz = lT.stopps[lT.stopps.length - 1];
+    $(".hb-unter").textContent = g.n + (g.n === 1 ? " Hausbesuch" : " Hausbesuche") + " · " + eT.stopps[0].zeit + " bis " + uhr(minVon(lz.zeit) + (+lz.dauer || 0)) + " Uhr";
+    var F = fahrten(), eing = T.touren.map(function (t) { return F[fkSchluessel(S.datum, t.teil)]; }), kmE = eing.every(function (e) { return e && e.km != null; }) ? eing.reduce(function (s, e) { return s + e.km; }, 0) : null;
+    var kmZ = kmE != null ? kmE : g.offen ? null : g.m / 1000;
+    $(".hb-zahlen").innerHTML =
+      '<div class="hb-zahl"><small>Strecke</small><b>' + (kmZ == null ? "offen" : kmTxt(kmZ)) + (kmZ == null ? "" : '<span>km</span>') + '</b></div>' +
+      '<div class="hb-zahl"><small>Fahrzeit</small><b>' + Math.round(g.s / 60) + '<span>Min</span></b></div>' +
+      '<div class="hb-zahl"><small>Fahrtkosten</small><b>' + (kmZ == null ? "–" : euroTxt(cent(kmZ))) + (kmZ == null ? "" : '<span>€</span>') + '</b></div>';
+    var fkTxt;
+    if (S.datum > heute()) fkTxt = "Wird am Tag selbst in die Fahrtkosten eingetragen.";
+    else if (g.offen) fkTxt = "Noch nicht in den Fahrtkosten: " + (g.offen === 1 ? "eine Adresse fehlt." : g.offen + " Adressen fehlen.");
+    else fkTxt = "In den Fahrtkosten eingetragen" + (eing.some(function (e) { return e && e.korr; }) ? " (km von dir korrigiert)" : "") + ".";
+    $(".hb-fk").innerHTML = '<button type="button" class="hb-fk-zeile" data-k="fk"><span>' + esc(fkTxt) + '</span><b>Fahrtkosten ›</b></button>';
+    var h = "", nr = 0;
+    T.bloecke.forEach(function (b) {
+      if (b.typ === "praxis") { h += '<li class="hb-praxisblock"><i></i><span>Praxis · ' + b.n + (b.n === 1 ? " Patient" : " Patienten") + '</span><span>' + uhr(b.von) + '–' + uhr(b.bis) + '</span></li>'; return; }
+      var t = b.t, ti2 = T.touren.indexOf(t);
+      t.punkte.forEach(function (p, i) {
+        var w = i > 0 ? t.wege[i - 1] : null; if (w) h += fahrtZeile(w);
+        if (p.praxis) {
+          var zt = "", zs = "";
+          if (i === 0 && t.wege[0] && t.wege[0].r) { zt = uhr(minVon(t.punkte[1].e.zeit) - Math.ceil(t.wege[0].r.s / 60)); zs = "Abfahrt"; }
+          else if (i > 0 && w && w.r) { var vp = t.punkte[i - 1].e; zt = uhr(minVon(vp.zeit) + (+vp.dauer || 0) + Math.ceil(w.r.s / 60)); zs = "Ankunft"; }
+          h += '<li><button type="button" class="hb-halt' + (S.wahl === "p" ? " an" : "") + '" data-wahl="p"><span class="hb-nr hb-praxis">' + IC.haus + '</span><span class="hb-wer"><b>Praxis</b><span>' + esc(PRAXIS) + '</span></span><span class="hb-zeit">' + (zt ? "ca. " + zt : "") + '<small>' + zs + '</small></span></button></li>';
+          return;
+        }
+        nr++; p.nr = nr;
+        var e = p.e, a = art(e.kz), id = t.stopps.indexOf(e) + "@" + ti2;
+        var adr = p.gi >= 0 ? esc(p.adresse) : p.adresse ? '<span class="hb-fehlt">Nicht auf der Karte: ' + esc(p.adresse) + '</span>' : '<span class="hb-fehlt">Adresse fehlt · antippen</span>';
+        h += '<li><button type="button" class="hb-halt' + (S.wahl === id ? " an" : "") + '" data-wahl="' + id + '"><span class="hb-nr" style="background:var(--hb-' + a + ')">' + nr + '</span><span class="hb-wer"><b>' + esc(e.name) + '<span class="hb-kz" style="--a:var(--hb-' + a + ')">' + esc(e.kz || "") + '</span></b><span>' + adr + '</span>' + (i > 0 && t.wege[i - 1] && t.wege[i - 1].r ? '<span class="hb-hin">' + IC.auto + ' ' + kmTxt(t.wege[i - 1].r.m / 1000) + ' km · ca. ' + Math.ceil(t.wege[i - 1].r.s / 60) + ' Min von ' + esc(t.punkte[i - 1].praxis ? "der Praxis" : t.punkte[i - 1].e.name) + '</span>' : "") + '</span><span class="hb-zeit">' + esc(e.zeit) + '<small>' + (+e.dauer || 0) + ' Min</small></span></button>' +
+          (S.offen === schluessel(e.name) ? adrFeld(e.name, p.adresse) : S.wahl === id && p.gi >= 0 ? aktion(p, e.name) : "") + '</li>';
+      });
+    });
+    $(".hb-ablauf").innerHTML = h;
+    var inp = o.querySelector(".hb-adr input"); if (inp) { inp.focus(); vorschlag(inp); }
+  }
+  // Navigieren übergibt nur den Zielpunkt an Apple Karten, keinen Namen
+  function aktion(p, name) {
+    var lat = K.kopf.lat0 - p.y / K.kopf.ky, lon = K.kopf.lon0 + p.x / K.kopf.kx;
+    var url = "https://maps.apple.com/?daddr=" + lat.toFixed(6) + "," + lon.toFixed(6) + "&dirflg=d";
+    return '<div class="hb-aktion"><a class="hb-navi" href="' + url + '" target="_blank" rel="noopener">' + IC.navi + 'Navigieren</a>' +
+      '<button type="button" class="hb-mini" data-k="adr-edit" data-n="' + esc(name) + '">Adresse ändern</button>' +
+      '<small>Öffnet Apple Karten. Übergeben wird nur der Zielpunkt, kein Name.</small></div>';
+  }
+  function fahrtZeile(w) {
+    if (!w.r) return '<li class="hb-fahrt"><div>Strecke offen, Adresse fehlt</div></li>';
+    var min = Math.ceil(w.r.s / 60), chip = "";
+    if (w.luecke != null) chip = min <= w.luecke ? '<span class="hb-luecke ok">passt in ' + w.luecke + ' Min Lücke</span>' : '<span class="hb-luecke knapp">' + (w.luecke <= 0 ? "keine Lücke" : "knapp: " + w.luecke + " Min Lücke") + '</span>';
+    return '<li class="hb-fahrt"><div><span>' + IC.auto + ' ' + kmTxt(w.r.m / 1000) + ' km · ca. ' + min + ' Min</span>' + chip + '</div></li>';
+  }
+  function neu(behalte) {
+    S.T = tourBerechnen(S.datum, true);
+    if (S.T && S.datum <= heute()) tagEintragen(S.T);
+    if (!behalte) S.wahl = null;
+    var erst = !S.geladen; S.geladen = true;
+    liste(); if (!behalte) ganz(erst ? 0 : 500); else malen();
+  }
+  OV.neu = neu;
+  o.addEventListener("click", function (ev) {
+    var t = ev.target.closest("button"); if (!t || !o.contains(t)) return;
+    if (t.classList.contains("hb-vor")) { var tage = hbTage(), r = +t.getAttribute("data-r"), n = r < 0 ? tage.filter(function (x) { return x < S.datum; }).pop() : tage.filter(function (x) { return x > S.datum; })[0]; if (n) { S.datum = n; S.offen = null; neu(); } return; }
+    var k = t.getAttribute("data-k");
+    if (k === "ganz") { S.wahl = null; liste(); ganz(); return; }
+    if (k === "ort") { ortAn(true); return; }
+    if (k === "praxis") { S.wahl = "p"; liste(); zeige(S.T && S.T.praxis); return; }
+    if (k === "zuordnen") { zuordnen(t.getAttribute("data-n"), t.getAttribute("data-key")); S.offen = null; neu(true); return; }
+    if (k === "adr-edit") { S.offen = schluessel(t.getAttribute("data-n")); liste(); stufe(2); return; }
+    if (k === "fk") { fahrtkostenOeffnen(S.datum.slice(0, 7), "Tour", S.datum); return; }
+    if (t.hasAttribute("data-st")) { var inp = o.querySelector(".hb-adr input"); inp.value = t.getAttribute("data-st") + " "; inp.focus(); vorschlag(inp); return; }
+    if (t.hasAttribute("data-wahl")) {
+      var w = t.getAttribute("data-wahl"); S.wahl = w;
+      if (w === "p") { S.offen = null; liste(); zeige(S.T.praxis); return; }
+      var ps = w.split("@"), tt = S.T.touren[+ps[1]], e = tt.stopps[+ps[0]], p = tt.punkte.filter(function (q) { return q.e === e; })[0];
+      if (p.gi < 0) { S.offen = S.offen === schluessel(e.name) ? null : schluessel(e.name); liste(); stufe(2); return; }
+      S.offen = null; liste(); zeige(p);
+    }
+  });
+  adrEvents(o, function () { S.offen = null; neu(true); });
+  // Start
+  farben(); groesse(); setze(blattH(), false);
+  var ro = new ResizeObserver(function () { groesse(); setze(blattH(), false); }); ro.observe(o);
+  var mo = new MutationObserver(function () { farben(); malen(); }); mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  // Eigener Standort: nur auf dem Gerät, nur solange die Karte offen und sichtbar ist
+  S.ort = null; S.wid = null; S.folgen = false;
+  function hinweis(t) { var h = $(".hb-hinweis"); h.textContent = t || ""; h.hidden = !t; clearTimeout(S.hT); if (t) S.hT = setTimeout(function () { h.hidden = true; }, 5000); }
+  function ortKnopf() { var b = o.querySelector('[data-k="ort"]'); if (b) { b.setAttribute("aria-pressed", S.folgen ? "true" : "false"); b.classList.toggle("an", S.wid != null); } }
+  function ortAn(folgen) {
+    if (!navigator.geolocation) { hinweis("Dieses Gerät gibt keinen Standort heraus."); return; }
+    if (folgen) S.folgen = true;
+    ortRechnen(); if (S.ort && K && folgen) fliege({ s: Math.max(S.ans.s, 0.35), x: S.ort.x, y: S.ort.y }, 400);
+    ortKnopf();
+    if (S.wid != null) return;
+    S.wid = navigator.geolocation.watchPosition(function (p) {
+      var erst = !S.ort, c = p.coords;
+      S.roh = c; S.ort = null; ortRechnen(); if (!S.ort) return;
+      if (S.folgen) { if (erst) fliege({ s: Math.max(S.ans.s, 0.35), x: S.ort.x, y: S.ort.y }, 400); else { S.ans.x = S.ort.x; S.ans.y = S.ort.y; } }
+      malen(); ortKnopf();
+    }, function (err) {
+      ortAus(); S.folgen = false; ortKnopf();
+      hinweis(err && err.code === 1 ? "Standort ist für Doku-Fix nicht erlaubt. Das kannst du in den iPhone-Einstellungen ändern." : "Standort gerade nicht verfügbar.");
+    }, { enableHighAccuracy: true, maximumAge: 5000, timeout: 20000 });
+    ortKnopf();
+  }
+  function ortAus() { if (S.wid != null) { try { navigator.geolocation.clearWatch(S.wid); } catch (x) {} } S.wid = null; ortKnopf(); }
+  function ortRechnen() { if (S.roh && K && !S.ort) S.ort = { x: (S.roh.longitude - K.kopf.lon0) * K.kopf.kx, y: (K.kopf.lat0 - S.roh.latitude) * K.kopf.ky, gen: S.roh.accuracy || 0 }; }
+  function standortMalen() {
+    ortRechnen(); if (!S.ort) return;
+    var c = cx, p = schirm(S.ort.x, S.ort.y), r = Math.max(0, S.ort.gen * S.ans.s);
+    c.setTransform(DPR, 0, 0, DPR, 0, 0);
+    if (r > 14) { c.fillStyle = "rgba(10,132,255,.14)"; c.beginPath(); c.arc(p.x, p.y, r, 0, 7); c.fill(); }
+    c.shadowColor = "rgba(0,0,0,.3)"; c.shadowBlur = 6; c.fillStyle = "#fff"; c.beginPath(); c.arc(p.x, p.y, 10, 0, 7); c.fill(); c.shadowColor = "transparent";
+    c.fillStyle = "#0A84FF"; c.beginPath(); c.arc(p.x, p.y, 7, 0, 7); c.fill();
+  }
+  function sichtbar() { if (document.hidden) { S.warAn = S.wid != null; ortAus(); } else if (S.warAn) { S.warAn = false; ortAn(false); } }
+  document.addEventListener("visibilitychange", sichtbar);
+  // schon erlaubt? Dann gleich mitlaufen lassen, sonst erst auf Knopfdruck fragen
+  try { navigator.permissions && navigator.permissions.query({ name: "geolocation" }).then(function (q) { if (q.state === "granted" && OV && OV.el === o) ortAn(false); }).catch(function () {}); } catch (x) {}
+  OV.aufraeumen = function () { ro.disconnect(); mo.disconnect(); cancelAnimationFrame(anim); ortAus(); document.removeEventListener("visibilitychange", sichtbar); };
+  liste();
+  karte().then(function () {
+    if (!OV || OV.el !== o) return;
+    pfade(); var pi = geocode(PRAXIS); if (pi >= 0) { S.ans.x = K.AX[pi]; S.ans.y = K.AY[pi]; S.ans.s = 0.1; }
+    neu();
+  }).catch(function () { $(".hb-unter").textContent = "Die Offline-Karte konnte nicht geladen werden. Beim ersten Mal braucht Doku-Fix dafür Internet."; });
+}
+
+/* ---------- Adresse eintragen (Tour und Fahrtkosten) ---------- */
+function adrFeld(name, wert) {
+  var K0 = kandidaten(name), zu = K0.length ? '<div class="hb-zuord"><small>Aus deiner Liste zuordnen</small><div class="hb-vorschl">' + K0.map(function (c) { return '<button type="button" data-k="zuordnen" data-n="' + esc(name) + '" data-key="' + esc(c.k) + '">' + esc(c.name) + '<i>' + esc(c.adresse) + '</i></button>'; }).join("") + '</div><small>oder Adresse neu eintragen:</small></div>' : "";
+  return zu + '<div class="hb-adr"><input type="text" autocomplete="off" enterkeyhint="done" placeholder="Straße und Hausnummer" aria-label="Adresse von ' + esc(name) + '" value="' + esc(wert) + '" data-name="' + esc(name) + '"><div class="hb-vorschl"></div><small>Bleibt nur auf diesem Gerät.</small></div>';
+}
+function vorschlag(inp) {
+  var box = inp.parentNode.querySelector(".hb-vorschl"), hin = inp.parentNode.querySelector("small"), v = inp.value;
+  if (!K) { hin.textContent = "Karte wird geladen …"; return; }
+  var m = v.match(/^(.+?)\s*(\d+\s*[a-zA-Z]?)?\s*$/), st = m ? normSt(m[1]) : "";
+  if (/\d/.test(v) && geocode(v) >= 0) { hin.className = "gut"; hin.textContent = "Auf der Karte gefunden"; box.innerHTML = ""; return; }
+  hin.className = v.trim() ? "schlecht" : ""; hin.textContent = v.trim() ? (/\d/.test(v) ? "Diese Adresse kennt die Karte nicht" : "Hausnummer fehlt noch") : "Bleibt nur auf diesem Gerät.";
+  if (st.length < 3 || /\d/.test(v)) { box.innerHTML = ""; return; }
+  box.innerHTML = K.strNamen.filter(function (s) { return s[0].indexOf(st) === 0; }).slice(0, 5).map(function (s) { return '<button type="button" data-st="' + esc(s[1]) + '">' + esc(s[1]) + '</button>'; }).join("");
+}
+function adrEvents(o, fertig) {
+  o.addEventListener("input", function (ev) { if (ev.target.closest(".hb-adr")) vorschlag(ev.target); });
+  o.addEventListener("keydown", function (ev) { if (ev.key === "Enter" && ev.target.closest(".hb-adr")) ev.target.blur(); });
+  o.addEventListener("focusout", function (ev) {
+    var inp = ev.target; if (!inp.closest || !inp.closest(".hb-adr")) return;
+    setTimeout(function () {
+      if (document.activeElement && document.activeElement.closest && document.activeElement.closest(".hb-adr") === inp.closest(".hb-adr")) return;
+      var v = inp.value.trim(); if (!v) return;
+      adrSetzen(inp.getAttribute("data-name"), "adresse", v); fertig(inp);
+    }, 160);
+  });
+}
+
+/* ---------- Fahrtkosten-Ansicht ---------- */
+function fahrtkostenOeffnen(ym, zurueck, markiert) {
+  var o = oeffnen(NAME, zurueck || "Mehr");
+  o.classList.add("hb-fk-seite");
+  var S = { ym: ym || heute().slice(0, 7), auf: null, markiert: markiert || null, adrAuf: false, add: null };
+  OV.S = S;
+  function zeichne() {
+    var L = monatsListe(S.ym), t = summe(L), y = +S.ym.slice(0, 4), m = +S.ym.slice(5, 7);
+    var A = adressen(), ak = Object.keys(A).sort(function (a, b) { return (A[a].name || a).localeCompare(A[b].name || b, "de"); });
+    var ohne = ak.filter(function (k) { return !(A[k].adresse || "").trim(); }).length;
+    var h = '<div class="hb-leiste"><button type="button" class="hb-zurueck" data-k="zu">' + IC.zur + '<span>' + esc(OV.zurueck) + '</span></button></div>' +
+      '<div class="hb-seite"><h2>Fahrtkosten/<wbr>Hausbesuche</h2>' +
+      '<div class="hb-monat"><button type="button" data-k="mon" data-r="-1" aria-label="Vorheriger Monat">' + IC.li + '</button><b>' + MON[m - 1] + ' ' + y + '</b><button type="button" data-k="mon" data-r="1" aria-label="Nächster Monat">' + IC.re + '</button></div>' +
+      '<div class="hb-zahlen"><div class="hb-zahl"><small>Kilometer</small><b>' + kmTxt(t.km) + '<span>km</span></b></div><div class="hb-zahl"><small>Betrag</small><b>' + euroTxt(t.cent) + '<span>€</span></b></div><div class="hb-zahl"><small>Tage</small><b>' + L.filter(function (e, i) { return !i || L[i - 1].datum !== e.datum; }).length + '</b></div></div>' +
+      (t.offen ? '<p class="hb-warn">' + (t.offen === 1 ? "Ein Tag hat" : t.offen + " Tage haben") + ' noch keine km, weil eine Adresse fehlt. Unten unter „Adressen“ nachtragen.</p>' : "") +
+      '<ul class="hb-liste">' + (L.length ? L.map(zeile).join("") : '<li class="hb-leer"><b>Noch keine Fahrten</b>Hausbesuche aus dem Dienstplan werden am Tag selbst eingetragen.</li>') + '</ul>' +
+      (S.add ? addForm() : '<button type="button" class="hb-knopf zwei" data-k="add">Tag nachtragen</button>') +
+      (S.fehlt && S.fehlt.length ? fehltBox() : '<button type="button" class="hb-knopf" data-k="jpg"' + (L.length ? "" : " disabled") + '>Abrechnung als JPEG speichern</button>') + '<p class="hb-hinw hb-jpg-hinw"></p>' +
+      '<h3>Einstellungen</h3><div class="hb-gruppe">' +
+
+      '<label class="hb-opt"><span>Name auf der Abrechnung<small>Therapeut/in, steht oben auf dem Blatt</small></span><input type="text" id="hb-th" value="' + esc(liesText(TH_KEY)) + '" placeholder="Vor- und Nachname" autocomplete="name"></label>' +
+      '<button type="button" class="hb-opt hb-auf" data-k="adr" aria-expanded="' + S.adrAuf + '"><span>Adressen der Hausbesuch-Patienten<small>' + ak.length + (ak.length === 1 ? " Patient" : " Patienten") + (ohne ? " · " + ohne + " ohne Adresse" : "") + '</small></span><b>' + (S.adrAuf ? "‹" : "›") + '</b></button>' +
+      (S.adrAuf ? adrListe(A, ak) : "") + '</div>' +
+      '<p class="hb-hinw">Die km rechnet Doku-Fix offline mit dem Straßennetz von OpenStreetMap, 0,30 € pro km. Korrigierst du einen Wert, merkt sich Doku-Fix die Strecke und nimmt sie beim nächsten Mal mit denselben Patienten wieder. Alles bleibt auf diesem Gerät und ist in der Sicherung enthalten.</p></div>';
+    o.innerHTML = h;
+    var mk = S.markiert && o.querySelector('[data-tag="' + S.markiert + '"]'); if (mk) { mk.scrollIntoView({ block: "center" }); S.markiert = null; }
+  }
+  function zeile(e) {
+    var d = new Date(e.datum + "T12:00:00"), auf = S.auf === e.key, namen = (e.namen || []).map(function (n) { return abrName(n).replace(/ /g, "\u00a0"); }).join(" – ");
+    var teil = e.teil ? (e.start && !e.ende ? "nach der Praxis" : e.ende && !e.start ? "vor der Praxis" : "Tour " + e.teil) : "";
+    var h = '<li class="hb-z' + (auf ? " auf" : "") + '" data-tag="' + e.datum + '"><button type="button" class="hb-zk" data-k="z" data-key="' + esc(e.key) + '" aria-expanded="' + auf + '">' +
+      '<span class="hb-zd"><b>' + datKurz(e.datum) + '</b><small>' + WK[d.getDay()] + '</small></span>' +
+      '<span class="hb-zn">' + esc(namen) + (teil ? '<small>' + teil + '</small>' : "") + '</span>' +
+      '<span class="hb-zkm' + (e.km == null ? " offen" : "") + '">' + kmTxt(e.km) + (e.km == null ? "" : " km") + (e.korr ? '<small>korrigiert</small>' : e.quelle === "hand" ? '<small>nachgetragen</small>' : "") + '</span></button>';
+    if (auf) {
+      h += '<div class="hb-zx"><label class="hb-kmfeld"><span>Kilometer</span><input type="text" inputmode="decimal" id="hb-km" value="' + (e.km == null ? "" : String(e.km).replace(".", ",")) + '" placeholder="z. B. 6,8"></label>' +
+        (e.kmKarte != null ? '<p class="hb-hinw">Laut Karte ' + kmTxt(e.kmKarte) + ' km' + (e.km !== e.kmKarte ? ' · <button type="button" class="hb-link" data-k="karte-km" data-key="' + esc(e.key) + '">übernehmen</button>' : "") + '</p>' : "") +
+        '<div class="hb-zx-kn"><button type="button" class="hb-knopf" data-k="km" data-key="' + esc(e.key) + '">Speichern</button>' +
+        (plaene()[e.datum] ? '<button type="button" class="hb-knopf zwei" data-k="tour" data-tag="' + e.datum + '">' + IC.karte + ' Auf der Karte</button>' : "") +
+        '<button type="button" class="hb-knopf weg" data-k="weg" data-key="' + esc(e.key) + '">Entfernen</button></div></div>';
+    }
+    return h + "</li>";
+  }
+  function adrListe(A, ak) {
+    if (!ak.length) return '<p class="hb-hinw hb-innen">Noch leer. Adressen trägst du in der Tour ein, wenn du einen Patienten ohne Adresse antippst.</p>';
+    return '<ul class="hb-adrliste">' + ak.map(function (k) {
+      var e = A[k];
+      var vo = (e.abr || "").trim() || (e.alias && e.alias.length ? abrName(e.alias[0]) : "");
+      return '<li><b>' + esc(e.name || k) + (e.alias && e.alias.length ? '<small>im Dienstplan: ' + esc(e.alias.join(", ")) + '</small>' : "") + '</b><div class="hb-adr"><input type="text" autocomplete="off" placeholder="Straße und Hausnummer" aria-label="Adresse von ' + esc(e.name || k) + '" value="' + esc(e.adresse || "") + '" data-name="' + esc(e.name || k) + '"><div class="hb-vorschl"></div><small></small></div>' +
+        '<label class="hb-abr"><span>Vor- und Nachname für die Abrechnung</span><input type="text" data-abr="' + esc(e.name || k) + '" value="' + esc(vo) + '" placeholder="Vorname ' + esc(e.name || k) + '" autocomplete="off"></label></li>';
+    }).join("") + '</ul>';
+  }
+  function fehltBox() {
+    return '<div class="hb-fehltbox"><b>Für die Abrechnung fehlen noch Vornamen</b><p class="hb-hinw">Trag Vor- und Nachname ein. Doku-Fix merkt sich das für die nächsten Monate.</p>' +
+      S.fehlt.map(function (n) { return '<label class="hb-abr"><span>' + esc(n) + '</span><input type="text" data-abr="' + esc(n) + '" value="" placeholder="Vorname ' + esc(abrName(n)) + '" autocomplete="off"></label>'; }).join("") +
+      '<div class="hb-zx-kn"><button type="button" class="hb-knopf" data-k="jpg-ok">Abrechnung speichern</button><button type="button" class="hb-knopf zwei" data-k="jpg-trotzdem">Ohne Vornamen speichern</button></div></div>';
+  }
+  function addForm() {
+    var A = adressen(), ak = Object.keys(A);
+    return '<div class="hb-add"><h3>Tag nachtragen</h3><label class="hb-kmfeld"><span>Datum</span><input type="date" id="hb-add-d" value="' + S.add.datum + '"></label>' +
+      '<p class="hb-hinw">Patienten in der gefahrenen Reihenfolge antippen.</p><div class="hb-chips">' + ak.map(function (k) { var i = S.add.namen.indexOf(A[k].name || k); return '<button type="button" data-k="add-n" data-n="' + esc(A[k].name || k) + '" class="' + (i >= 0 ? "an" : "") + '">' + (i >= 0 ? '<i>' + (i + 1) + '</i>' : "") + esc(A[k].name || k) + '</button>'; }).join("") + '</div>' +
+      (S.add.namen.length ? '<p class="hb-hinw">' + esc(S.add.namen.join(" → ")) + '</p>' : "") +
+      '<div class="hb-zx-kn"><button type="button" class="hb-knopf" data-k="add-ok"' + (S.add.namen.length ? "" : " disabled") + '>Eintragen</button><button type="button" class="hb-knopf zwei" data-k="add-ab">Abbrechen</button></div></div>';
+  }
+  function speichereKm(key, km) {
+    var F = fahrten(), e = F[key]; if (!e) return;
+    e.km = km; e.korr = km != null && e.kmKarte !== km;
+    if (e.rk) { var R = routen(); if (e.korr) R[e.rk] = km; else delete R[e.rk]; schreib(RT_KEY, R); }
+    schreib(FK_KEY, F);
+  }
+  o.addEventListener("click", async function (ev) {
+    var t = ev.target.closest("button"); if (!t) return; var k = t.getAttribute("data-k"), key = t.getAttribute("data-key");
+    if (k === "zu") { schliessen(); return; }
+    if (k === "mon") { var d = new Date(+S.ym.slice(0, 4), +S.ym.slice(5, 7) - 1 + +t.getAttribute("data-r"), 1); S.ym = iso(d).slice(0, 7); S.auf = null; zeichne(); return; }
+    if (k === "z") { S.auf = S.auf === key ? null : key; zeichne(); return; }
+    if (k === "km") { var v = (o.querySelector("#hb-km").value || "").trim().replace(",", "."), km = v === "" ? null : Math.round(parseFloat(v) * 10) / 10; if (v !== "" && !isFinite(km)) return; speichereKm(key, km); S.auf = null; zeichne(); return; }
+    if (k === "karte-km") { var F0 = fahrten(); speichereKm(key, F0[key].kmKarte); S.auf = null; zeichne(); return; }
+    if (k === "weg") { if (!t.classList.contains("sicher")) { t.classList.add("sicher"); t.textContent = "Wirklich entfernen?"; return; } var F1 = fahrten(); delete F1[key]; schreib(FK_KEY, F1); S.auf = null; zeichne(); return; }
+    if (k === "tour") { tourOeffnen(t.getAttribute("data-tag"), NAME); return; }
+    if (k === "karte-stil") { try { localStorage.setItem(KARTE_KEY, t.getAttribute("data-v")); } catch (x) {} o.setAttribute("data-karte", kartenStil()); zeichne(); return; }
+    if (k === "adr") { S.adrAuf = !S.adrAuf; zeichne(); if (S.adrAuf) karte().catch(function () {}); return; }
+    if (t.hasAttribute("data-st")) { var inp = t.closest(".hb-adr").querySelector("input"); inp.value = t.getAttribute("data-st") + " "; inp.focus(); vorschlag(inp); return; }
+    if (k === "add") { S.add = { datum: heute(), namen: [] }; zeichne(); return; }
+    if (k === "add-ab") { S.add = null; zeichne(); return; }
+    if (k === "add-n") { var n = t.getAttribute("data-n"), i = S.add.namen.indexOf(n); if (i >= 0) S.add.namen.splice(i, 1); else S.add.namen.push(n); zeichne(); return; }
+    if (k === "add-ok") {
+      var dd = o.querySelector("#hb-add-d").value; if (!dd) return; t.disabled = true; t.textContent = "Rechne …";
+      try { await karte(); } catch (x) {}
+      var wd = wtag(dd), namen = S.add.namen.slice(), start = wd === 4 || wd === 5, ende = wd >= 1 && wd <= 3, km = null, km0 = null;
+      var rk = (start ? "P" : "") + "|" + namen.map(kanon).join(">") + "|" + (ende ? "P" : ""), R = routen();
+      if (K) { var pts = namen.map(function (n) { var g = geocode(adresseVon({ name: n })); return g >= 0 ? K.AK[g] : -1; }), pi = geocode(PRAXIS);
+        if (pi >= 0) { if (start) pts.unshift(K.AK[pi]); if (ende) pts.push(K.AK[pi]); }
+        if (pts.every(function (x) { return x >= 0; })) { var sm = 0, okk = true; for (var j = 0; j < pts.length - 1; j++) { var r = strecke(pts[j], pts[j + 1]); if (!r) { okk = false; break; } sm += r.m; } if (okk) km0 = Math.round(sm / 100) / 10; } }
+      km = R[rk] != null ? R[rk] : km0;
+      var F2 = fahrten(), tl = 0; while (F2[fkSchluessel(dd, tl)]) tl++;
+      F2[fkSchluessel(dd, tl)] = { datum: dd, teil: tl, namen: namen, km: km, kmKarte: km0, rk: rk, quelle: "hand", korr: R[rk] != null, start: start, ende: ende, stand: new Date().toISOString() };
+      schreib(FK_KEY, F2); S.ym = dd.slice(0, 7); S.add = null; S.markiert = dd; zeichne(); return;
+    }
+    if (k === "jpg" || k === "jpg-ok" || k === "jpg-trotzdem") {
+      if (k === "jpg-ok") o.querySelectorAll(".hb-fehltbox input[data-abr]").forEach(function (i) { if (i.value.trim()) adrSetzen(i.getAttribute("data-abr"), "abr", i.value.trim()); });
+      if (k !== "jpg-trotzdem") {
+        var ns = {}; monatsListe(S.ym).forEach(function (e) { (e.namen || []).forEach(function (n) { if (!vollstaendig(n)) ns[n] = 1; }); });
+        S.fehlt = Object.keys(ns); if (S.fehlt.length) { zeichne(); var fb = o.querySelector(".hb-fehltbox"); if (fb) fb.scrollIntoView({ block: "center", behavior: "smooth" }); return; }
+      }
+      S.fehlt = null; zeichne();
+      var hin = o.querySelector(".hb-jpg-hinw"); hin.textContent = "";
+      try { await (document.fonts && document.fonts.ready); } catch (x) {}
+      var blob = await new Promise(function (res) { blatt(S.ym).toBlob(res, "image/jpeg", 0.95); });
+      var name = MON[+S.ym.slice(5, 7) - 1] + "_" + S.ym.slice(0, 4) + "_Fahrtkostenabrechnung.jpg";
+      try { var r2 = await speichern(blob, name); hin.textContent = r2 === false ? "Speichern hat nicht geklappt." : r2 ? "Gespeichert." : ""; } catch (x) { hin.textContent = "Speichern hat nicht geklappt."; }
+    }
+  });
+  o.addEventListener("change", function (ev) {
+    if (ev.target.id === "hb-th") { try { localStorage.setItem(TH_KEY, ev.target.value.trim()); } catch (x) {} }
+    if (ev.target.hasAttribute("data-abr")) adrSetzen(ev.target.getAttribute("data-abr"), "abr", ev.target.value.trim());
+    if (ev.target.id === "hb-add-d" && S.add) S.add.datum = ev.target.value;
+  });
+  o.addEventListener("focusin", function (ev) { if (ev.target.closest(".hb-adr")) karte().then(function () { vorschlag(ev.target); }).catch(function () {}); });
+  adrEvents(o, function () { sync().then(function (n) { if (OV && OV.el === o && n) zeichne(); }); });
+  zeichne();
+  sync().then(function (n) { if (n && OV && OV.el === o) zeichne(); });
+}
+function speichern(blob, name) {
+  if (typeof window.Ic === "function") return window.Ic(blob, name);
+  return (async function () {
+    try { var a = window.claude && window.claude.use ? await window.claude.use("downloads") : null; if (a) { await a.save({ filename: name, data: blob }); return true; } } catch (e) { if (e && e.code === "declined") return null; }
+    try { var fl = new File([blob], name, { type: "image/jpeg" }); if (navigator.canShare && navigator.canShare({ files: [fl] })) { await navigator.share({ files: [fl], title: name }); return true; } } catch (e) { if (e && e.name === "AbortError") return null; }
+    var u = URL.createObjectURL(blob), l = document.createElement("a"); l.href = u; l.download = name; document.body.appendChild(l); l.click(); l.remove(); setTimeout(function () { URL.revokeObjectURL(u); }, 1000); return true;
+  })();
+}
+// JPEG im Layout der bisherigen Abrechnung
+function blatt(ym) {
+  var W = 1240, H = 1754, L = 90, R = 1150, c = document.createElement("canvas"); c.width = W; c.height = H;
+  var g = c.getContext("2d"), list = monatsListe(ym), t = summe(list);
+  var ink = "#22262a", muted = "#6e757b", line = "#d9dcde", accent = "#3b4147", soft = "#eceeef";
+  var disp = '-apple-system, "SF Pro Display", "Helvetica Neue", Arial, sans-serif', body = '-apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif';
+  g.fillStyle = "#fff"; g.fillRect(0, 0, W, H);
+  g.fillStyle = ink; g.font = "700 58px " + disp; g.textBaseline = "alphabetic"; g.fillText("Fahrkostenabrechnung", L, 150);
+  g.fillStyle = accent; g.fillRect(L, 172, R - L, 4);
+  g.font = "500 24px " + body; g.fillStyle = muted; g.fillText("Monat / Jahr:", L, 225); g.fillText("Therapeut/in:", L, 262);
+  g.fillStyle = ink; g.fillText(MON[+ym.slice(5, 7) - 1] + " " + ym.slice(0, 4), 280, 225); g.fillText(liesText(TH_KEY), 280, 262);
+  var top = 300, hh = 46; g.fillStyle = soft; g.fillRect(L, top, R - L, hh);
+  g.fillStyle = accent; g.font = "600 21px " + body; g.fillText("DATUM", L + 14, top + 31); g.fillText("PATIENT", 270, top + 31);
+  g.textAlign = "right"; g.fillText("KM", R - 14, top + 31); g.textAlign = "left";
+  var rowsTop = top + hh, n = Math.max(24, list.length), rh = Math.min(44, (1440 - rowsTop) / n);
+  for (var i = 0; i < n; i++) {
+    var y = rowsTop + i * rh; g.strokeStyle = line; g.lineWidth = 1; g.beginPath(); g.moveTo(L, y + rh); g.lineTo(R, y + rh); g.stroke();
+    var e = list[i]; if (!e) continue;
+    g.fillStyle = ink; g.font = "500 23px " + body; g.fillText(e.datum.slice(8, 10) + "." + e.datum.slice(5, 7) + "." + e.datum.slice(2, 4), L + 14, y + rh * 0.68);
+    var txt = (e.namen || []).map(abrName).join(" - "), size = 23; g.font = "500 " + size + "px " + body;
+    while (g.measureText(txt).width > 700 && size > 14) { size--; g.font = "500 " + size + "px " + body; }
+    g.fillText(txt, 270, y + rh * 0.68);
+    g.font = "600 23px " + body; g.textAlign = "right"; g.fillText(kmTxt(e.km), R - 14, y + rh * 0.68); g.textAlign = "left";
+  }
+  var by = 1500; g.fillStyle = accent; g.fillRect(L, by - 20, R - L, 3);
+  g.fillStyle = ink; g.font = "600 26px " + body; g.fillText("Gesamt-KM:", L + 14, by + 28); g.fillText("Betrag (KM × 0,30 €):", L + 14, by + 72);
+  g.textAlign = "right"; g.fillText(kmTxt(t.km), R - 14, by + 28); g.fillText(euroTxt(t.cent) + " €", R - 14, by + 72); g.textAlign = "left";
+  g.fillStyle = muted; g.font = "500 22px " + body; g.fillText("Datum:", L + 14, 1672); g.fillText("Unterschrift:", 640, 1672);
+  var td = new Date(); g.fillStyle = ink; g.font = "500 24px " + body; g.fillText(String(td.getDate()).padStart(2, "0") + "." + String(td.getMonth() + 1).padStart(2, "0") + "." + td.getFullYear(), L + 130, 1670);
+  g.strokeStyle = line; g.beginPath(); g.moveTo(L + 100, 1678); g.lineTo(520, 1678); g.moveTo(790, 1678); g.lineTo(R, 1678); g.stroke();
+  return c;
+}
+
+/* ---------- Sicherung ---------- */
+function sicherung() {
+  var o = {}, a = adressen(), f = fahrten(), r = routen(), th = liesText(TH_KEY);
+  if (Object.keys(a).length) o.hbAdressen = a; if (Object.keys(f).length) o.fahrtkosten = f; if (Object.keys(r).length) o.hbRouten = r; if (th) o.therapeut = th;
+  return o;
+}
+function einspielen(x) {
+  if (!x || typeof x !== "object") return;
+  function misch(key, neu) { if (!neu || typeof neu !== "object") return; var alt = lies(key, {}); Object.keys(neu).forEach(function (k) { if (!(k in alt)) alt[k] = neu[k]; }); schreib(key, alt); }
+  misch(ADR_KEY, x.hbAdressen); misch(FK_KEY, x.fahrtkosten); misch(RT_KEY, x.hbRouten);
+  if (typeof x.therapeut === "string" && !liesText(TH_KEY)) try { localStorage.setItem(TH_KEY, x.therapeut); } catch (e) {}
+}
+
+window.HB = { tour: tourOeffnen, fahrtkosten: fahrtkostenOeffnen, schliessen: schliessen, sync: sync, monatsKm: monatsKm, sicherung: sicherung, einspielen: einspielen, offeneTage: offeneTage };
+// Im Hintergrund nachtragen, was seit dem letzten Öffnen gefahren wurde
+setTimeout(function () { try { if (offeneTage().length) sync(); } catch (e) {} }, 4000);
+})();
+</script>
 <script>var D0=Object.defineProperty;var Q0=(e,n,t)=>{for(var i in n)D0(e,i,{get:n[i],set:t[i],enumerable:!0,configurable:!0})};function Eb(){if(typeof __REACT_DEVTOOLS_GLOBAL_HOOK__>"u"||typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.checkDCE!=="function")return;try{__REACT_DEVTOOLS_GLOBAL_HOOK__.checkDCE(Eb)}catch(e){console.error(e)}}var Pt={};Q0(Pt,{unstable_now:()=>xn,unstable_IdlePriority:()=>cl,unstable_ImmediatePriority:()=>dl,unstable_LowPriority:()=>gl,unstable_NormalPriority:()=>Ct,unstable_Profiling:()=>cd,unstable_UserBlockingPriority:()=>fl,unstable_cancelCallback:()=>ml,unstable_forceFrameRate:()=>dd,unstable_getCurrentPriorityLevel:()=>bl,unstable_next:()=>gd,unstable_requestPaint:()=>pl,unstable_runWithPriority:()=>fd,unstable_scheduleCallback:()=>Zt,unstable_shouldYield:()=>kl,unstable_wrapCallback:()=>md},{unstable_now:(dv)=>xn=dv,unstable_IdlePriority:(dv)=>cl=dv,unstable_ImmediatePriority:(dv)=>dl=dv,unstable_LowPriority:(dv)=>gl=dv,unstable_NormalPriority:(dv)=>Ct=dv,unstable_Profiling:(dv)=>cd=dv,unstable_UserBlockingPriority:(dv)=>fl=dv,unstable_cancelCallback:(dv)=>ml=dv,unstable_forceFrameRate:(dv)=>dd=dv,unstable_getCurrentPriorityLevel:(dv)=>bl=dv,unstable_next:(dv)=>gd=dv,unstable_requestPaint:(dv)=>pl=dv,unstable_runWithPriority:(dv)=>fd=dv,unstable_scheduleCallback:(dv)=>Zt=dv,unstable_shouldYield:(dv)=>kl=dv,unstable_wrapCallback:(dv)=>md=dv});function Pu(e,n){var t=e.length;e.push(n);e:for(;0<t;){var i=t-1>>>1,r=e[i];if(0<ll(r,n))e[i]=n,e[t]=r,t=i;else break e}}function Kn(e){return e.length===0?null:e[0]}function hl(e){if(e.length===0)return null;var n=e[0],t=e.pop();if(t!==n){e[0]=t;e:for(var i=0,r=e.length,a=r>>>1;i<a;){var l=2*(i+1)-1,s=e[l],o=l+1,h=e[o];if(0>ll(s,t))o<r&&0>ll(h,s)?(e[i]=h,e[o]=t,i=o):(e[i]=s,e[l]=t,i=l);else if(o<r&&0>ll(h,t))e[i]=h,e[o]=t,i=o;else break e}}return n}function ll(e,n){var t=e.sortIndex-n.sortIndex;return t!==0?t:e.id-n.id}var xn=void 0;if(typeof performance==="object"&&typeof performance.now==="function")Cu=performance,xn=function(){return Cu.now()};else sl=Date,Zu=sl.now(),xn=function(){return sl.now()-Zu};var Cu,sl,Zu,On=[],ft=[],H0=1,cn=null,_e=3,Uu=!1,Tr=!1,Br=!1,Iu=!1,ld=typeof setTimeout==="function"?setTimeout:null,sd=typeof clearTimeout==="function"?clearTimeout:null,ad=typeof setImmediate<"u"?setImmediate:null;function ul(e){for(var n=Kn(ft);n!==null;){if(n.callback===null)hl(ft);else if(n.startTime<=e)hl(ft),n.sortIndex=n.expirationTime,Pu(On,n);else break;n=Kn(ft)}}function ju(e){if(Br=!1,ul(e),!Tr)if(Kn(On)!==null)Tr=!0,vi||(vi=!0,zi());else{var n=Kn(ft);n!==null&&$u(ju,n.startTime-e)}}var vi=!1,Kr=-1,ud=5,od=-1;function hd(){return Iu?!0:Pt.unstable_now()-od<ud?!1:!0}function qu(){if(Iu=!1,vi){var e=Pt.unstable_now();od=e;var n=!0;try{e:{Tr=!1,Br&&(Br=!1,sd(Kr),Kr=-1),Uu=!0;var t=_e;try{n:{ul(e);for(cn=Kn(On);cn!==null&&!(cn.expirationTime>e&&hd());){var i=cn.callback;if(typeof i==="function"){cn.callback=null,_e=cn.priorityLevel;var r=i(cn.expirationTime<=e);if(e=Pt.unstable_now(),typeof r==="function"){cn.callback=r,ul(e),n=!0;break n}cn===Kn(On)&&hl(On),ul(e)}else hl(On);cn=Kn(On)}if(cn!==null)n=!0;else{var a=Kn(ft);a!==null&&$u(ju,a.startTime-e),n=!1}}break e}finally{cn=null,_e=t,Uu=!1}n=void 0}}finally{n?zi():vi=!1}}}var zi;if(typeof ad==="function")zi=function(){ad(qu)};else if(typeof MessageChannel<"u")ol=new MessageChannel,Vu=ol.port2,ol.port1.onmessage=qu,zi=function(){Vu.postMessage(null)};else zi=function(){ld(qu,0)};var ol,Vu;function $u(e,n){Kr=ld(function(){e(Pt.unstable_now())},n)}var cl=5,dl=1,gl=4,Ct=3,cd=null,fl=2,ml=function(e){e.callback=null},dd=function(e){0>e||125<e?console.error("forceFrameRate takes a positive int between 0 and 125, forcing frame rates higher than 125 fps is not supported"):ud=0<e?Math.floor(1000/e):5},bl=function(){return _e},gd=function(e){switch(_e){case 1:case 2:case 3:var n=3;break;default:n=_e}var t=_e;_e=n;try{return e()}finally{_e=t}},pl=function(){Iu=!0},fd=function(e,n){switch(e){case 1:case 2:case 3:case 4:case 5:break;default:e=3}var t=_e;_e=e;try{return n()}finally{_e=t}},Zt=function(e,n,t){var i=Pt.unstable_now();switch(typeof t==="object"&&t!==null?(t=t.delay,t=typeof t==="number"&&0<t?i+t:i):t=i,e){case 1:var r=-1;break;case 2:r=250;break;case 5:r=1073741823;break;case 4:r=1e4;break;default:r=5000}return r=t+r,e={id:H0++,callback:n,priorityLevel:e,startTime:t,expirationTime:r,sortIndex:-1},t>i?(e.sortIndex=t,Pu(ft,e),Kn(On)===null&&e===Kn(ft)&&(Br?(sd(Kr),Kr=-1):Br=!0,$u(ju,t-i))):(e.sortIndex=r,Pu(On,e),Tr||Uu||(Tr=!0,vi||(vi=!0,zi()))),e},kl=hd,md=function(e){var n=_e;return function(){var t=_e;_e=n;try{return e.apply(this,arguments)}finally{_e=t}}};var bd={isMounted:function(){return!1},enqueueForceUpdate:function(){},enqueueReplaceState:function(){},enqueueSetState:function(){}},_0=Object.assign,pd={};function Nr(e,n,t){this.props=e,this.context=n,this.refs=pd,this.updater=t||bd}Nr.prototype.isReactComponent={};Nr.prototype.setState=function(e,n){if(typeof e!=="object"&&typeof e!=="function"&&e!=null)throw Error("takes an object of state variables to update or a function which returns an object of state variables.");this.updater.enqueueSetState(this,e,n,"setState")};Nr.prototype.forceUpdate=function(e){this.updater.enqueueForceUpdate(this,e,"forceUpdate")};function kd(){}kd.prototype=Nr.prototype;function Sd(e,n,t){this.props=e,this.context=n,this.refs=pd,this.updater=t||bd}var Ju=Sd.prototype=new kd;Ju.constructor=Sd;_0(Ju,Nr.prototype);Ju.isPureReactComponent=!0;var Sl={H:null,A:null,T:null,S:null};var zl=Sl;var mt=function(e,n){return Sl.H.useEffect(e,n)};var Nn=function(e){return Sl.H.useRef(e)},H=function(e){return Sl.H.useState(e)};var Yu="19.2.8";function vd(){if(typeof __REACT_DEVTOOLS_GLOBAL_HOOK__>"u"||typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.checkDCE!=="function")return;try{__REACT_DEVTOOLS_GLOBAL_HOOK__.checkDCE(vd)}catch(e){console.error(e)}}function F0(e){var n="https://react.dev/errors/"+e;if(1<arguments.length){n+="?args[]="+encodeURIComponent(arguments[1]);for(var t=2;t<arguments.length;t++)n+="&args[]="+encodeURIComponent(arguments[t])}return"Minified React error #"+e+"; visit "+n+" for the full message or use the non-minified dev environment for full errors and additional helpful warnings."}function bt(){}var L0={d:{f:bt,r:function(){throw Error(F0(522))},D:bt,C:bt,L:bt,m:bt,X:bt,S:bt,M:bt},p:0,findDOMNode:null};var Xu=L0;vd();function E(e){var n="https://react.dev/errors/"+e;if(1<arguments.length){n+="?args[]="+encodeURIComponent(arguments[1]);for(var t=2;t<arguments.length;t++)n+="&args[]="+encodeURIComponent(arguments[t])}return"Minified React error #"+e+"; visit "+n+" for the full message or use the non-minified dev environment for full errors and additional helpful warnings."}function W0(e){return!(!e||e.nodeType!==1&&e.nodeType!==9&&e.nodeType!==11)}function za(e){var n=e,t=e;if(e.alternate)for(;n.return;)n=n.return;else{e=n;do n=e,(n.flags&4098)!==0&&(t=n.return),e=n.return;while(e)}return n.tag===3?t:null}function Zg(e){if(e.tag===13){var n=e.memoizedState;if(n===null&&(e=e.alternate,e!==null&&(n=e.memoizedState)),n!==null)return n.dehydrated}return null}function Ug(e){if(e.tag===31){var n=e.memoizedState;if(n===null&&(e=e.alternate,e!==null&&(n=e.memoizedState)),n!==null)return n.dehydrated}return null}function wd(e){if(za(e)!==e)throw Error(E(188))}function q0(e){var n=e.alternate;if(!n){if(n=za(e),n===null)throw Error(E(188));return n!==e?null:e}for(var t=e,i=n;;){var r=t.return;if(r===null)break;var a=r.alternate;if(a===null){if(i=r.return,i!==null){t=i;continue}break}if(r.child===a.child){for(a=r.child;a;){if(a===t)return wd(r),e;if(a===i)return wd(r),n;a=a.sibling}throw Error(E(188))}if(t.return!==i.return)t=r,i=a;else{for(var l=!1,s=r.child;s;){if(s===t){l=!0,t=r,i=a;break}if(s===i){l=!0,i=r,t=a;break}s=s.sibling}if(!l){for(s=a.child;s;){if(s===t){l=!0,t=a,i=r;break}if(s===i){l=!0,i=a,t=r;break}s=s.sibling}if(!l)throw Error(E(189))}}if(t.alternate!==i)throw Error(E(190))}if(t.tag!==3)throw Error(E(188));return t.stateNode.current===t?e:n}function Vg(e){var n=e.tag;if(n===5||n===26||n===27||n===6)return e;for(e=e.child;e!==null;){if(n=Vg(e),n!==null)return n;e=e.sibling}return null}var be=Object.assign,P0=Symbol.for("react.element"),vl=Symbol.for("react.transitional.element"),Fr=Symbol.for("react.portal"),Ai=Symbol.for("react.fragment"),Ig=Symbol.for("react.strict_mode"),Ro=Symbol.for("react.profiler"),jg=Symbol.for("react.consumer"),In=Symbol.for("react.context"),Kh=Symbol.for("react.forward_ref"),Do=Symbol.for("react.suspense"),Qo=Symbol.for("react.suspense_list"),Nh=Symbol.for("react.memo"),pt=Symbol.for("react.lazy"),Ho=Symbol.for("react.activity"),C0=Symbol.for("react.memo_cache_sentinel"),yd=Symbol.iterator;function Gr(e){if(e===null||typeof e!=="object")return null;return e=yd&&e[yd]||e["@@iterator"],typeof e==="function"?e:null}var Z0=Symbol.for("react.client.reference");function _o(e){if(e==null)return null;if(typeof e==="function")return e.$$typeof===Z0?null:e.displayName||e.name||null;if(typeof e==="string")return e;switch(e){case Ai:return"Fragment";case Ro:return"Profiler";case Ig:return"StrictMode";case Do:return"Suspense";case Qo:return"SuspenseList";case Ho:return"Activity"}if(typeof e==="object")switch(e.$$typeof){case Fr:return"Portal";case In:return e.displayName||"Context";case jg:return(e._context.displayName||"Context")+".Consumer";case Kh:var n=e.render;return e=e.displayName,e||(e=n.displayName||n.name||"",e=e!==""?"ForwardRef("+e+")":"ForwardRef"),e;case Nh:return n=e.displayName||null,n!==null?n:_o(e.type)||"Memo";case pt:n=e._payload,e=e._init;try{return _o(e(n))}catch(t){}}return null}var Lr=Array.isArray,Q=zl,X=Xu,Yt={pending:!1,data:null,method:null,action:null},Fo=[],Ti=-1;function Hn(e){return{current:e}}function Ke(e){0>Ti||(e.current=Fo[Ti],Fo[Ti]=null,Ti--)}function he(e,n){Ti++,Fo[Ti]=e.current,e.current=n}var Qn=Hn(null),la=Hn(null),Tt=Hn(null),Jl=Hn(null);function Yl(e,n){switch(he(Tt,n),he(la,e),he(Qn,null),n.nodeType){case 9:case 11:e=(e=n.documentElement)?(e=e.namespaceURI)?Tg(e):0:0;break;default:if(e=n.tagName,n=n.namespaceURI)n=Tg(n),e=mb(n,e);else switch(e){case"svg":e=1;break;case"math":e=2;break;default:e=0}}Ke(Qn),he(Qn,e)}function Ui(){Ke(Qn),Ke(la),Ke(Tt)}function Lo(e){e.memoizedState!==null&&he(Jl,e);var n=Qn.current,t=mb(n,e.type);n!==t&&(he(la,e),he(Qn,t))}function Xl(e){la.current===e&&(Ke(Qn),Ke(la)),Jl.current===e&&(Ke(Jl),pa._currentValue=Yt)}var eo,xd;function Vt(e){if(eo===void 0)try{throw Error()}catch(t){var n=t.stack.trim().match(/\n( *(at )?)/);eo=n&&n[1]||"",xd=-1<t.stack.indexOf(`
     at`)?" (<anonymous>)":-1<t.stack.indexOf("@")?"@unknown:0:0":""}return`
 `+eo+e+xd}var no=!1;function to(e,n){if(!e||no)return"";no=!0;var t=Error.prepareStackTrace;Error.prepareStackTrace=void 0;try{var i={DetermineComponentFrameRoot:function(){try{if(n){var k=function(){throw Error()};if(Object.defineProperty(k.prototype,"props",{set:function(){throw Error()}}),typeof Reflect==="object"&&Reflect.construct){try{Reflect.construct(k,[])}catch(b){var d=b}Reflect.construct(e,[],k)}else{try{k.call()}catch(b){d=b}e.call(k.prototype)}}else{try{throw Error()}catch(b){d=b}(k=e())&&typeof k.catch==="function"&&k.catch(function(){})}}catch(b){if(b&&d&&typeof b.stack==="string")return[b.stack,d.stack]}return[null,null]}};i.DetermineComponentFrameRoot.displayName="DetermineComponentFrameRoot";var r=Object.getOwnPropertyDescriptor(i.DetermineComponentFrameRoot,"name");r&&r.configurable&&Object.defineProperty(i.DetermineComponentFrameRoot,"name",{value:"DetermineComponentFrameRoot"});var a=i.DetermineComponentFrameRoot(),l=a[0],s=a[1];if(l&&s){var o=l.split(`
@@ -4074,7 +5193,7 @@ function TB_Karte({P,mutiere,pos}){let[,bump]=H(0),eb=P.erstbefund??{},per=TB_pe
 function TB_Liste({P,mutiere}){let[,bump]=H(0),B=[...(P.berichte??[])].sort((a,b)=>b.bis.localeCompare(a.bis));if(!B.length)return null;
   return f("section",{className:"tb-liste",children:[u("p",{className:"gruppe",style:{marginTop:18},children:"Bisherige Berichte"}),...B.map((b)=>f("button",{type:"button",className:"tb-alt",onClick:()=>TB_oeffnen(P,mutiere,TB_periode(P),bump,b),children:[f("span",{children:[b.von?`${b.von.slice(0,4)===b.bis.slice(0,4)?ke(b.von).slice(0,6):ke(b.von)} – `:"",ke(b.bis)]}),u("small",{children:`gesichert am ${ke(b.gesichert)}`}),u("span",{className:"mehr-zeile-pfeil","aria-hidden":"true"})]},b.id))]})}
 function _u({patient:e,mutiere:n,kurz:t,loeschen:i,extras:KX,zumPlan:ZP}){let[r,a]=H(null),l=e.erstbefund,s=e.verlauf??{einheiten:[],offen:null},o=rl(e),h=(T)=>n((x)=>{let G=x.verlauf?.einheiten.find((D)=>D.id===x.verlauf.offen);if(G)T(G)}),g=(T)=>(x)=>h((G)=>{let D=G.stellen.find((C)=>C.id===T);if(D)x(D)}),k=h0(l),d=!!kr(l),b=r0(l);if(!t&&!l.stellen.length&&!k.length&&!d&&!b.nschmerz&&!b.wurzel)return f("div",{className:"schritt leerer-zustand",children:[u("p",{className:"frage",children:"Zuerst den Erstbefund erfassen."}),u("p",{className:"hinweis",children:"Der Verlauf vergleicht mit dem Erstbefund. Dafür braucht er mindestens eine Region."})]});let S=()=>n((T)=>{T.verlauf??={einheiten:[],offen:null};let x=a0(T.erstbefund,J1(),T.verlauf.einheiten[0]);T.verlauf.einheiten.unshift(x),T.verlauf.offen=x.id,UR_merke(T)});if(!o&&e.bericht?.offen)return u(z0,{patient:e,mutiere:n,loeschen:i});if(!o){let T=[...s.einheiten].sort((x,G)=>G.datum.localeCompare(x.datum));return f("div",{className:"schritt",children:[u(O,{hinweis:"Jede Einheit hält den aktuellen Befund und die Behandlung des Tages fest.",children:"Neue Behandlung dokumentieren"}),u(TB_Karte,{P:e,mutiere:n,pos:"oben"}),u("button",{type:"button",className:"weiter",style:{marginTop:0},onClick:S,children:"Neue Einheit"}),u(TB_Karte,{P:e,mutiere:n,pos:"unten"}),u(y0,{einfuegen:(x)=>{let G=new Set(s.einheiten.filter((C)=>C.notiz!==void 0).map((C)=>`${C.datum}|${C.notiz.trim()}`)),D=x.filter((C)=>!G.has(`${C.datum}|${C.text.trim()}`));if(D.length)n((C)=>{C.verlauf??={einheiten:[],offen:null},C.verlauf.einheiten.push(...D.map((hn)=>w0(hn,Math.random().toString(36).slice(2,9))))});return D.length}}),u(PX_Knopf,{P:e,mutiere:n,klein:!0}),KX||null,u(VK_Kurve,{P:e}),u(TB_Liste,{P:e,mutiere:n}),T.length>0&&u("p",{className:"gruppe",style:{marginTop:18},children:"Bisherige Einheiten"}),T.map((x)=>f("div",{className:"karte",children:[u("h3",{children:x.erstTag?`${ke(x.datum)} · Tag des Erstbefunds`:ke(x.datum)}),x.fertig&&u("span",{className:"be-mini",children:"✓ beendet"}),x.notiz!==void 0?f("p",{className:"hinweis klein",style:{margin:"2px 0 10px",whiteSpace:"pre-wrap"},children:[u("b",{children:x.imp?PX_herkunft(x):"Aus Notizen übernommen"}),`
-`,x.notiz]}):f("div",{style:{margin:"2px 0 10px"},children:[u("p",{className:"hinweis klein",style:{margin:0},children:x.stellen.map(se).join(" · ")}),KU_kurz(x)&&u("p",{className:"ku-kurz",children:KU_kurz(x)})]}),f("div",{className:"knopfreihe",style:{marginTop:0},children:[x.notiz===void 0&&u("button",{type:"button",className:"sekundaer",onClick:()=>n((G)=>{G.verlauf.offen=x.id}),children:"Öffnen"}),u(Le,{text:OD(VK_mit(e,()=>pi(x)))}),r===x.id?u("button",{type:"button",className:"kleinknopf rot",onClick:()=>{n((G)=>{G.verlauf.einheiten=G.verlauf.einheiten.filter((D)=>D.id!==x.id)}),a(null)},children:"Wirklich löschen?"}):u("button",{type:"button",className:"kleinknopf rot",onClick:()=>a(x.id),children:"Löschen"})]})]},x.id))]})}let z=PF_einfuegen(o.erstTag&&!t?o0(o,k,d,b).filter((q)=>!ET_MESS.has(q.art)):o0(o,k,d,b),e),K=Math.min(o.schritt,z.length-1),m=z[K],c=m.stelle?o.stellen.find((T)=>T.id===m.stelle):void 0,p=c?l.stellen.find((T)=>T.id===c.id):void 0,v=(T)=>h((x)=>{x.schritt=Math.max(0,T)}),y=()=>v(K+1),DSv=(DSW.f=(q0,pr)=>{let n0=K+q0;if(n0<0||n0>=z.length)return!1;if(!pr)v(n0);return!0}),A=c?g(c.id):()=>{},B=()=>K===0?n((T)=>{T.verlauf.offen=null}):v(K-1),N=s0(l,s.einheiten.filter((T)=>T.id!==o.id)),w=(T)=>T?f("div",{className:"vergleich",children:[u("b",{children:"Erstbefund"}),u("span",{children:T})]}):null,M=null;switch(m.art){case"start":M=f("div",{children:[!o.erstTag&&(o.stellen??[]).length>0&&u("button",{type:"button",className:"sekundaer kd-hin",onClick:()=>h((x)=>{x.kd=!0}),children:"Zur Kurz-Doku"}),u(O,{hinweis:"Datum der Behandlung und was der Patient seit dem letzten Mal berichtet.",children:"Verlauf"}),f("label",{className:"kgg-text",children:[u("span",{children:"Datum"}),u("input",{className:"eingabe",type:"date",value:o.datum,"aria-label":"Datum der Behandlung",onChange:(T)=>h((x)=>{x.datum=T.target.value})})]}),u("p",{className:"unterfrage",children:"Subjektiv seit der letzten Behandlung"}),u(SBF_Regler,{wert:o.befinden??null,setze:(v)=>h((x)=>{if(v==null)delete x.befinden;else x.befinden=v})}),u("textarea",{className:"eingabe",rows:3,value:o.subjektiv,"aria-label":"Subjektiv, eigene Angaben",placeholder:"Eigene Angaben, z. B. nachts deutlich besser, Schmerz beim Anziehen weiter vorhanden",onChange:(T)=>h((x)=>{x.subjektiv=T.target.value})}),u(TX_Vorschlag,{wert:o.subjektiv??"",liste:TX_SUBJ,lern:"subj",setze:(v)=>h((x)=>{x.subjektiv=v})}),PS_aktiv(l).length>0&&f(J,{children:[u("p",{className:"unterfrage",children:"PSFS heute"}),PS_aktiv(l).map((q)=>f("div",{style:{marginTop:8},children:[u("p",{className:"hinweis klein",style:{margin:"0 0 4px"},children:`${q.akt.trim()}${q.wert!=null?` (Erstbefund ${q.wert}/10)`:""}`}),u(PS_Skala,{wert:o.psfs?.[q.i]??null,label:`PSFS heute ${q.akt}`,setze:(v)=>h((x)=>{x.psfs??={};if(v==null)delete x.psfs[q.i];else x.psfs[q.i]=v;x.psfsText=PS_heute(x,l)})})]},q.i))]}),N&&f("div",{className:"vergleich",style:{marginTop:18},children:[f("b",{children:["Zuletzt behandelt (",N.label,")"]}),u("span",{children:N.text})]}),(()=>{let WL=WL_letzteVA(o,s.einheiten);if(!WL)return null;let ab=z.findIndex((q)=>q.art==="abschluss");return o.wieLetzt?f("div",{className:"hinweis-box",style:{marginTop:12},children:[o.wieLetztAlles?"Alles vom ":"Maßnahmen vom ",ke(o.wieLetzt)," übernommen. Ändern kannst du sie in den Schritten Detonisierung, Mobilisation und Übungen.",z.findIndex((q)=>q.art==="ausgabe")>=0&&u("button",{type:"button",className:"kleinknopf",style:{display:"block",marginTop:8},onClick:()=>v(z.findIndex((q)=>q.art==="ausgabe")),children:"Direkt zu Fertig zum Kopieren"}),ab>=0&&u("button",{type:"button",className:"kleinknopf",style:{display:"block",marginTop:8},onClick:()=>v(ab),children:"Direkt zu Reaktion und Heimübungen"})]}):f("div",{className:"wl-box",children:[u("button",{type:"button",className:"weiter",style:{marginTop:0},onClick:()=>{let ag=z.findIndex((q)=>q.art==="ausgabe");h((x)=>{WL_alles(x,WL);if(ag>=0)x.schritt=ag})},children:`Alles wie am ${ke(WL.datum)}`}),u("p",{className:"hinweis klein",style:{margin:"6px 0 10px"},children:"Übernimmt Maßnahmen, Übungen und Heimprogramm und springt direkt zu „Fertig zum Kopieren“. Befinden und Schmerz von heute vorher oben eintragen."}),u("button",{type:"button",className:"sekundaer",onClick:()=>h((x)=>WL_uebernehmen(x,WL)),children:`Nur Maßnahmen wie am ${ke(WL.datum)}`})]})})(),!PF_zeigen(e)&&PF_knieStelle(e)&&u("button",{type:"button",className:"kleinknopf",style:{display:"block",marginTop:12,paddingLeft:0},onClick:()=>{n((G)=>{G.pfadAn=!0});h((x)=>{x.schritt=1})},children:"VKB-Reha-Pfad anlegen"}),u(I,{klick:y})]});break;case"pfad":M=u(PF_Schritt,{P:e,o,h,n,weiter:y,alle:s.einheiten});break;case"nschmerz":M=f(J,{children:[w(l.neuroSchmerz?ct(l.neuroSchmerz):""),u(Er,{s:o.neuroSchmerz??x0,weiter:y,aendern:(T)=>h((x)=>{x.neuroSchmerz??={...x0,tageszeit:[]},T(x.neuroSchmerz),x.neuroSchmerzRef=structuredClone(l.neuroSchmerz)})})]});break;case"wurzel":M=u(d0,{ref_:l.wurzeln??{},werte:o.wurzeln??{},weiter:y,setze:(T,x,G)=>h((D)=>{D.wurzeln??={};let C=D.wurzeln[T]??={};if(C[x]===G)delete C[x];else C[x]=G;if(!C.sens&&!C.kraft&&!C.reflex)delete D.wurzeln[T];D.wurzelnRef=structuredClone(l.wurzeln??{})})});break;case"tests":M=u(Hp,{ids:k,ref_:l.tests??{},werte:o.tests??{},weiter:y,verschoben:o.testsVerschoben??[],mitgebracht:o.testsMitgebracht??[],verschiebe:(T,x)=>h((G)=>l0(G,T,x)),setze:(T,x)=>h((G)=>{G.tests??={},G.tests[T]=x,G.testsRef={...l.tests??{}}})});break;case"neurobv":M=u(Tu,{e:l,werte:o.neuroBv??{},weiter:y,setze:(T,x)=>h((G)=>{G.neuroBv??={},G.neuroBv[T]=x}),entferne:(T)=>h((x)=>{if(x.neuroBv)delete x.neuroBv[T]}),kgg:o.kgg??{},aendernKgg:(T)=>h((x)=>{x.kgg??={},T(x.kgg)}),kennzeichnen:!!o.kggKennzeichnen,setKennzeichnen:(T)=>h((x)=>{x.kggKennzeichnen=T})});break;case"schmerz":M=c&&f(J,{children:[w(p?ct(p):""),u(Er,{s:c,aendern:A,weiter:y})]});break;case"beweg":M=c&&f(J,{children:[w(p?Wc(p):""),u(vu,{s:c,aendern:A,weiter:y})]});break;case"schwellung":M=c&&f(J,{children:[w(p?Pc(p):""),u(wu,{s:c,aendern:A,weiter:y})]});break;case"deton":M=c&&u(Mu,{s:c,aendern:A,weiter:y});break;case"mobi":M=c&&u(Eu,{s:BF_misch(p,c),aendern:A,weiter:y});break;case"uebung":M=c&&u(Au,{s:c,ref:p,aendern:A,weiter:y,kgg:o.kgg??{},aendernKgg:(T)=>h((x)=>{x.kgg??={},T(x.kgg)}),kennzeichnen:!!o.kggKennzeichnen,setKennzeichnen:(T)=>h((x)=>{x.kggKennzeichnen=T})});break;case"abschluss":M=u(VA_Schritt,{o,h,weiter:y});break;case"ausgabe":{let T=VK_mit(e,()=>pi(o));M=f("div",{children:[u(O,{hinweis:"Der Text steht auch unten im Textfeld.",children:"Fertig zum Kopieren"}),!T.includes("\n")&&u("p",{className:"hinweis-box warn",children:"Bisher steht nur das Datum im Text. Trag mindestens das Befinden oder eine Maßnahme ein."}),u("div",{className:`doku${T?"":" leer"}`,children:T||"Noch nichts erfasst."}),f("div",{className:"knopfreihe",children:[u(Le,{text:OD(T),label:"Verlauf kopieren"}),u("button",{type:"button",className:"sekundaer",onClick:()=>n((x)=>{x.verlauf.offen=null}),children:"Zur Liste"})]}),o.fertig?f("div",{className:"hinweis-box be-fertig",children:[f("p",{style:{margin:"0 0 8px",fontWeight:600},children:["✓ Behandlung beendet um ",new Date(o.fertig).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})," Uhr"]}),u("p",{style:{margin:"0 0 10px"},children:"Im Dienstplan steht die Dokumentation bei diesem Patienten als fertig."}),f("div",{className:"knopfreihe",style:{marginTop:0},children:[ZP&&u("button",{type:"button",className:"sekundaer",onClick:ZP,children:"Zum Dienstplan"}),u("button",{type:"button",className:"kleinknopf",onClick:()=>h((x)=>{delete x.fertig}),children:"Wieder öffnen"})]})]}):u("button",{type:"button",className:"weiter be-knopf",disabled:!T.includes("\n"),onClick:()=>{h((x)=>{x.fertig=new Date().toISOString()});n((x)=>{x.verlauf.offen=null});ZP?.()},children:"Behandlung beenden"})]})}}if(KD_an(o,s.einheiten)){DSW.f=()=>!1;return u(KD_Seite,{P:e,o,h,n,E:s.einheiten,ZP,ausfuehrlich:()=>h((x)=>{x.kd=!1;x.schritt=0}),zuSchritt:(art,sid)=>h((x)=>{x.kd=!1;let i=z.findIndex((q)=>q.art===art&&q.stelle===sid);x.schritt=i>=0?i:0})})}return f("div",{children:[f("div",{className:"v-kopf",children:[u("button",{type:"button",className:"kleinknopf",onClick:B,children:K===0?"‹ Zur Liste":"‹ Zurück"}),f("div",{className:"v-rechts",children:[u("span",{className:"zahl v-datum",children:ke(o.datum)}),u(SN_Menu,{text:`Schritt ${K+1}/${z.length}`,schritte:z,aktuell:K,springe:v,e:o,fertig:SN_fertigV})]})]}),c&&u("p",{className:"gruppe",style:{margin:"6px 0 10px"},children:se(c)}),M]})}var M0="doku-fix-sicherung";function E0(e,n=new Date){let t=Ja();return{format:M0,version:1,exportiert:n.toISOString(),patienten:structuredClone(e.patienten),...t.length?{uebungsFundus:t}:{},uebungsKat:UK_lesen(),diagnosenEigene:DG_eigene(),...(()=>{let d=DP_lesen(),o={};for(let k of Object.keys(d)){if(!/^\d{4}-\d{2}-\d{2}$/.test(k)||!Array.isArray(d[k]?.eintraege))continue;let{vorher:_v,...r}=d[k];o[k]=r}return Object.keys(o).length?{dienstplan:o}:{}})()}}var A0=(e=new Date)=>{let n=(t)=>String(t).padStart(2,"0");return`doku-fix-sicherung-${e.getFullYear()}-${n(e.getMonth()+1)}-${n(e.getDate())}.json`},Y1=(e)=>{let n=e;return!!n&&typeof n==="object"&&typeof n.id==="string"&&typeof n.name==="string"&&!!n.erstbefund&&typeof n.erstbefund==="object"&&Array.isArray(n.erstbefund.stellen)};function T0(e,n){let t={neu:0,vorhanden:0,defekt:0},i;try{i=JSON.parse(e)}catch{return{ok:!1,fehler:"Das ist keine Sicherungsdatei (Text nicht lesbar).",...t}}let r=i;if(!r||typeof r!=="object"||r.format!==M0||!Array.isArray(r.patienten))return{ok:!1,fehler:"Das ist keine Doku-Fix-Sicherung.",...t};let a=structuredClone(n),l=new Set(a.patienten.map((k)=>k.id)),s=0,o=0,h=0,g=[];for(let k of r.patienten){if(!Y1(k)){h++;continue}if(l.has(k.id)){o++;continue}l.add(k.id),g.push(k),s++}if(a.patienten.push(...g),Ec(a),Array.isArray(r.uebungsFundus))r.uebungsFundus.filter((k)=>typeof k==="string").reduce(yu,Ja());if(r.uebungsKat&&typeof r.uebungsKat==="object")UK_merge(r.uebungsKat);if(Array.isArray(r.diagnosenEigene)){let d0=DG_eigene();for(let x of r.diagnosenEigene)if(typeof x==="string"&&!d0.includes(x))d0.push(x);DG_setzeEigene(d0)}let dpT=0;if(r.dienstplan&&typeof r.dienstplan==="object"){let d1=DP_lesen();for(let[k,v]of Object.entries(r.dienstplan)){if(!/^\d{4}-\d{2}-\d{2}$/.test(k)||!Array.isArray(v?.eintraege)||d1[k])continue;d1[k]={...v,datum:k,zuletzt:null};dpT++}if(dpT)DP_schreiben(d1)}return{ok:!0,neu:s,vorhanden:o,defekt:h,zustand:a,dpTage:dpT}}var B0="doku-fix-letzte-sicherung",X1=()=>{try{return localStorage.getItem(B0)??""}catch{return""}},ev=(e)=>{try{localStorage.setItem(B0,e)}catch{}},nv=(e)=>new Date(e).toLocaleString("de-DE",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});var MH_IC={tdb:f("svg",{viewBox:"0 0 24 24",width:20,height:20,fill:"none",stroke:"currentColor",strokeWidth:"1.9",strokeLinecap:"round",strokeLinejoin:"round","aria-hidden":"true",children:[u("path",{d:"M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"}),u("path",{d:"M7.5 14h9"})]}),vd:f("svg",{viewBox:"0 0 24 24",width:20,height:20,fill:"none",stroke:"currentColor",strokeWidth:"1.9",strokeLinecap:"round",strokeLinejoin:"round","aria-hidden":"true",children:[u("path",{d:"M4 19V5M4 19h16"}),u("path",{d:"M7 15l4-4 3 3 5-6"})]}),tx:f("svg",{viewBox:"0 0 24 24",width:20,height:20,fill:"none",stroke:"currentColor",strokeWidth:"1.9",strokeLinecap:"round",strokeLinejoin:"round","aria-hidden":"true",children:[u("path",{d:"M9 18h6M10 21h4"}),u("path",{d:"M12 3a6 6 0 0 0-3.5 10.9c.6.4 1 1.1 1 1.8V16h5v-.3c0-.7.4-1.4 1-1.8A6 6 0 0 0 12 3z"})]}),dp:f("svg",{viewBox:"0 0 24 24",width:20,height:20,fill:"none",stroke:"currentColor",strokeWidth:"1.9",strokeLinecap:"round",strokeLinejoin:"round","aria-hidden":"true",children:[u("rect",{x:"3.5",y:"5",width:"17",height:"15.5",rx:"2.5"}),u("path",{d:"M3.5 10h17M8 3v4M16 3v4"})]}),si:f("svg",{viewBox:"0 0 24 24",width:20,height:20,fill:"none",stroke:"currentColor",strokeWidth:"1.9",strokeLinecap:"round",strokeLinejoin:"round","aria-hidden":"true",children:[u("path",{d:"M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"}),u("path",{d:"M9 12l2 2 4-4"})]})},MH_kopf=(ic,titel,sub)=>[u("span",{className:"mh-ic mh-"+ic,children:MH_IC[ic]}),f("span",{className:"mh-txt",children:[u("b",{children:titel}),u("small",{children:sub})]})];
+`,x.notiz]}):f("div",{style:{margin:"2px 0 10px"},children:[u("p",{className:"hinweis klein",style:{margin:0},children:x.stellen.map(se).join(" · ")}),KU_kurz(x)&&u("p",{className:"ku-kurz",children:KU_kurz(x)})]}),f("div",{className:"knopfreihe",style:{marginTop:0},children:[x.notiz===void 0&&u("button",{type:"button",className:"sekundaer",onClick:()=>n((G)=>{G.verlauf.offen=x.id}),children:"Öffnen"}),u(Le,{text:OD(VK_mit(e,()=>pi(x)))}),r===x.id?u("button",{type:"button",className:"kleinknopf rot",onClick:()=>{n((G)=>{G.verlauf.einheiten=G.verlauf.einheiten.filter((D)=>D.id!==x.id)}),a(null)},children:"Wirklich löschen?"}):u("button",{type:"button",className:"kleinknopf rot",onClick:()=>a(x.id),children:"Löschen"})]})]},x.id))]})}let z=PF_einfuegen(o.erstTag&&!t?o0(o,k,d,b).filter((q)=>!ET_MESS.has(q.art)):o0(o,k,d,b),e),K=Math.min(o.schritt,z.length-1),m=z[K],c=m.stelle?o.stellen.find((T)=>T.id===m.stelle):void 0,p=c?l.stellen.find((T)=>T.id===c.id):void 0,v=(T)=>h((x)=>{x.schritt=Math.max(0,T)}),y=()=>v(K+1),DSv=(DSW.f=(q0,pr)=>{let n0=K+q0;if(n0<0||n0>=z.length)return!1;if(!pr)v(n0);return!0}),A=c?g(c.id):()=>{},B=()=>K===0?n((T)=>{T.verlauf.offen=null}):v(K-1),N=s0(l,s.einheiten.filter((T)=>T.id!==o.id)),w=(T)=>T?f("div",{className:"vergleich",children:[u("b",{children:"Erstbefund"}),u("span",{children:T})]}):null,M=null;switch(m.art){case"start":M=f("div",{children:[!o.erstTag&&(o.stellen??[]).length>0&&u("button",{type:"button",className:"sekundaer kd-hin",onClick:()=>h((x)=>{x.kd=!0}),children:"Zur Kurz-Doku"}),u(O,{hinweis:"Datum der Behandlung und was der Patient seit dem letzten Mal berichtet.",children:"Verlauf"}),f("label",{className:"kgg-text",children:[u("span",{children:"Datum"}),u("input",{className:"eingabe",type:"date",value:o.datum,"aria-label":"Datum der Behandlung",onChange:(T)=>h((x)=>{x.datum=T.target.value})})]}),u("p",{className:"unterfrage",children:"Subjektiv seit der letzten Behandlung"}),u(SBF_Regler,{wert:o.befinden??null,setze:(v)=>h((x)=>{if(v==null)delete x.befinden;else x.befinden=v})}),u("textarea",{className:"eingabe",rows:3,value:o.subjektiv,"aria-label":"Subjektiv, eigene Angaben",placeholder:"Eigene Angaben, z. B. nachts deutlich besser, Schmerz beim Anziehen weiter vorhanden",onChange:(T)=>h((x)=>{x.subjektiv=T.target.value})}),u(TX_Vorschlag,{wert:o.subjektiv??"",liste:TX_SUBJ,lern:"subj",setze:(v)=>h((x)=>{x.subjektiv=v})}),PS_aktiv(l).length>0&&f(J,{children:[u("p",{className:"unterfrage",children:"PSFS heute"}),PS_aktiv(l).map((q)=>f("div",{style:{marginTop:8},children:[u("p",{className:"hinweis klein",style:{margin:"0 0 4px"},children:`${q.akt.trim()}${q.wert!=null?` (Erstbefund ${q.wert}/10)`:""}`}),u(PS_Skala,{wert:o.psfs?.[q.i]??null,label:`PSFS heute ${q.akt}`,setze:(v)=>h((x)=>{x.psfs??={};if(v==null)delete x.psfs[q.i];else x.psfs[q.i]=v;x.psfsText=PS_heute(x,l)})})]},q.i))]}),N&&f("div",{className:"vergleich",style:{marginTop:18},children:[f("b",{children:["Zuletzt behandelt (",N.label,")"]}),u("span",{children:N.text})]}),(()=>{let WL=WL_letzteVA(o,s.einheiten);if(!WL)return null;let ab=z.findIndex((q)=>q.art==="abschluss");return o.wieLetzt?f("div",{className:"hinweis-box",style:{marginTop:12},children:[o.wieLetztAlles?"Alles vom ":"Maßnahmen vom ",ke(o.wieLetzt)," übernommen. Ändern kannst du sie in den Schritten Detonisierung, Mobilisation und Übungen.",z.findIndex((q)=>q.art==="ausgabe")>=0&&u("button",{type:"button",className:"kleinknopf",style:{display:"block",marginTop:8},onClick:()=>v(z.findIndex((q)=>q.art==="ausgabe")),children:"Direkt zu Fertig zum Kopieren"}),ab>=0&&u("button",{type:"button",className:"kleinknopf",style:{display:"block",marginTop:8},onClick:()=>v(ab),children:"Direkt zu Reaktion und Heimübungen"})]}):f("div",{className:"wl-box",children:[u("button",{type:"button",className:"weiter",style:{marginTop:0},onClick:()=>{let ag=z.findIndex((q)=>q.art==="ausgabe");h((x)=>{WL_alles(x,WL);if(ag>=0)x.schritt=ag})},children:`Alles wie am ${ke(WL.datum)}`}),u("p",{className:"hinweis klein",style:{margin:"6px 0 10px"},children:"Übernimmt Maßnahmen, Übungen und Heimprogramm und springt direkt zu „Fertig zum Kopieren“. Befinden und Schmerz von heute vorher oben eintragen."}),u("button",{type:"button",className:"sekundaer",onClick:()=>h((x)=>WL_uebernehmen(x,WL)),children:`Nur Maßnahmen wie am ${ke(WL.datum)}`})]})})(),!PF_zeigen(e)&&PF_knieStelle(e)&&u("button",{type:"button",className:"kleinknopf",style:{display:"block",marginTop:12,paddingLeft:0},onClick:()=>{n((G)=>{G.pfadAn=!0});h((x)=>{x.schritt=1})},children:"VKB-Reha-Pfad anlegen"}),u(I,{klick:y})]});break;case"pfad":M=u(PF_Schritt,{P:e,o,h,n,weiter:y,alle:s.einheiten});break;case"nschmerz":M=f(J,{children:[w(l.neuroSchmerz?ct(l.neuroSchmerz):""),u(Er,{s:o.neuroSchmerz??x0,weiter:y,aendern:(T)=>h((x)=>{x.neuroSchmerz??={...x0,tageszeit:[]},T(x.neuroSchmerz),x.neuroSchmerzRef=structuredClone(l.neuroSchmerz)})})]});break;case"wurzel":M=u(d0,{ref_:l.wurzeln??{},werte:o.wurzeln??{},weiter:y,setze:(T,x,G)=>h((D)=>{D.wurzeln??={};let C=D.wurzeln[T]??={};if(C[x]===G)delete C[x];else C[x]=G;if(!C.sens&&!C.kraft&&!C.reflex)delete D.wurzeln[T];D.wurzelnRef=structuredClone(l.wurzeln??{})})});break;case"tests":M=u(Hp,{ids:k,ref_:l.tests??{},werte:o.tests??{},weiter:y,verschoben:o.testsVerschoben??[],mitgebracht:o.testsMitgebracht??[],verschiebe:(T,x)=>h((G)=>l0(G,T,x)),setze:(T,x)=>h((G)=>{G.tests??={},G.tests[T]=x,G.testsRef={...l.tests??{}}})});break;case"neurobv":M=u(Tu,{e:l,werte:o.neuroBv??{},weiter:y,setze:(T,x)=>h((G)=>{G.neuroBv??={},G.neuroBv[T]=x}),entferne:(T)=>h((x)=>{if(x.neuroBv)delete x.neuroBv[T]}),kgg:o.kgg??{},aendernKgg:(T)=>h((x)=>{x.kgg??={},T(x.kgg)}),kennzeichnen:!!o.kggKennzeichnen,setKennzeichnen:(T)=>h((x)=>{x.kggKennzeichnen=T})});break;case"schmerz":M=c&&f(J,{children:[w(p?ct(p):""),u(Er,{s:c,aendern:A,weiter:y})]});break;case"beweg":M=c&&f(J,{children:[w(p?Wc(p):""),u(vu,{s:c,aendern:A,weiter:y})]});break;case"schwellung":M=c&&f(J,{children:[w(p?Pc(p):""),u(wu,{s:c,aendern:A,weiter:y})]});break;case"deton":M=c&&u(Mu,{s:c,aendern:A,weiter:y});break;case"mobi":M=c&&u(Eu,{s:BF_misch(p,c),aendern:A,weiter:y});break;case"uebung":M=c&&u(Au,{s:c,ref:p,aendern:A,weiter:y,kgg:o.kgg??{},aendernKgg:(T)=>h((x)=>{x.kgg??={},T(x.kgg)}),kennzeichnen:!!o.kggKennzeichnen,setKennzeichnen:(T)=>h((x)=>{x.kggKennzeichnen=T})});break;case"abschluss":M=u(VA_Schritt,{o,h,weiter:y});break;case"ausgabe":{let T=VK_mit(e,()=>pi(o));M=f("div",{children:[u(O,{hinweis:"Der Text steht auch unten im Textfeld.",children:"Fertig zum Kopieren"}),!T.includes("\n")&&u("p",{className:"hinweis-box warn",children:"Bisher steht nur das Datum im Text. Trag mindestens das Befinden oder eine Maßnahme ein."}),u("div",{className:`doku${T?"":" leer"}`,children:T||"Noch nichts erfasst."}),f("div",{className:"knopfreihe",children:[u(Le,{text:OD(T),label:"Verlauf kopieren"}),u("button",{type:"button",className:"sekundaer",onClick:()=>n((x)=>{x.verlauf.offen=null}),children:"Zur Liste"})]}),o.fertig?f("div",{className:"hinweis-box be-fertig",children:[f("p",{style:{margin:"0 0 8px",fontWeight:600},children:["✓ Behandlung beendet um ",new Date(o.fertig).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})," Uhr"]}),u("p",{style:{margin:"0 0 10px"},children:"Im Dienstplan steht die Dokumentation bei diesem Patienten als fertig."}),f("div",{className:"knopfreihe",style:{marginTop:0},children:[ZP&&u("button",{type:"button",className:"sekundaer",onClick:ZP,children:"Zum Dienstplan"}),u("button",{type:"button",className:"kleinknopf",onClick:()=>h((x)=>{delete x.fertig}),children:"Wieder öffnen"})]})]}):u("button",{type:"button",className:"weiter be-knopf",disabled:!T.includes("\n"),onClick:()=>{h((x)=>{x.fertig=new Date().toISOString()});n((x)=>{x.verlauf.offen=null});ZP?.()},children:"Behandlung beenden"})]})}}if(KD_an(o,s.einheiten)){DSW.f=()=>!1;return u(KD_Seite,{P:e,o,h,n,E:s.einheiten,ZP,ausfuehrlich:()=>h((x)=>{x.kd=!1;x.schritt=0}),zuSchritt:(art,sid)=>h((x)=>{x.kd=!1;let i=z.findIndex((q)=>q.art===art&&q.stelle===sid);x.schritt=i>=0?i:0})})}return f("div",{children:[f("div",{className:"v-kopf",children:[u("button",{type:"button",className:"kleinknopf",onClick:B,children:K===0?"‹ Zur Liste":"‹ Zurück"}),f("div",{className:"v-rechts",children:[u("span",{className:"zahl v-datum",children:ke(o.datum)}),u(SN_Menu,{text:`Schritt ${K+1}/${z.length}`,schritte:z,aktuell:K,springe:v,e:o,fertig:SN_fertigV})]})]}),c&&u("p",{className:"gruppe",style:{margin:"6px 0 10px"},children:se(c)}),M]})}var M0="doku-fix-sicherung";function E0(e,n=new Date){let t=Ja();return{format:M0,version:1,exportiert:n.toISOString(),patienten:structuredClone(e.patienten),...t.length?{uebungsFundus:t}:{},uebungsKat:UK_lesen(),diagnosenEigene:DG_eigene(),...(()=>{let d=DP_lesen(),o={};for(let k of Object.keys(d)){if(!/^\d{4}-\d{2}-\d{2}$/.test(k)||!Array.isArray(d[k]?.eintraege))continue;let{vorher:_v,...r}=d[k];o[k]=r}return Object.keys(o).length?{dienstplan:o}:{}})(),...(window.HB?.sicherung?.()??{})}}var A0=(e=new Date)=>{let n=(t)=>String(t).padStart(2,"0");return`doku-fix-sicherung-${e.getFullYear()}-${n(e.getMonth()+1)}-${n(e.getDate())}.json`},Y1=(e)=>{let n=e;return!!n&&typeof n==="object"&&typeof n.id==="string"&&typeof n.name==="string"&&!!n.erstbefund&&typeof n.erstbefund==="object"&&Array.isArray(n.erstbefund.stellen)};function T0(e,n){let t={neu:0,vorhanden:0,defekt:0},i;try{i=JSON.parse(e)}catch{return{ok:!1,fehler:"Das ist keine Sicherungsdatei (Text nicht lesbar).",...t}}let r=i;if(!r||typeof r!=="object"||r.format!==M0||!Array.isArray(r.patienten))return{ok:!1,fehler:"Das ist keine Doku-Fix-Sicherung.",...t};let a=structuredClone(n),l=new Set(a.patienten.map((k)=>k.id)),s=0,o=0,h=0,g=[];for(let k of r.patienten){if(!Y1(k)){h++;continue}if(l.has(k.id)){o++;continue}l.add(k.id),g.push(k),s++}if(a.patienten.push(...g),Ec(a),Array.isArray(r.uebungsFundus))r.uebungsFundus.filter((k)=>typeof k==="string").reduce(yu,Ja());if(r.uebungsKat&&typeof r.uebungsKat==="object")UK_merge(r.uebungsKat);if(Array.isArray(r.diagnosenEigene)){let d0=DG_eigene();for(let x of r.diagnosenEigene)if(typeof x==="string"&&!d0.includes(x))d0.push(x);DG_setzeEigene(d0)}let dpT=0;if(r.dienstplan&&typeof r.dienstplan==="object"){let d1=DP_lesen();for(let[k,v]of Object.entries(r.dienstplan)){if(!/^\d{4}-\d{2}-\d{2}$/.test(k)||!Array.isArray(v?.eintraege)||d1[k])continue;d1[k]={...v,datum:k,zuletzt:null};dpT++}if(dpT)DP_schreiben(d1)}try{window.HB?.einspielen?.(r)}catch{}return{ok:!0,neu:s,vorhanden:o,defekt:h,zustand:a,dpTage:dpT}}var B0="doku-fix-letzte-sicherung",X1=()=>{try{return localStorage.getItem(B0)??""}catch{return""}},ev=(e)=>{try{localStorage.setItem(B0,e)}catch{}},nv=(e)=>new Date(e).toLocaleString("de-DE",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});var MH_IC={tdb:f("svg",{viewBox:"0 0 24 24",width:20,height:20,fill:"none",stroke:"currentColor",strokeWidth:"1.9",strokeLinecap:"round",strokeLinejoin:"round","aria-hidden":"true",children:[u("path",{d:"M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"}),u("path",{d:"M7.5 14h9"})]}),vd:f("svg",{viewBox:"0 0 24 24",width:20,height:20,fill:"none",stroke:"currentColor",strokeWidth:"1.9",strokeLinecap:"round",strokeLinejoin:"round","aria-hidden":"true",children:[u("path",{d:"M4 19V5M4 19h16"}),u("path",{d:"M7 15l4-4 3 3 5-6"})]}),tx:f("svg",{viewBox:"0 0 24 24",width:20,height:20,fill:"none",stroke:"currentColor",strokeWidth:"1.9",strokeLinecap:"round",strokeLinejoin:"round","aria-hidden":"true",children:[u("path",{d:"M9 18h6M10 21h4"}),u("path",{d:"M12 3a6 6 0 0 0-3.5 10.9c.6.4 1 1.1 1 1.8V16h5v-.3c0-.7.4-1.4 1-1.8A6 6 0 0 0 12 3z"})]}),dp:f("svg",{viewBox:"0 0 24 24",width:20,height:20,fill:"none",stroke:"currentColor",strokeWidth:"1.9",strokeLinecap:"round",strokeLinejoin:"round","aria-hidden":"true",children:[u("rect",{x:"3.5",y:"5",width:"17",height:"15.5",rx:"2.5"}),u("path",{d:"M3.5 10h17M8 3v4M16 3v4"})]}),si:f("svg",{viewBox:"0 0 24 24",width:20,height:20,fill:"none",stroke:"currentColor",strokeWidth:"1.9",strokeLinecap:"round",strokeLinejoin:"round","aria-hidden":"true",children:[u("path",{d:"M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"}),u("path",{d:"M9 12l2 2 4-4"})]})},MH_kopf=(ic,titel,sub)=>[u("span",{className:"mh-ic mh-"+ic,children:MH_IC[ic]}),f("span",{className:"mh-txt",children:[u("b",{children:titel}),u("small",{children:sub})]})];
 MH_IC.tb=f("svg",{viewBox:"0 0 24 24",width:20,height:20,fill:"none",stroke:"currentColor",strokeWidth:"1.9",strokeLinecap:"round",strokeLinejoin:"round","aria-hidden":"true",children:[u("path",{d:"M7 3h7l4 4v14H7z"}),u("path",{d:"M14 3v4h4"}),u("path",{d:"M10 12h5M10 15.5h5M10 19h3"})]});MH_IC.ds=f("svg",{viewBox:"0 0 24 24",width:20,height:20,fill:"none",stroke:"currentColor",strokeWidth:"1.9",strokeLinecap:"round",strokeLinejoin:"round","aria-hidden":"true",children:[u("circle",{cx:"12",cy:"12",r:"8"}),u("path",{d:"M12 4a8 8 0 0 0 0 16z",fill:"currentColor"})]});
 function WW_Darstellung(){let[m,setM]=H(WW_modus());let sub=m==="hell"?"W&W-Farben, hell":m==="dunkel"?"W&W-Farben, dunkel":"Wie beim Gerät, hell oder dunkel";return f("section",{className:"mehr-block mehr-klapp-block ww-ds",children:[f("div",{className:"ww-ds-kopf",children:MH_kopf("ds","Darstellung",sub)}),u("div",{className:"pw-seg ww-ds-seg",role:"tablist","aria-label":"Darstellung",children:[["hell","Hell"],["dunkel","Dunkel"],["auto","Automatisch"]].map(([k,t0])=>u("button",{type:"button",role:"tab","aria-selected":m===k,onClick:()=>{WW_setzeModus(k);setM(k)},children:t0},k))})]})}
 
@@ -5249,6 +6368,9 @@ MH_Neu = ({ z, mutiere }) => {
   let txN = (() => { try { let A = TX_lesen(); return Object.keys(TX_NAMEN).reduce((s0, k) => s0 + Object.keys(A[k] ?? {}).length, 0) } catch { return 0 } })();
   let ds = WW_modus(), dsName = { hell: "Hell", dunkel: "Dunkel", auto: "Automatisch" }[ds] ?? "";
   let mic = DPM_ICON.mic;
+  let fkIc = f("svg", { viewBox: "0 0 24 24", width: 20, height: 20, fill: "none", stroke: "currentColor", strokeWidth: "1.9", strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true", children: [u("path", { d: "M5 17h14M6 17l1.5-5.5A2 2 0 0 1 9.4 10h5.2a2 2 0 0 1 1.9 1.5L18 17" }), u("circle", { cx: 8, cy: 17, r: 1.6 }), u("circle", { cx: 16, cy: 17, r: 1.6 })] });
+  let fkM = (() => { try { return window.HB?.monatsKm() ?? null } catch { return null } })(), fkKm = (x) => x.toFixed(1).replace(".", ","), fkEur = (c) => (c / 100).toFixed(2).replace(".", ",");
+  mt(() => { let a = () => neu((x) => x + 1); window.addEventListener("doku-fix-hb", a); return () => window.removeEventListener("doku-fix-hb", a) }, []);
   let Z = (o) => u(MH_Zeile, { ...o, an: sel === o.id, klick: () => waehle(o.id) });
   let heute = [];
   if (offen.length) heute.push(Z({ id: "offen", ic: "vd", titel: "Doku offen", chip: offen.length }));
@@ -5259,7 +6381,8 @@ MH_Neu = ({ z, mutiere }) => {
     u("h4", { children: "Werkzeuge" }), f("div", { className: "mh2-gruppe", children: [
       Z({ id: "tdb", ic: "tdb", titel: "Testdatenbank", rechts: tests || "" }),
       Z({ id: "tb", ic: "tb", titel: "Therapiebericht", rechts: berichte.length ? "" : "Formular", chip: berichte.length ? `${berichte.length} fällig` : null }),
-      Z({ id: "dp", ic: "dp", titel: "Dienstpläne", rechts: plaene })] }),
+      Z({ id: "dp", ic: "dp", titel: "Dienstpläne", rechts: plaene }),
+      Z({ id: "fk", ic: "fk", icEl: fkIc, titel: "Fahrtkosten/Hausbesuche", rechts: fkM ? `${fkKm(fkM.km)} km` : "" })] }),
     u("h4", { children: "Dokumentation" }), f("div", { className: "mh2-gruppe", children: [
       Z({ id: "vd", ic: "vd", titel: "Verlaufsdoku", rechts: KD_stil() === "kurz" ? "kurz" : "ausführlich" }),
       Z({ id: "dx", ic: "dx", icEl: mic, titel: "Diktat", rechts: dxWeg === "live" ? "Live" : dxWeg === "geraet" ? "Auf dem Gerät" : "Automatisch" }),
@@ -5273,6 +6396,11 @@ MH_Neu = ({ z, mutiere }) => {
     offen: () => f(J, { children: [MH_Kopf("vd", "Doku offen", "Patienten aus dem heutigen Dienstplan ohne fertige Doku"),
       ...offen.map((o) => { let P = z.patienten.find((x) => DP_schluessel(x.name) === DP_schluessel(o.name) && !x.abgeschlossen) ?? z.patienten.find((x) => DP_schluessel(x.name) === DP_schluessel(o.name)); return u(MH_Opt, { titel: o.name, sub: o.zeit, children: P && u("button", { type: "button", className: "mh2-knopf zwei", onClick: () => oeffneP(P, "verlauf"), children: "Öffnen" }) }, o.name + o.zeit) }),
       u("button", { type: "button", className: "mh2-knopf", style: { marginTop: 12 }, onClick: () => mutiere((Q) => { Q.tab = "dienst" }), children: "Zum Dienstplan" })] }),
+    fk: () => f(J, { children: [MH_Kopf("fk", "Fahrtkosten/Hausbesuche", "Touren aus dem Dienstplan, km und Betrag je Monat", fkIc),
+      u(MH_Opt, { titel: "Dieser Monat", sub: fkM && fkM.offen ? `${fkM.offen} ${fkM.offen === 1 ? "Tag" : "Tage"} ohne km` : "0,30 € pro km", children: u("span", { className: "mh2-r", children: fkM ? `${fkKm(fkM.km)} km · ${fkEur(fkM.cent)} €` : "–" }) }),
+      u("p", { className: "mh2-hinw", children: "Jede Hausbesuchs-Tour aus dem Dienstplan wird am Tag selbst eingetragen. Strecke und km rechnet Doku-Fix offline auf der Karte." }),
+      u("button", { type: "button", className: "mh2-knopf", style: { marginTop: 12 }, onClick: () => window.HB?.fahrtkosten(null, "Mehr"), children: "Monatsliste öffnen" }),
+      u("button", { type: "button", className: "mh2-knopf zwei", style: { marginTop: 8 }, onClick: () => window.HB?.tour(dt(), "Mehr"), children: "Heutige Tour auf der Karte" })] }),
     bericht: () => R.tb(),
     tdb: () => f(J, { children: [MH_Kopf("tdb", "Testdatenbank", "Funktionstests mit Quelle und Belegstärke"), u(MH_Opt, { titel: "Tests in der Datenbank", children: u("span", { className: "mh2-r", children: tests }) }),
       u("button", { type: "button", className: "mh2-knopf", style: { marginTop: 12 }, onClick: () => mutiere((Q) => { Q.tab = "testdb" }), children: "Testdatenbank öffnen" })] }),
@@ -5320,7 +6448,7 @@ MH_WbNeu = ({ neu }) => {
   let dazu = () => { if (!a.trim() || !b.trim() || !window.DiktatSprache) return; let w = window.DiktatSprache.woerterbuch(); if (!w.some((x) => x.falsch.toLowerCase() === a.trim().toLowerCase())) w.push({ falsch: a.trim(), richtig: b.trim() }); window.DiktatSprache.woerterbuchSetzen(w); setA(""); setB(""); neu() };
   return f("div", { className: "mh2-wbneu", children: [u("input", { className: "eingabe", value: a, placeholder: "falsch erkannt", "aria-label": "falsch erkannt", onChange: (x) => setA(x.target.value) }), u("span", { children: "→" }), u("input", { className: "eingabe", value: b, placeholder: "richtig", "aria-label": "richtig", onChange: (x) => setB(x.target.value) }), u("button", { type: "button", className: "mh2-knopf zwei", onClick: dazu, children: "+ Eintrag" })] });
 };
-function K0({z:e,mutiere:n,wechsel:t}){let[i,r]=H(""),[a,l]=H(null),[s,o]=H({}),h=e.patienten.filter((m)=>m.art==="nurVerlauf"),g=h.find((m)=>m.id===e.aktivKurz)??null,k=(m)=>n((c)=>{let p=c.patienten.find((v)=>v.id===c.aktivKurz);if(p)m(p)}),d=(m)=>k((c)=>m(c.erstbefund)),b=()=>{let m=Math.random().toString(36).slice(2,9);n((c)=>{c.patienten.unshift(av(i,m)),c.aktivKurz=m}),r(""),t?.()};if(!g&&(DSW.f=(q0,pr)=>{if(q0>=0)return!1;if(!pr)n((Q)=>{Q.tab="patienten"});return!0},!0))return f("div",{className:"schritt",children:[u(O,{hinweis:"Für Patienten, die schon länger bei dir sind oder nur zur Vertretung kommen. Du hältst nur den Verlauf fest, einen Erstbefund gibt es nicht. Im Test nur erfundene Daten verwenden.",children:"Wen dokumentierst du?"}),f("div",{className:"knopfreihe",style:{marginTop:0},children:[u("input",{className:"eingabe",style:{flex:1,minWidth:160},value:i,placeholder:"Name suchen oder neu anlegen","aria-label":"Name des Patienten ohne Erstbefund",autoComplete:"off",onChange:(m)=>r(m.target.value),onKeyDown:(m)=>{if(m.key==="Enter")b()}}),u("button",{type:"button",className:"weiter",style:{flex:"none",width:"auto",padding:"0 20px",marginTop:0},onClick:b,children:"Anlegen"})]}),u(PX_Knopf,{name:i,alle:e.patienten,mutiere:n,root:!0}),h.length===0?u("p",{className:"hinweis",style:{marginTop:18},children:"Noch kein Patient. Lege oben den ersten an."}):i.trim()?f("div",{className:"kz-treffer",children:[PV_filter(h,i).length?u("p",{className:"gruppe",style:{margin:"10px 0 6px"},children:"Passende Patienten"}):u("p",{className:"hinweis klein",style:{margin:"10px 0 0"},children:"Kein Patient passt. Mit „Anlegen“ neu anlegen."}),PV_filter(h,i).map((m)=>f("div",{className:"pt-zeile",children:[f("button",{type:"button",className:"haupt",onClick:()=>{n((c)=>{c.aktivKurz=m.id}),t?.()},children:[f("div",{className:"pt-name",children:[PV_name(m.name,i),FA_tag(m,h)]}),f("div",{className:"sek",children:[m.erstbefund.diagnose.trim()?lv(m.erstbefund.diagnose.trim(),40):"Diagnose noch offen"," · ",m.verlauf?.einheiten.length??0," Einheiten"]})]}),a===m.id?u("button",{type:"button",className:"kleinknopf rot",onClick:()=>{n((c)=>{if(c.patienten=c.patienten.filter((p)=>p.id!==m.id),c.aktivKurz===m.id)c.aktivKurz=null}),l(null)},children:"Wirklich löschen?"}):u("button",{type:"button",className:"kleinknopf rot",onClick:()=>l(m.id),children:"Löschen"})]},m.id))]}):f("details",{className:"aufklapp kz-alle",children:[f("summary",{children:[u("span",{children:"Alle Patienten"}),u("span",{className:"zaehler",children:h.length})]}),f("div",{className:"inhalt",children:[...h].sort((x,y)=>(!!x.abgeschlossen-!!y.abgeschlossen)||x.name.localeCompare(y.name,"de")).map((m)=>f("div",{className:"pt-zeile",children:[f("button",{type:"button",className:"haupt",onClick:()=>{n((c)=>{c.aktivKurz=m.id}),t?.()},children:[f("div",{className:"pt-name",children:[PV_name(m.name,i),FA_tag(m,h)]}),f("div",{className:"sek",children:[m.erstbefund.diagnose.trim()?lv(m.erstbefund.diagnose.trim(),40):"Diagnose noch offen"," · ",m.verlauf?.einheiten.length??0," Einheiten"]})]}),a===m.id?u("button",{type:"button",className:"kleinknopf rot",onClick:()=>{n((c)=>{if(c.patienten=c.patienten.filter((p)=>p.id!==m.id),c.aktivKurz===m.id)c.aktivKurz=null}),l(null)},children:"Wirklich löschen?"}):u("button",{type:"button",className:"kleinknopf rot",onClick:()=>l(m.id),children:"Löschen"})]},m.id))})]}),]});let S=g.erstbefund,z=()=>n((m)=>{m.kartAuf=DP_schluessel(g.name)||g.id;m.tab="patienten";m.aktivKurz=null;delete m.zurueck});if(!g.kurzFertig){let m=tv(S),c=Math.min(S.schritt,m.length-1),p=()=>c+1>=m.length?k(rv):d((v)=>{v.schritt=c+1});DSW.f=(q0,pr)=>{let n0=c+q0;if(n0<0||n0>=m.length)return!1;if(!pr)d((v)=>{v.schritt=n0});return!0};return f("div",{children:[f("div",{className:"v-kopf",children:[(c!==0||e.zurueck?.pid!==g.id)&&u("button",{type:"button",className:"kleinknopf",onClick:()=>{if(m[c]==="region"&&s.bereich){if(s.seite)o({bereich:s.bereich,region:s.region});else if(s.region)o({bereich:s.bereich});else o({});return}if(c===0)z();else d((v)=>{v.schritt=c-1})},children:c===0?"‹ Patienten":"‹ Zurück"}),f("span",{className:"zahl",children:[FA_name(g,h)," · Schritt ",c+1,"/",m.length]})]}),m[c]==="diagnose"&&u(Su,{e:S,aendern:d,weiter:p,name:g.name}),m[c]==="bsv"&&u(Bu,{e:S,aendern:d,weiter:p}),m[c]==="ursache"&&u(UR_Schritt,{e:S,aendern:(m0)=>k((c0)=>{m0(c0.erstbefund);UR_merke(c0)}),weiter:p}),m[c]==="region"&&u(zu,{e:S,aendern:d,weiter:p,entwurf:s,setEntwurf:o})]})}let K=!!rl(g);let KE=!K&&f("div",{className:"kurz-extras",children:[u("p",{className:"hinweis klein",children:[S.diagnose.trim(),(S.ursachen??[]).join(", "),S.stellen.map(se).join(", ")].filter(Boolean).join(" · ")||"Ohne Diagnose und Region"}),f("div",{className:"kurz-klein",children:[u("button",{type:"button",className:"kleinknopf",onClick:()=>k((m)=>{m.kurzFertig=!1,m.erstbefund.schritt=0}),children:"Diagnose, Auslöser oder Region ändern"})]}),u(FA_Wahl,{P:g,mutiere:n})]});return f("div",{children:[u(_u,{patient:g,mutiere:k,kurz:!0,extras:KE,zumPlan:()=>n((m)=>{m.tab="dienst"}),loeschen:()=>n((m)=>{qs(m,g.id)})})]})}var N0={ruhe:null,bewegung:null,tageszeit:[],schmerzBei:""};function sv(e){let n=[{art:"diagnose"},...st(e)?[{art:"bsv"}]:[],{art:"beginn"},{art:"ursache"},{art:"region"},...PF_RE.test((e.diagnose??"")+" "+(e.krankheitsbild??""))?[{art:"pfad"}]:[],{art:"vorgeschichte"},{art:"sozial"},{art:"flags"}];if(!e.stellen.length&&(e.diagnoseKat==="neuro"||pr(e)))n.push({art:"nschmerz"});if(e.stellen.forEach((t)=>n.push({art:"schmerz",stelle:t.id},{art:"beweg",stelle:t.id},{art:"schwellung",stelle:t.id})),Rb(e))n.push({art:"wurzel"});if(ru(e).length)n.push({art:"tests"});n.push({art:"ziel"});if(n.push({art:"befund"}),kr(e))n.push({art:"neurobv"});return e.stellen.forEach((t)=>n.push({art:"deton",stelle:t.id},{art:"mobi",stelle:t.id},{art:"uebung",stelle:t.id})),n.push({art:"ausgabe"}),n}var G0=(e,n)=>e.length>n?e.slice(0,n-1).trimEnd()+"…":e,uv=()=>Math.random().toString(36).slice(2,9),BH_ARTEN=new Set(["neurobv","deton","mobi","uebung"]),BH_liste=(l,bh)=>bh?[...l.filter((x)=>BH_ARTEN.has(x.art)),{art:"ausgabe"}]:l.filter((x)=>!BH_ARTEN.has(x.art)&&x.art!=="ausgabe"),Lu={dienst:f("svg",{viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"1.8",children:[u("rect",{x:"3.5",y:"5",width:"17",height:"15.5",rx:"2.5"}),u("path",{d:"M3.5 10h17M8 3v4M16 3v4"}),u("path",{d:"M8 14h2M14 14h2M8 17.5h2"})]}),beh:f("svg",{viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"1.8",children:[u("path",{d:"M7 11V6a1.5 1.5 0 0 1 3 0v4"}),u("path",{d:"M10 10V4.5a1.5 1.5 0 0 1 3 0V10"}),u("path",{d:"M13 10V5.5a1.5 1.5 0 0 1 3 0V12"}),u("path",{d:"M16 9.5a1.5 1.5 0 0 1 3 0V14a7 7 0 0 1-7 7h-.5a6 6 0 0 1-4.6-2.2L4.2 15.4a1.6 1.6 0 0 1 2.4-2.1L7 14v-3"})]}),pat:f("svg",{viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"1.8",children:[u("circle",{cx:"12",cy:"8",r:"4"}),u("path",{d:"M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"})]}),erst:f("svg",{viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"1.8",children:[u("rect",{x:"5",y:"3",width:"14",height:"18",rx:"2"}),u("path",{d:"M9 8h6M9 12h6M9 16h4"})]}),verl:u("svg",{viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"1.8",children:u("path",{d:"M3 18l5-6 4 3 5-8 4 5"})}),kurz:f("svg",{viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"1.8",children:[u("path",{d:"M4 6h16M4 12h10M4 18h6"}),u("path",{d:"M17 15l3 3-3 3"})]})};var DSW={f:null,x:0,y:0,t:0,ok:!1,lock:0,dx:0,m:null,hist:[]},DS_quer=(el,stop)=>{try{for(let n=el;n&&n!==stop&&n!==document.body;n=n.parentElement){if(n.scrollWidth>n.clientWidth+1){let o=getComputedStyle(n).overflowX;if(o==="auto"||o==="scroll")return!0}}}catch{}return!1},DS_ruhig=()=>!!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches,DS_EZ="cubic-bezier(.3,.7,.3,1)",DS_kopf=()=>document.querySelector(".links header"),DS_kopfReset=(hd,weich)=>{if(!hd)return;if(weich){hd.style.transition=`transform .32s ${DS_EZ},opacity .32s ${DS_EZ}`;setTimeout(()=>{hd.style.transition=""},340)}else hd.style.transition="";hd.style.transform="";hd.style.opacity=""},DS_aufraeumen=()=>{document.querySelectorAll(".ds-klon").forEach((x)=>x.remove());document.body.classList.remove("ds-kommt");document.querySelector(".links")?.classList.remove("ds-clip");document.querySelectorAll(".ds-kopfklon").forEach((x)=>x.remove());DS_kopfReset(DS_kopf());let m0=document.querySelector("main");if(m0&&!DSW.lock){m0.style.transform="";m0.style.opacity="";m0.style.transition=""}},DS_v=()=>{let h=DSW.hist,n=h.length;if(n<2)return 0;let b=h[n-1],a=h[0];for(let i=n-2;i>=0;i--){a=h[i];if(b.t-h[i].t>=80)break}let dt=b.t-a.t;return dt>0?(b.x-a.x)/dt:0},DS_start=(ev)=>{DS_aufraeumen();let q=ev.touches?.[0];DSW.lock=0;DSW.dx=0;DSW.hist=[];if(!q||ev.touches.length>1||!DSW.f){DSW.ok=!1;return}let el=ev.target;DSW.ok=!(el.closest&&el.closest('input,textarea,select,svg,.chips,.ziele,.nj-rolle,.pw-seg,.sn-liste,.tx-vorschlag,.pf-leiste,[role="tablist"],[role="slider"]'))&&!DS_quer(el,ev.currentTarget);DSW.x=q.clientX;DSW.y=q.clientY;DSW.t=Date.now();DSW.m=ev.currentTarget;DSW.hist=[{x:q.clientX,t:performance.now()}]},DS_zug=(ev)=>{if(!DSW.ok)return;let q=ev.touches?.[0];if(!q)return;let jetzt=performance.now();DSW.hist.push({x:q.clientX,t:jetzt});while(DSW.hist.length>2&&jetzt-DSW.hist[0].t>150)DSW.hist.shift();let dx=q.clientX-DSW.x,dy=q.clientY-DSW.y;if(!DSW.lock){if(Math.abs(dx)<10&&Math.abs(dy)<10)return;DSW.lock=Math.abs(dx)>Math.abs(dy)*1.3?1:-1}if(DSW.lock!==1)return;let m=DSW.m;if(!m)return;let geht=DSW.f?.(dx<0?1:-1,!0);if(!geht){if(m.style.transform)DS_zurueck(m);DSW.dx=0;return}DSW.dx=dx;m.style.transition="none";m.style.willChange="transform";m.classList.add("ds-zieht");m.style.transform=`translate3d(${dx}px,0,0)`;if(DSW.titel){let hd=DS_kopf(),w0=m.clientWidth||1;if(hd){hd.style.transition="none";hd.style.transform=`translate3d(${dx*.5}px,0,0)`;hd.style.opacity=String(Math.max(0,1-Math.abs(dx)/(w0*.5)))}}},DS_zurueck=(m)=>{m.classList.remove("ds-zieht");DS_kopfReset(DS_kopf(),!0);m.style.transition=`transform .32s ${DS_EZ}`;m.style.transform="translate3d(0,0,0)";m.style.opacity="";setTimeout(()=>{m.style.transition="";m.style.transform="";m.style.willChange=""},340)},DS_ende=(ev)=>{let m=DSW.m;if(!DSW.ok||DSW.lock!==1||!m){return}let q=ev.changedTouches?.[0];if(q)DSW.hist.push({x:q.clientX,t:performance.now()});let dx=q?q.clientX-DSW.x:DSW.dx,w=m.clientWidth||1,dir=dx<0?1:-1,v=DS_v(),va=Math.abs(v),schwung=va>.35&&Math.sign(v)===Math.sign(dx)&&Math.abs(dx)>30,zurueckSchwung=va>.35&&Math.sign(v)!==Math.sign(dx);if(!DSW.dx||zurueckSchwung||!(Math.abs(dx)>w*.35||schwung)||!DSW.f?.(dir,!0)){DS_zurueck(m);return}if(DS_ruhig()){m.style.transform="";m.style.transition="";DSW.f(dir);return}let rest=Math.max(0,w-Math.abs(dx)),dauer=Math.round(Math.min(420,Math.max(240,2.3*rest/Math.max(va,.7)))),r=m.getBoundingClientRect(),cs=getComputedStyle(m),st=m.scrollTop,k=document.createElement("div");for(let c0 of m.childNodes)k.appendChild(c0.cloneNode(!0));k.className="ds-klon";k.setAttribute("aria-hidden","true");k.inert=!0;Object.assign(k.style,{display:cs.display,flexDirection:cs.flexDirection,gap:cs.gap,padding:cs.padding,boxSizing:"border-box",position:"fixed",left:r.left+"px",top:r.top+"px",width:r.width+"px",height:r.height+"px",margin:"0",overflow:"hidden",zIndex:"40",pointerEvents:"none",background:getComputedStyle(document.body).backgroundColor,transform:`translate3d(${dx}px,0,0)`,willChange:"transform"});document.body.appendChild(k);k.scrollTop=st;setTimeout(()=>k.remove(),dauer+400);let L=document.querySelector(".links");L?.classList.add("ds-clip");document.documentElement.style.setProperty("--ds-x",dir*w+"px");document.body.classList.add("ds-kommt");m.classList.remove("ds-zieht");m.style.transition="none";m.style.transform="";m.style.willChange="";let h1=document.querySelector(".links header h1"),t0=h1?.textContent,hd=DSW.titel?DS_kopf():null,hk=null,hx=0,ho=1;if(hd){let hr=hd.getBoundingClientRect();hx=dx*.5;ho=Math.max(0,1-Math.abs(dx)/(w*.5));hk=hd.cloneNode(!0);hk.className="ds-kopfklon";hk.setAttribute("aria-hidden","true");hk.inert=!0;Object.assign(hk.style,{position:"fixed",left:hr.left+"px",top:hr.top+"px",width:hr.width+"px",margin:"0",zIndex:"41",pointerEvents:"none",transform:`translate3d(${hx}px,0,0)`,opacity:String(ho)});document.body.appendChild(hk);setTimeout(()=>hk.remove(),dauer+400);hd.style.transition="none";hd.style.transform=`translate3d(${dir*w*.5}px,0,0)`;hd.style.opacity="0"}DSW.lock=0;DSW.f(dir);requestAnimationFrame(()=>{let neu=document.querySelector("main"),opt={duration:dauer,easing:DS_EZ,fill:"both"};document.body.classList.remove("ds-kommt");try{if(neu){neu.classList.add("ds-zieht");neu.style.willChange="transform";neu.animate([{transform:`translate3d(${dir*w}px,0,0)`},{transform:"translate3d(0,0,0)"}],opt)}k.animate([{transform:`translate3d(${dx}px,0,0)`},{transform:`translate3d(${-dir*w}px,0,0)`}],opt)}catch{k.remove()}if(hd)try{let hd2=DS_kopf()||hd;hd2.style.transition="none";hd2.style.transform="";hd2.style.opacity="";hd2.animate([{transform:`translate3d(${dir*w*.5}px,0,0)`,opacity:0},{transform:"translate3d(0,0,0)",opacity:1}],{duration:dauer,easing:DS_EZ,fill:"both"});hk.animate([{transform:`translate3d(${hx}px,0,0)`,opacity:ho},{transform:`translate3d(${-dir*w*.5}px,0,0)`,opacity:0}],{duration:Math.round(dauer*.7),easing:DS_EZ,fill:"forwards"})}catch{hk?.remove();DS_kopfReset(DS_kopf())}let h2=document.querySelector(".links header h1");if(!hd&&h2&&h2.textContent!==t0)try{h2.animate([{opacity:0,transform:`translate3d(${dir*24}px,0,0)`},{opacity:1,transform:"none"}],{duration:Math.min(300,dauer),easing:DS_EZ})}catch{}setTimeout(()=>{k.remove();hk?.remove();let hd3=DS_kopf();if(hd3){hd3.getAnimations?.().forEach((x)=>x.cancel());DS_kopfReset(hd3)}document.querySelector(".links")?.classList.remove("ds-clip");if(neu){neu.classList.remove("ds-zieht");neu.getAnimations?.().forEach((x)=>x.cancel());neu.style.transition="";neu.style.transform="";neu.style.willChange=""}},dauer+40)})};var DF_VERSION="v105",DP_KEY="doku-fix-dienstplan",
+function K0({z:e,mutiere:n,wechsel:t}){let[i,r]=H(""),[a,l]=H(null),[s,o]=H({}),h=e.patienten.filter((m)=>m.art==="nurVerlauf"),g=h.find((m)=>m.id===e.aktivKurz)??null,k=(m)=>n((c)=>{let p=c.patienten.find((v)=>v.id===c.aktivKurz);if(p)m(p)}),d=(m)=>k((c)=>m(c.erstbefund)),b=()=>{let m=Math.random().toString(36).slice(2,9);n((c)=>{c.patienten.unshift(av(i,m)),c.aktivKurz=m}),r(""),t?.()};if(!g&&(DSW.f=(q0,pr)=>{if(q0>=0)return!1;if(!pr)n((Q)=>{Q.tab="patienten"});return!0},!0))return f("div",{className:"schritt",children:[u(O,{hinweis:"Für Patienten, die schon länger bei dir sind oder nur zur Vertretung kommen. Du hältst nur den Verlauf fest, einen Erstbefund gibt es nicht. Im Test nur erfundene Daten verwenden.",children:"Wen dokumentierst du?"}),f("div",{className:"knopfreihe",style:{marginTop:0},children:[u("input",{className:"eingabe",style:{flex:1,minWidth:160},value:i,placeholder:"Name suchen oder neu anlegen","aria-label":"Name des Patienten ohne Erstbefund",autoComplete:"off",onChange:(m)=>r(m.target.value),onKeyDown:(m)=>{if(m.key==="Enter")b()}}),u("button",{type:"button",className:"weiter",style:{flex:"none",width:"auto",padding:"0 20px",marginTop:0},onClick:b,children:"Anlegen"})]}),u(PX_Knopf,{name:i,alle:e.patienten,mutiere:n,root:!0}),h.length===0?u("p",{className:"hinweis",style:{marginTop:18},children:"Noch kein Patient. Lege oben den ersten an."}):i.trim()?f("div",{className:"kz-treffer",children:[PV_filter(h,i).length?u("p",{className:"gruppe",style:{margin:"10px 0 6px"},children:"Passende Patienten"}):u("p",{className:"hinweis klein",style:{margin:"10px 0 0"},children:"Kein Patient passt. Mit „Anlegen“ neu anlegen."}),PV_filter(h,i).map((m)=>f("div",{className:"pt-zeile",children:[f("button",{type:"button",className:"haupt",onClick:()=>{n((c)=>{c.aktivKurz=m.id}),t?.()},children:[f("div",{className:"pt-name",children:[PV_name(m.name,i),FA_tag(m,h)]}),f("div",{className:"sek",children:[m.erstbefund.diagnose.trim()?lv(m.erstbefund.diagnose.trim(),40):"Diagnose noch offen"," · ",m.verlauf?.einheiten.length??0," Einheiten"]})]}),a===m.id?u("button",{type:"button",className:"kleinknopf rot",onClick:()=>{n((c)=>{if(c.patienten=c.patienten.filter((p)=>p.id!==m.id),c.aktivKurz===m.id)c.aktivKurz=null}),l(null)},children:"Wirklich löschen?"}):u("button",{type:"button",className:"kleinknopf rot",onClick:()=>l(m.id),children:"Löschen"})]},m.id))]}):f("details",{className:"aufklapp kz-alle",children:[f("summary",{children:[u("span",{children:"Alle Patienten"}),u("span",{className:"zaehler",children:h.length})]}),f("div",{className:"inhalt",children:[...h].sort((x,y)=>(!!x.abgeschlossen-!!y.abgeschlossen)||x.name.localeCompare(y.name,"de")).map((m)=>f("div",{className:"pt-zeile",children:[f("button",{type:"button",className:"haupt",onClick:()=>{n((c)=>{c.aktivKurz=m.id}),t?.()},children:[f("div",{className:"pt-name",children:[PV_name(m.name,i),FA_tag(m,h)]}),f("div",{className:"sek",children:[m.erstbefund.diagnose.trim()?lv(m.erstbefund.diagnose.trim(),40):"Diagnose noch offen"," · ",m.verlauf?.einheiten.length??0," Einheiten"]})]}),a===m.id?u("button",{type:"button",className:"kleinknopf rot",onClick:()=>{n((c)=>{if(c.patienten=c.patienten.filter((p)=>p.id!==m.id),c.aktivKurz===m.id)c.aktivKurz=null}),l(null)},children:"Wirklich löschen?"}):u("button",{type:"button",className:"kleinknopf rot",onClick:()=>l(m.id),children:"Löschen"})]},m.id))})]}),]});let S=g.erstbefund,z=()=>n((m)=>{m.kartAuf=DP_schluessel(g.name)||g.id;m.tab="patienten";m.aktivKurz=null;delete m.zurueck});if(!g.kurzFertig){let m=tv(S),c=Math.min(S.schritt,m.length-1),p=()=>c+1>=m.length?k(rv):d((v)=>{v.schritt=c+1});DSW.f=(q0,pr)=>{let n0=c+q0;if(n0<0||n0>=m.length)return!1;if(!pr)d((v)=>{v.schritt=n0});return!0};return f("div",{children:[f("div",{className:"v-kopf",children:[(c!==0||e.zurueck?.pid!==g.id)&&u("button",{type:"button",className:"kleinknopf",onClick:()=>{if(m[c]==="region"&&s.bereich){if(s.seite)o({bereich:s.bereich,region:s.region});else if(s.region)o({bereich:s.bereich});else o({});return}if(c===0)z();else d((v)=>{v.schritt=c-1})},children:c===0?"‹ Patienten":"‹ Zurück"}),f("span",{className:"zahl",children:[FA_name(g,h)," · Schritt ",c+1,"/",m.length]})]}),m[c]==="diagnose"&&u(Su,{e:S,aendern:d,weiter:p,name:g.name}),m[c]==="bsv"&&u(Bu,{e:S,aendern:d,weiter:p}),m[c]==="ursache"&&u(UR_Schritt,{e:S,aendern:(m0)=>k((c0)=>{m0(c0.erstbefund);UR_merke(c0)}),weiter:p}),m[c]==="region"&&u(zu,{e:S,aendern:d,weiter:p,entwurf:s,setEntwurf:o})]})}let K=!!rl(g);let KE=!K&&f("div",{className:"kurz-extras",children:[u("p",{className:"hinweis klein",children:[S.diagnose.trim(),(S.ursachen??[]).join(", "),S.stellen.map(se).join(", ")].filter(Boolean).join(" · ")||"Ohne Diagnose und Region"}),f("div",{className:"kurz-klein",children:[u("button",{type:"button",className:"kleinknopf",onClick:()=>k((m)=>{m.kurzFertig=!1,m.erstbefund.schritt=0}),children:"Diagnose, Auslöser oder Region ändern"})]}),u(FA_Wahl,{P:g,mutiere:n})]});return f("div",{children:[u(_u,{patient:g,mutiere:k,kurz:!0,extras:KE,zumPlan:()=>n((m)=>{m.tab="dienst"}),loeschen:()=>n((m)=>{qs(m,g.id)})})]})}var N0={ruhe:null,bewegung:null,tageszeit:[],schmerzBei:""};function sv(e){let n=[{art:"diagnose"},...st(e)?[{art:"bsv"}]:[],{art:"beginn"},{art:"ursache"},{art:"region"},...PF_RE.test((e.diagnose??"")+" "+(e.krankheitsbild??""))?[{art:"pfad"}]:[],{art:"vorgeschichte"},{art:"sozial"},{art:"flags"}];if(!e.stellen.length&&(e.diagnoseKat==="neuro"||pr(e)))n.push({art:"nschmerz"});if(e.stellen.forEach((t)=>n.push({art:"schmerz",stelle:t.id},{art:"beweg",stelle:t.id},{art:"schwellung",stelle:t.id})),Rb(e))n.push({art:"wurzel"});if(ru(e).length)n.push({art:"tests"});n.push({art:"ziel"});if(n.push({art:"befund"}),kr(e))n.push({art:"neurobv"});return e.stellen.forEach((t)=>n.push({art:"deton",stelle:t.id},{art:"mobi",stelle:t.id},{art:"uebung",stelle:t.id})),n.push({art:"ausgabe"}),n}var G0=(e,n)=>e.length>n?e.slice(0,n-1).trimEnd()+"…":e,uv=()=>Math.random().toString(36).slice(2,9),BH_ARTEN=new Set(["neurobv","deton","mobi","uebung"]),BH_liste=(l,bh)=>bh?[...l.filter((x)=>BH_ARTEN.has(x.art)),{art:"ausgabe"}]:l.filter((x)=>!BH_ARTEN.has(x.art)&&x.art!=="ausgabe"),Lu={dienst:f("svg",{viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"1.8",children:[u("rect",{x:"3.5",y:"5",width:"17",height:"15.5",rx:"2.5"}),u("path",{d:"M3.5 10h17M8 3v4M16 3v4"}),u("path",{d:"M8 14h2M14 14h2M8 17.5h2"})]}),beh:f("svg",{viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"1.8",children:[u("path",{d:"M7 11V6a1.5 1.5 0 0 1 3 0v4"}),u("path",{d:"M10 10V4.5a1.5 1.5 0 0 1 3 0V10"}),u("path",{d:"M13 10V5.5a1.5 1.5 0 0 1 3 0V12"}),u("path",{d:"M16 9.5a1.5 1.5 0 0 1 3 0V14a7 7 0 0 1-7 7h-.5a6 6 0 0 1-4.6-2.2L4.2 15.4a1.6 1.6 0 0 1 2.4-2.1L7 14v-3"})]}),pat:f("svg",{viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"1.8",children:[u("circle",{cx:"12",cy:"8",r:"4"}),u("path",{d:"M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"})]}),erst:f("svg",{viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"1.8",children:[u("rect",{x:"5",y:"3",width:"14",height:"18",rx:"2"}),u("path",{d:"M9 8h6M9 12h6M9 16h4"})]}),verl:u("svg",{viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"1.8",children:u("path",{d:"M3 18l5-6 4 3 5-8 4 5"})}),kurz:f("svg",{viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"1.8",children:[u("path",{d:"M4 6h16M4 12h10M4 18h6"}),u("path",{d:"M17 15l3 3-3 3"})]})};var DSW={f:null,x:0,y:0,t:0,ok:!1,lock:0,dx:0,m:null,hist:[]},DS_quer=(el,stop)=>{try{for(let n=el;n&&n!==stop&&n!==document.body;n=n.parentElement){if(n.scrollWidth>n.clientWidth+1){let o=getComputedStyle(n).overflowX;if(o==="auto"||o==="scroll")return!0}}}catch{}return!1},DS_ruhig=()=>!!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches,DS_EZ="cubic-bezier(.3,.7,.3,1)",DS_kopf=()=>document.querySelector(".links header"),DS_kopfReset=(hd,weich)=>{if(!hd)return;if(weich){hd.style.transition=`transform .32s ${DS_EZ},opacity .32s ${DS_EZ}`;setTimeout(()=>{hd.style.transition=""},340)}else hd.style.transition="";hd.style.transform="";hd.style.opacity=""},DS_aufraeumen=()=>{document.querySelectorAll(".ds-klon").forEach((x)=>x.remove());document.body.classList.remove("ds-kommt");document.querySelector(".links")?.classList.remove("ds-clip");document.querySelectorAll(".ds-kopfklon").forEach((x)=>x.remove());DS_kopfReset(DS_kopf());let m0=document.querySelector("main");if(m0&&!DSW.lock){m0.style.transform="";m0.style.opacity="";m0.style.transition=""}},DS_v=()=>{let h=DSW.hist,n=h.length;if(n<2)return 0;let b=h[n-1],a=h[0];for(let i=n-2;i>=0;i--){a=h[i];if(b.t-h[i].t>=80)break}let dt=b.t-a.t;return dt>0?(b.x-a.x)/dt:0},DS_start=(ev)=>{DS_aufraeumen();let q=ev.touches?.[0];DSW.lock=0;DSW.dx=0;DSW.hist=[];if(!q||ev.touches.length>1||!DSW.f){DSW.ok=!1;return}let el=ev.target;DSW.ok=!(el.closest&&el.closest('input,textarea,select,svg,.chips,.ziele,.nj-rolle,.pw-seg,.sn-liste,.tx-vorschlag,.pf-leiste,[role="tablist"],[role="slider"]'))&&!DS_quer(el,ev.currentTarget);DSW.x=q.clientX;DSW.y=q.clientY;DSW.t=Date.now();DSW.m=ev.currentTarget;DSW.hist=[{x:q.clientX,t:performance.now()}]},DS_zug=(ev)=>{if(!DSW.ok)return;let q=ev.touches?.[0];if(!q)return;let jetzt=performance.now();DSW.hist.push({x:q.clientX,t:jetzt});while(DSW.hist.length>2&&jetzt-DSW.hist[0].t>150)DSW.hist.shift();let dx=q.clientX-DSW.x,dy=q.clientY-DSW.y;if(!DSW.lock){if(Math.abs(dx)<10&&Math.abs(dy)<10)return;DSW.lock=Math.abs(dx)>Math.abs(dy)*1.3?1:-1}if(DSW.lock!==1)return;let m=DSW.m;if(!m)return;let geht=DSW.f?.(dx<0?1:-1,!0);if(!geht){if(m.style.transform)DS_zurueck(m);DSW.dx=0;return}DSW.dx=dx;m.style.transition="none";m.style.willChange="transform";m.classList.add("ds-zieht");m.style.transform=`translate3d(${dx}px,0,0)`;if(DSW.titel){let hd=DS_kopf(),w0=m.clientWidth||1;if(hd){hd.style.transition="none";hd.style.transform=`translate3d(${dx*.5}px,0,0)`;hd.style.opacity=String(Math.max(0,1-Math.abs(dx)/(w0*.5)))}}},DS_zurueck=(m)=>{m.classList.remove("ds-zieht");DS_kopfReset(DS_kopf(),!0);m.style.transition=`transform .32s ${DS_EZ}`;m.style.transform="translate3d(0,0,0)";m.style.opacity="";setTimeout(()=>{m.style.transition="";m.style.transform="";m.style.willChange=""},340)},DS_ende=(ev)=>{let m=DSW.m;if(!DSW.ok||DSW.lock!==1||!m){return}let q=ev.changedTouches?.[0];if(q)DSW.hist.push({x:q.clientX,t:performance.now()});let dx=q?q.clientX-DSW.x:DSW.dx,w=m.clientWidth||1,dir=dx<0?1:-1,v=DS_v(),va=Math.abs(v),schwung=va>.35&&Math.sign(v)===Math.sign(dx)&&Math.abs(dx)>30,zurueckSchwung=va>.35&&Math.sign(v)!==Math.sign(dx);if(!DSW.dx||zurueckSchwung||!(Math.abs(dx)>w*.35||schwung)||!DSW.f?.(dir,!0)){DS_zurueck(m);return}if(DS_ruhig()){m.style.transform="";m.style.transition="";DSW.f(dir);return}let rest=Math.max(0,w-Math.abs(dx)),dauer=Math.round(Math.min(420,Math.max(240,2.3*rest/Math.max(va,.7)))),r=m.getBoundingClientRect(),cs=getComputedStyle(m),st=m.scrollTop,k=document.createElement("div");for(let c0 of m.childNodes)k.appendChild(c0.cloneNode(!0));k.className="ds-klon";k.setAttribute("aria-hidden","true");k.inert=!0;Object.assign(k.style,{display:cs.display,flexDirection:cs.flexDirection,gap:cs.gap,padding:cs.padding,boxSizing:"border-box",position:"fixed",left:r.left+"px",top:r.top+"px",width:r.width+"px",height:r.height+"px",margin:"0",overflow:"hidden",zIndex:"40",pointerEvents:"none",background:getComputedStyle(document.body).backgroundColor,transform:`translate3d(${dx}px,0,0)`,willChange:"transform"});document.body.appendChild(k);k.scrollTop=st;setTimeout(()=>k.remove(),dauer+400);let L=document.querySelector(".links");L?.classList.add("ds-clip");document.documentElement.style.setProperty("--ds-x",dir*w+"px");document.body.classList.add("ds-kommt");m.classList.remove("ds-zieht");m.style.transition="none";m.style.transform="";m.style.willChange="";let h1=document.querySelector(".links header h1"),t0=h1?.textContent,hd=DSW.titel?DS_kopf():null,hk=null,hx=0,ho=1;if(hd){let hr=hd.getBoundingClientRect();hx=dx*.5;ho=Math.max(0,1-Math.abs(dx)/(w*.5));hk=hd.cloneNode(!0);hk.className="ds-kopfklon";hk.setAttribute("aria-hidden","true");hk.inert=!0;Object.assign(hk.style,{position:"fixed",left:hr.left+"px",top:hr.top+"px",width:hr.width+"px",margin:"0",zIndex:"41",pointerEvents:"none",transform:`translate3d(${hx}px,0,0)`,opacity:String(ho)});document.body.appendChild(hk);setTimeout(()=>hk.remove(),dauer+400);hd.style.transition="none";hd.style.transform=`translate3d(${dir*w*.5}px,0,0)`;hd.style.opacity="0"}DSW.lock=0;DSW.f(dir);requestAnimationFrame(()=>{let neu=document.querySelector("main"),opt={duration:dauer,easing:DS_EZ,fill:"both"};document.body.classList.remove("ds-kommt");try{if(neu){neu.classList.add("ds-zieht");neu.style.willChange="transform";neu.animate([{transform:`translate3d(${dir*w}px,0,0)`},{transform:"translate3d(0,0,0)"}],opt)}k.animate([{transform:`translate3d(${dx}px,0,0)`},{transform:`translate3d(${-dir*w}px,0,0)`}],opt)}catch{k.remove()}if(hd)try{let hd2=DS_kopf()||hd;hd2.style.transition="none";hd2.style.transform="";hd2.style.opacity="";hd2.animate([{transform:`translate3d(${dir*w*.5}px,0,0)`,opacity:0},{transform:"translate3d(0,0,0)",opacity:1}],{duration:dauer,easing:DS_EZ,fill:"both"});hk.animate([{transform:`translate3d(${hx}px,0,0)`,opacity:ho},{transform:`translate3d(${-dir*w*.5}px,0,0)`,opacity:0}],{duration:Math.round(dauer*.7),easing:DS_EZ,fill:"forwards"})}catch{hk?.remove();DS_kopfReset(DS_kopf())}let h2=document.querySelector(".links header h1");if(!hd&&h2&&h2.textContent!==t0)try{h2.animate([{opacity:0,transform:`translate3d(${dir*24}px,0,0)`},{opacity:1,transform:"none"}],{duration:Math.min(300,dauer),easing:DS_EZ})}catch{}setTimeout(()=>{k.remove();hk?.remove();let hd3=DS_kopf();if(hd3){hd3.getAnimations?.().forEach((x)=>x.cancel());DS_kopfReset(hd3)}document.querySelector(".links")?.classList.remove("ds-clip");if(neu){neu.classList.remove("ds-zieht");neu.getAnimations?.().forEach((x)=>x.cancel());neu.style.transition="";neu.style.transform="";neu.style.willChange=""}},dauer+40)})};var DF_VERSION="v106",DP_KEY="doku-fix-dienstplan",
 DP_lesen=()=>{try{let x=JSON.parse(localStorage.getItem(DP_KEY)??"{}");return x&&typeof x==="object"?x:{}}catch{return{}}},
 DP_schreiben=(x)=>{try{localStorage.setItem(DP_KEY,JSON.stringify(x))}catch{}try{DP_hbLernen(x)}catch{}},
 DP_min=(t)=>{let m=/^(\d{1,2}):(\d{2})/.exec(t??"");return m?+m[1]*60+ +m[2]:null},
@@ -5483,7 +6611,7 @@ let docHeute=(P)=>(P?.verlauf?.einheiten??[]).filter((x)=>x.datum===datum),ferti
 starte=(P,ziel)=>c((Q)=>{let X=Q.patienten.find((p)=>p.id===P.id);if(!X)return;Q.zurueck={tab:"dienst",pid:X.id,k:DP_schluessel(X.name),datum};if(X.art==="nurVerlauf"){Q.tab="kurz";Q.aktivKurz=X.id}else{Q.aktiv=X.id;Q.tab=ziel??"verlauf"}if(datum!==heute)return;try{X.verlauf??={einheiten:[],offen:null};let off=X.verlauf.einheiten.find((x)=>x.datum===heute&&!x.fertig&&x.notiz===void 0);if(off){X.verlauf.offen=off.id;return}if(X.verlauf.einheiten.some((x)=>x.datum===heute&&x.fertig))return;if(!(X.erstbefund?.stellen?.length))return;let x=a0(X.erstbefund,J1(),X.verlauf.einheiten[0]);X.verlauf.einheiten.unshift(x);X.verlauf.offen=x.id;UR_merke(X)}catch{}}),
 naechster=(()=>{if(!plan||datum!==heute)return null;let L=[...plan.eintraege].filter((q)=>!q.frei&&q.name&&DP_min(q.zeit)!=null).sort((a,b)=>DP_min(a.zeit)-DP_min(b.zeit)),st=L.map((q)=>{let P=pmap.get(DP_schluessel(q.name));return{q,P,f:!!P&&fertigP(P)}}),li=-1;st.forEach((x,i)=>{if(x.f)li=i});let k=li>=0?st.slice(li+1).find((x)=>!x.f):st.find((x)=>!x.f&&DP_min(x.q.zeit)+(+x.q.dauer||0)>nowMin);if(!k)return null;let nOffen=st.filter((x)=>x.P&&!x.f&&DP_min(x.q.zeit)+(+x.q.dauer||0)<=nowMin).length;return{...k,nOffen,erster:li<0}})(),
 weiterBox=naechster&&f("div",{className:"dp-weiter",role:"region","aria-label":"Nächster Patient",children:[f("div",{className:"dp-weiter-text",children:[u("small",{children:naechster.erster?"Als Nächstes":"Weiter mit"}),f("b",{children:[DP_kurz(naechster.q.name)," · ",naechster.q.zeit]})]}),naechster.P?u("button",{type:"button",className:"weiter dp-weiter-knopf",onClick:()=>starte(naechster.P),children:"Doku öffnen"}):f("div",{className:"dp-weiter-zwei",children:[u("button",{type:"button",className:"weiter dp-weiter-knopf",onClick:()=>lege(naechster.q.name,"kurz"),children:"Schnell Doku"}),u("button",{type:"button",className:"sekundaer dp-weiter-knopf",onClick:()=>lege(naechster.q.name,"erst"),children:"Erstbefund"})]})]});
-let kopf=f("div",{className:"dp-kopf",children:[f("div",{className:"dp-datum",children:[u("button",{type:"button",className:"dp-pfeil","aria-label":"Vorheriger Tag",onClick:()=>{setDatum(DP_tagPlus(datum,-1));setOffen(null);setEdit(null)},children:"‹"}),f("div",{className:"dp-datum-text",children:[u("b",{children:DP_WT[new Date(datum+"T12:00:00").getDay()]}),u("span",{children:ke(datum)})]}),u("button",{type:"button",className:"dp-pfeil","aria-label":"Nächster Tag",onClick:()=>{setDatum(DP_tagPlus(datum,1));setOffen(null);setEdit(null)},children:"›"}),!istHeute&&u("button",{type:"button",className:"kleinknopf",onClick:()=>setDatum(heute),children:"Heute"})]}),plan&&f("div",{className:"dp-eckdaten",children:[(()=>{let T0=plan.eintraege.filter((q)=>DP_min(q.zeit)!=null),a=DP_min(plan.von)??(T0.length?Math.min(...T0.map((q)=>DP_min(q.zeit))):null),b=DP_min(plan.bis)??(T0.length?Math.max(...T0.map((q)=>DP_min(q.zeit)+(+q.dauer||0))):null);if(a==null||b==null||b<=a)return null;let P=DP_frei(plan).pause,pm=P?Math.max(0,P.b-P.a):0,dau=(m)=>`${Math.floor(m/60)}:${String(m%60).padStart(2,"0")} h`;return f("span",{className:"dp-chip-zeit",children:[u("b",{children:"Arbeitszeit"})," ",DP_hhmm(a),"–",DP_hhmm(b)," · ",dau(b-a-pm),pm?u("small",{children:" netto"}):null]})})(),(()=>{let P=DP_frei(plan).pause;return P&&f("span",{className:"dp-chip-pause",children:[u("b",{children:"Pause"})," ",DP_hhmm(P.a),"–",DP_hhmm(P.b)]})})(),(()=>{let nT=plan.eintraege.filter((q)=>!q.frei).length,nH=plan.eintraege.filter((q)=>q.hb).length;return f(J,{children:[f("span",{children:[u("b",{children:nT}),nT===1?" Termin":" Termine"]}),nH>0&&f("span",{children:[u("b",{children:nH}),nH===1?" Hausbesuch":" Hausbesuche"]}),DP_frei(plan).fahrt>0&&f("span",{className:"dp-chip-fahrt",children:[u("b",{children:"Fahrzeit"})," ",DP_frei(plan).fahrt," min"]})]})})()]})]});
+let kopf=f("div",{className:"dp-kopf",children:[f("div",{className:"dp-datum",children:[u("button",{type:"button",className:"dp-pfeil","aria-label":"Vorheriger Tag",onClick:()=>{setDatum(DP_tagPlus(datum,-1));setOffen(null);setEdit(null)},children:"‹"}),f("div",{className:"dp-datum-text",children:[u("b",{children:DP_WT[new Date(datum+"T12:00:00").getDay()]}),u("span",{children:ke(datum)})]}),u("button",{type:"button",className:"dp-pfeil","aria-label":"Nächster Tag",onClick:()=>{setDatum(DP_tagPlus(datum,1));setOffen(null);setEdit(null)},children:"›"}),!istHeute&&u("button",{type:"button",className:"kleinknopf",onClick:()=>setDatum(heute),children:"Heute"})]}),plan&&f("div",{className:"dp-eckdaten",children:[(()=>{let T0=plan.eintraege.filter((q)=>DP_min(q.zeit)!=null),a=DP_min(plan.von)??(T0.length?Math.min(...T0.map((q)=>DP_min(q.zeit))):null),b=DP_min(plan.bis)??(T0.length?Math.max(...T0.map((q)=>DP_min(q.zeit)+(+q.dauer||0))):null);if(a==null||b==null||b<=a)return null;let P=DP_frei(plan).pause,pm=P?Math.max(0,P.b-P.a):0,dau=(m)=>`${Math.floor(m/60)}:${String(m%60).padStart(2,"0")} h`;return f("span",{className:"dp-chip-zeit",children:[u("b",{children:"Arbeitszeit"})," ",DP_hhmm(a),"–",DP_hhmm(b)," · ",dau(b-a-pm),pm?u("small",{children:" netto"}):null]})})(),(()=>{let P=DP_frei(plan).pause;return P&&f("span",{className:"dp-chip-pause",children:[u("b",{children:"Pause"})," ",DP_hhmm(P.a),"–",DP_hhmm(P.b)]})})(),(()=>{let nT=plan.eintraege.filter((q)=>!q.frei).length,nH=plan.eintraege.filter((q)=>q.hb).length;return f(J,{children:[f("span",{children:[u("b",{children:nT}),nT===1?" Termin":" Termine"]}),nH>0&&f("button",{type:"button",className:"dp-chip-tour","aria-label":"Hausbesuchs-Tour auf der Karte zeigen",onClick:()=>window.HB?.tour(datum),children:[f("svg",{viewBox:"0 0 24 24",width:14,height:14,fill:"none",stroke:"currentColor",strokeWidth:"2.2",strokeLinecap:"round",strokeLinejoin:"round","aria-hidden":"true",children:[u("path",{d:"M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"}),u("path",{d:"M9 4v14M15 6v14"})]}),u("b",{children:nH}),nH===1?" Hausbesuch":" Hausbesuche"," · Tour ›"]}),DP_frei(plan).fahrt>0&&f("span",{className:"dp-chip-fahrt",children:[u("b",{children:"Fahrzeit"})," ",DP_frei(plan).fahrt," min"]})]})})()]})]});
 let fotoWahl=async(ev)=>{let fl=ev.target.files?.[0];ev.target.value="";if(!fl)return;if(foto)URL.revokeObjectURL(foto);setFoto(URL.createObjectURL(fl));setVor(null);setOcr({lauf:!0,pct:null,text:"Foto wird geladen …"});try{let r=await DP_ocr(fl,(pc,tx)=>setOcr({lauf:!0,pct:pc,text:tx})),pl=DP_tabelle(r.tsv,datum)??DP_ausTSV(r.tsv,datum)??DP_parse(r.text,datum);if(pl&&!pl.eintraege.length)pl=null;if(pl){DP_ordnen(pl);DP_angleichen(pl,e.patienten);let dn=new Date(),w0=DP_tagWahl(pl,DP_lesen(),dt(),dn.getHours()*60+dn.getMinutes());pl.datum=w0.d;pl.datumSicher=w0.sicher;DP_hbRaten(pl)}setTxt(r.text);setVor(pl);setOcr({lauf:!1,ok:!0,text:pl?`${pl.eintraege.filter((q)=>!q.frei).length} Termine erkannt. Prüfe die Liste und korrigiere, was falsch gelesen wurde.`:"Im Foto wurden keine Termine erkannt. Versuche ein schärferes, gerades Foto oder füge den Text ein."})}catch(er){if(!/github\.io$/.test(location.hostname)){setOcr({lauf:!1,fehler:!0,text:"In der Testversion lässt sich die Texterkennung nicht laden, weil die Testseite keine Zusatzprogramme aus dem Internet nachladen darf. Den Foto-Import bitte in der App testen. Hier kannst du den Text vom Plan unten einfügen."});return}setOcr({lauf:!1,fehler:!0,text:er?.message==="haengt"?"Die Texterkennung reagiert nicht. Prüfe die Internetverbindung und versuche es noch einmal.":"Die automatische Texterkennung braucht beim ersten Mal Internet und konnte nicht geladen werden. Du kannst den Text auch direkt im Foto unten lange drücken, „Alles auswählen“ und „Kopieren“ und ihn ins Feld einfügen."})}},schliessen=()=>{setEinf(!1);setLeer(!1);setTxt("");setOcr(null);setVor(null);setRoh(!1);if(foto)URL.revokeObjectURL(foto);setFoto(null)},
 aendVor=(id,fn)=>setVor((v)=>{let n0=structuredClone(v);let q=n0.eintraege.find((x)=>x.id===id);if(q)fn(q);return n0});
 let quelle=vor??(txt.trim()?DP_parse(txt,datum):null),mg=quelle&&quelle.eintraege.length?DP_merge(basis(quelle.datum),quelle):null,ar=mg?DP_aufr(alle,quelle.datum,mg.plan):null,info=mg?(basis(quelle.datum)?`Plan vom ${ke(quelle.datum)}: ${mg.anzGeaendert} geändert, ${mg.anzNeu} neu, ${mg.anzGleich} unverändert${mg.anzWeg?`, ${mg.anzWeg} entfällt`:""}`:`Neuer Plan für ${ke(quelle.datum)}: ${mg.anzNeu} Termine`)+(ar.msg.length?`. Aufgeräumt: ${ar.msg.join(", ")}`:""):quelle?"Keine Termine erkannt.":"";
