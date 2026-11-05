@@ -1,6 +1,6 @@
 // Doku-Fix Service Worker: App-Dateien zwischenspeichern, damit sie ohne Netz starten.
 // Strategie: erst Netz (neue Version kommt an), bei fehlendem Netz die gespeicherte Datei.
-const CACHE = 'doku-fix-v102';
+const CACHE = 'doku-fix-v103';
 const DATEIEN = ['./', './index.html', './manifest.webmanifest', './icon-180.png', './icon-192.png', './icon-512.png', './anatomie.js', './ana_daten.js', './ana_css.js', './three.module.min.js', './anatomie-modell.wasm', './anatomie-haut.wasm', './werkstatt.html', './diktat.html', './jspdf.umd.min.js', './fonts/outfit-latin-wght-normal.woff2', './fonts/ibm-plex-sans-latin-500-normal.woff2'];
 
 self.addEventListener('install', e => {
