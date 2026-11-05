@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v103 | 05.11.2026 | 2fc3ae7 | Dienstplan: Ist der Feierabend erreicht, pulsiert die Feierabend-Zeile („Schönen Feierabend!“), bis sie einmal angetippt wird; das merkt sich die App für den Tag. |
 | v102 | 05.11.2026 | 69e652d | Dienstplan: Die Feierabend-Zeile geht über die volle Breite bis unter die Uhrzeiten und hat links keine eigene Uhrzeit mehr, damit sie als Tagesende und nicht als Termin erscheint. |
 | v101 | 05.11.2026 | 6bb04d2 | Dienstplan: Nach dem letzten Patienten steht eine schmale Zeile „Feierabend um 19:00“ mit der Restzeit bis Arbeitsende und der Zahl der Patienten, die heute noch kommen (Ende der Arbeitszeit aus dem Plan, sonst Ende des letzten Termins); danach „Schönen Feierabend!“. |
 | v100 | 05.11.2026 | 9001119 | Dienstplan: Beim laufenden Termin steht rechts neben dem Fortschrittsbalken die Restzeit („noch 12 min · bis 11:20“); in den letzten 5 Minuten werden Balken und Zahl orange. |
