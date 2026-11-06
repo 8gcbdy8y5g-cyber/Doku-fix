@@ -669,3 +669,4 @@ git push
 Danach in `sw.js` die Cache-Nummer um eins erhöhen, sonst zeigt die installierte App eventuell noch den alten Stand.
 
 Die Patientendaten auf dem Gerät hängen nicht an der Version. Sie bleiben beim Zurücksetzen erhalten.
+| v119 | 06.11.2026 | Hausbesuche: Fahrzeit zwischen zwei Patienten antippen hebt genau dieses Stück der Route auf der Karte hervor | 9c350f7 |
