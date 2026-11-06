@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v119 | 06.11.2026 | 9c350f7 | Hausbesuche-Tour: Die Fahrzeit zwischen zwei Halten lässt sich antippen. Die Karte zoomt auf genau dieses Stück und hebt es in der Tourfarbe hervor, der Rest der Route wird grau, unbeteiligte Nadeln blass. Nochmal tippen zeigt wieder die ganze Route. |
 | v118 | 06.11.2026 | f88b99c | Fahrtkosten/Hausbesuche: In Monatsliste und JPEG stehen überall Nachnamen; Dienstplan-Namen wie „Josef P.“ werden über die Adresse oder einen eindeutigen Anfangsbuchstaben zugeordnet, sonst fragt die Monatsliste „Wer ist …?“. Wird ein Patient im Ablauf angetippt, ist seine Nadel auf der Karte groß mit Lichtring, die anderen blass. Ein Tag unter Mehr › Fahrtkosten/Hausbesuche öffnet direkt die Karte dieses Tages. |
 | v117 | 06.11.2026 | 6573077 | Fahrtkosten/Hausbesuche: Ein Termin, der ohne Lücke direkt an Praxis-Terminen liegt, zählt nicht als Hausbesuch (keine Fahrzeit möglich) und landet weder in der Tour noch in den Fahrtkosten. Beim Einlesen des Dienstplans werden solche Termine nicht mehr als „HB?“ vorgeschlagen. Berechnete Abschnitte, die nicht mehr zum Dienstplan passen, verschwinden auch an übernommenen Tagen. |
 | v116 | 05.11.2026 | 680a9f0 | Fahrtkosten/Hausbesuche: Neues Fenster unter Mehr (Variante B3). Oben die heutige Tour wie im Tour-Banner: Strecke, Fahrzeit, Fahrtkosten, kleine Karte und „Als Nächstes … · Navigieren“ zum nächsten Patienten; ohne Hausbesuche die nächste Tour. Darunter der Monat mit Summe und den letzten Tagen (zweigeteilte Tage mit beiden Teilen), Abrechnung des Vormonats (gesichert oder antippen zum Sichern), Sperrungen und Adressen. |
@@ -669,4 +670,3 @@ git push
 Danach in `sw.js` die Cache-Nummer um eins erhöhen, sonst zeigt die installierte App eventuell noch den alten Stand.
 
 Die Patientendaten auf dem Gerät hängen nicht an der Version. Sie bleiben beim Zurücksetzen erhalten.
-| v119 | 06.11.2026 | Hausbesuche: Fahrzeit zwischen zwei Patienten antippen hebt genau dieses Stück der Route auf der Karte hervor | 9c350f7 |
