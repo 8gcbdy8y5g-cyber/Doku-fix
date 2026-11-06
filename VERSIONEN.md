@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v120 | 06.11.2026 | c0e3bfc | Hausbesuche-Tour: Standort-Knopf wie bei Apple Karten. 1× tippen folgt dem Standort, 2× tippen dreht die Karte in Fahrtrichtung (Kompass, beim Fahren GPS-Richtung) mit blauem Sichtkegel, 3× tippen wieder Norden oben. |
 | v119 | 06.11.2026 | 9c350f7 | Hausbesuche-Tour: Die Fahrzeit zwischen zwei Halten lässt sich antippen. Die Karte zoomt auf genau dieses Stück und hebt es in der Tourfarbe hervor, der Rest der Route wird grau, unbeteiligte Nadeln blass. Nochmal tippen zeigt wieder die ganze Route. |
 | v118 | 06.11.2026 | f88b99c | Fahrtkosten/Hausbesuche: In Monatsliste und JPEG stehen überall Nachnamen; Dienstplan-Namen wie „Josef P.“ werden über die Adresse oder einen eindeutigen Anfangsbuchstaben zugeordnet, sonst fragt die Monatsliste „Wer ist …?“. Wird ein Patient im Ablauf angetippt, ist seine Nadel auf der Karte groß mit Lichtring, die anderen blass. Ein Tag unter Mehr › Fahrtkosten/Hausbesuche öffnet direkt die Karte dieses Tages. |
 | v117 | 06.11.2026 | 6573077 | Fahrtkosten/Hausbesuche: Ein Termin, der ohne Lücke direkt an Praxis-Terminen liegt, zählt nicht als Hausbesuch (keine Fahrzeit möglich) und landet weder in der Tour noch in den Fahrtkosten. Beim Einlesen des Dienstplans werden solche Termine nicht mehr als „HB?“ vorgeschlagen. Berechnete Abschnitte, die nicht mehr zum Dienstplan passen, verschwinden auch an übernommenen Tagen. |
