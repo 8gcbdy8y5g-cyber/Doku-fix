@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v122 | 06.11.2026 | d493370 | Stunden neu gestaltet: links der Monat mit Ist, Soll bis heute und Plus/Minus, darunter die Kalenderwochen wie in Clockin; die aktuelle Woche zeigt jeden Tag als Kachel, Tippen öffnet Zeiten und Art des Tages. Rechts Stundenkonto, Urlaubstage (genommen, eingeplant, offen) und Fortbildung, Krank, Kind krank. Abgleich nimmt jetzt auch Krank- und Kind-krank-Tage; ein neuerer Abgleich aus der Sicherung ersetzt den alten. |
 | v121 | 06.11.2026 | fb62e7e | Neu unter Mehr: Stunden. Arbeitszeit je Tag aus dem Dienstplan (wie „Arbeitszeit … netto“), Soll 39 h/Woche, Feiertage NRW, 24.12./31.12. halb. Plus/Minus-Konto ab einem Abgleich mit Clockin, Balken je Monat, Monatsliste zum Korrigieren. Urlaub (30 + 6 vorgearbeitet), Krank, Kind krank, Fortbildung, Überstunden frei; Abwesenheiten von–bis eintragen. Daten nur auf dem Gerät, in der Sicherung enthalten. |
 | v120 | 06.11.2026 | c0e3bfc | Hausbesuche-Tour: Standort-Knopf wie bei Apple Karten. 1× tippen folgt dem Standort, 2× tippen dreht die Karte in Fahrtrichtung (Kompass, beim Fahren GPS-Richtung) mit blauem Sichtkegel, 3× tippen wieder Norden oben. |
 | v119 | 06.11.2026 | 9c350f7 | Hausbesuche-Tour: Die Fahrzeit zwischen zwei Halten lässt sich antippen. Die Karte zoomt auf genau dieses Stück und hebt es in der Tourfarbe hervor, der Rest der Route wird grau, unbeteiligte Nadeln blass. Nochmal tippen zeigt wieder die ganze Route. |
