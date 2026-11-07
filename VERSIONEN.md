@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v125 | 08.11.2026 | 9017bf1 | Dienstplan heute: Was vorbei ist, steht als eine Zeile „8 Termine vorbei · 5 Doku offen“ und klappt per Tipp auf. Die laufende Behandlung ist als Jetzt-Karte hervorgehoben (Überschrift „Jetzt“, größerer Name, Restzeit in der Akzentfarbe). Die Pause ist schmaler und ohne Leuchten. |
 | v124 | 06.11.2026 | 0b361dc | Stunden: Die Karte Urlaubstage lässt sich antippen und listet jeden Urlaub mit Wochentag, Anzahl Tage und genommen/eingeplant; Tage, die nur aus dem Clockin-Abgleich bekannt sind, stehen als „ohne Datum“ da; unten die Rechnung aus Anspruch, genommen, eingeplant und offen. |
 | v123 | 06.11.2026 | 9c718f9 | Stunden: Krank, Kind krank, Fortbildung und Urlaub zählen auch eingetragene Tage vor dem Abgleich; Antippen listet die Zeiträume (z. B. 8.–9.1., 27.–30.1.). Tage bis zum Clockin-Abgleich gelten als erfüllt und werden nicht noch einmal aus dem Dienstplan abgezogen. |
 | v122 | 06.11.2026 | d493370 | Stunden neu gestaltet: links der Monat mit Ist, Soll bis heute und Plus/Minus, darunter die Kalenderwochen wie in Clockin; die aktuelle Woche zeigt jeden Tag als Kachel, Tippen öffnet Zeiten und Art des Tages. Rechts Stundenkonto, Urlaubstage (genommen, eingeplant, offen) und Fortbildung, Krank, Kind krank. Abgleich nimmt jetzt auch Krank- und Kind-krank-Tage; ein neuerer Abgleich aus der Sicherung ersetzt den alten. |
