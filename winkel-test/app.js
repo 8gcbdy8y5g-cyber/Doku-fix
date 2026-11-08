@@ -63,6 +63,7 @@ function renderPick() {
   $("c-demo").hidden = method !== "cam";
   const isFoto = method === "foto"; $("spark").hidden = isFoto; $("reps").hidden = isFoto; $("level").hidden = isFoto;
   $("ctip").textContent = mv.cam ? mv.cam.tip : "";
+  showAufbau();
   sensorPrepare();
   resetResult();
 }
@@ -72,6 +73,14 @@ function selectMv(m) {
 }
 document.querySelectorAll("#methode button").forEach(b => b.onclick = () => { if (b.dataset.m === method) return; stopAll(); method = b.dataset.m; renderPick(); resetCam(); if (method === "foto") $("file").click(); });
 document.querySelectorAll("#seite button").forEach(b => b.onclick = () => { side = b.dataset.s; renderPick(); resetCam(); });
+
+/* ---------------- Aufbau für Kamera und Foto ---------------- */
+function showAufbau() {
+  const box = $("aufbau"); if (!box) return;
+  const a = window.ANL3 && ANL3.aufbau && (method === "cam" || method === "foto") && !camOn && !demoOn ? ANL3.aufbau(mv.k, side) : null;
+  box.hidden = !a; if (!a) return;
+  $("aufsvg").innerHTML = a.svg; $("auftxt").textContent = a.text;
+}
 
 /* ---------------- Ergebnis ---------------- */
 let result = null;
@@ -111,7 +120,7 @@ $("take").onclick = () => {
   if (!result) return;
   if (list.length && list.every(e => e.ex)) list = [];
   const g = parseFloat($("gv").value);
-  list.push({ j: joint.k, mv: mv.k, side: joint.side ? side : "", m: result.m, v: Math.round(result.v), n: result.n, range: Math.round(result.range || 0), g: isNaN(g) ? null : Math.round(g), q: result.q || "", manual: !!result.manual });
+  list.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), ts: Date.now(), j: joint.k, mv: mv.k, side: joint.side ? side : "", m: result.m, v: Math.round(result.v), n: result.n, range: Math.round(result.range || 0), g: isNaN(g) ? null : Math.round(g), q: result.q || "", manual: !!result.manual });
   store.set("liste", list); $("gv").value = ""; renderList(); toast("Übernommen"); beep(1046, .1);
 };
 $("next").onclick = () => { const i = joint.mv.indexOf(mv); const n = joint.mv[(i + 1) % joint.mv.length]; selectMv(n); window.scrollTo({ top: 0, behavior: "smooth" }); };
@@ -181,6 +190,35 @@ function renderVgl() {
   });
 }
 $("copy").onclick = async () => { const t = dokuText(); try { await navigator.clipboard.writeText(t); toast("Kopiert"); } catch (e) { const r = document.createRange(); r.selectNodeContents($("doku")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); toast("Text markiert, jetzt kopieren"); } };
+/* Übertragung zwischen eigenen Geräten über die gemeinsame Zwischenablage */
+const b64e = s => btoa(unescape(encodeURIComponent(s))), b64d = s => decodeURIComponent(escape(atob(s)));
+$("send").onclick = async () => {
+  const real = list.filter(e => !e.ex);
+  if (!real.length) { toast("Noch keine eigenen Messungen"); return; }
+  real.forEach(e => { if (!e.id) e.id = (e.ts || Date.now()).toString(36) + Math.random().toString(36).slice(2, 6); }); store.set("liste", list);
+  const code = "WINKEL1:" + b64e(JSON.stringify(real));
+  try { await navigator.clipboard.writeText(code); toast(real.length + " Messungen kopiert. Am anderen Gerät „Vom anderen Gerät einfügen“ tippen."); }
+  catch (e) { $("pastebox").hidden = false; $("pastetxt").value = code; $("pastetxt").select(); toast("Code markiert, jetzt kopieren"); }
+};
+function importCode(txt) {
+  const m = /WINKEL1:([A-Za-z0-9+/=]+)/.exec(txt || "");
+  if (!m) { toast("Kein Messungs-Code gefunden"); return false; }
+  let arr; try { arr = JSON.parse(b64d(m[1])); } catch (e) { toast("Code ist beschädigt"); return false; }
+  if (!Array.isArray(arr)) return false;
+  if (list.length && list.every(e => e.ex)) list = [];
+  const have = new Set(list.map(e => e.id)); let n = 0;
+  arr.forEach(e => { if (e && e.mv && !have.has(e.id) && findMv(e.mv)) { list.push(e); n++; } });
+  list.sort((a, b) => (a.ts || 0) - (b.ts || 0)); store.set("liste", list); renderList();
+  toast(n ? n + " Messungen übernommen" : "Alles schon vorhanden"); beep(1046, .1);
+  return true;
+}
+$("recv").onclick = async () => {
+  try { const t = await navigator.clipboard.readText(); if (importCode(t)) { $("pastebox").hidden = true; return; } } catch (e) {}
+  $("pastebox").hidden = false; $("pastetxt").value = ""; $("pastetxt").focus();
+};
+$("pasteok").onclick = () => { if (importCode($("pastetxt").value)) $("pastebox").hidden = true; };
+$("pastetxt").addEventListener("paste", e => { const t = (e.clipboardData || window.clipboardData).getData("text"); if (t && /WINKEL1:/.test(t)) { e.preventDefault(); if (importCode(t)) $("pastebox").hidden = true; } });
+
 $("clear").onclick = () => { const b = $("clear"); if (b.dataset.arm) { list = []; store.set("liste", list); renderList(); delete b.dataset.arm; b.textContent = "Liste leeren"; toast("Liste geleert"); return; } b.dataset.arm = 1; b.textContent = "Wirklich leeren?"; setTimeout(() => { delete b.dataset.arm; b.textContent = "Liste leeren"; }, 3000); };
 
 /* ---------------- Einstellungen ---------------- */
@@ -350,7 +388,7 @@ $("c-start").onclick = async () => {
   catch (e) { toast("Kein Kamerazugriff. Auf dem iPhone über die Testseite öffnen und die Kamera erlauben."); setQ("bad", "Kamera nicht erlaubt"); return; }
   vid.srcObject = stream; await vid.play().catch(() => {});
   await new Promise(r => { if (vid.videoWidth) r(); else vid.onloadedmetadata = r; });
-  cv.width = vid.videoWidth; cv.height = vid.videoHeight; camOn = true; keepAwake(true);
+  cv.width = vid.videoWidth; cv.height = vid.videoHeight; camOn = true; keepAwake(true); showAufbau();
   $("c-start").textContent = "Kamera stoppen"; $("c-flip").hidden = false; $("c-done").hidden = false;
   resetCam(); detOk = false; if (!loopOn) loop();
   const t0 = Date.now(), tick = setInterval(() => { if (!detOk && camOn) setQ("warn", "Erkennung lädt … " + Math.round((Date.now() - t0) / 1000) + " s (beim ersten Mal bis 30 s)"); else clearInterval(tick); }, 1000);
@@ -360,7 +398,7 @@ $("c-start").onclick = async () => {
 };
 $("c-flip").onclick = async () => { facing = facing === "environment" ? "user" : "environment"; stopCam(); $("c-start").click(); };
 $("c-done").onclick = () => finishCam(true);
-function stopCam() { if (stream) stream.getTracks().forEach(t => t.stop()); stream = null; camOn = false; keepAwake(false); $("c-flip").hidden = true; }
+function stopCam() { if (stream) stream.getTracks().forEach(t => t.stop()); stream = null; camOn = false; keepAwake(false); $("c-flip").hidden = true; showAufbau(); }
 function stopAll() { stopCam(); stopDemo(); stopSensor(); }
 
 let detOk = false, busy = false, lastDraw = null, loopOn = false;
@@ -577,9 +615,9 @@ $("c-demo").onclick = () => { unlockAudio(); if (demoOn) { stopDemo(); resetCam(
 function startDemo() {
   if (!mv.cam || mv.cam.hand) { toast("Die Vorführung gibt es für Körpermessungen"); return; }
   demoOn = true; cv.width = 720; cv.height = 960; resetCam(); $("c-demo").textContent = "Vorführung beenden"; $("c-done").hidden = false;
-  demoStart = performance.now(); setQ("ok", "Vorführung · simuliert"); demoFrame();
+  demoStart = performance.now(); setQ("ok", "Vorführung · simuliert"); showAufbau(); demoFrame();
 }
-function stopDemo() { demoOn = false; cancelAnimationFrame(demoRaf); $("c-demo").textContent = "Vorführung"; }
+function stopDemo() { demoOn = false; cancelAnimationFrame(demoRaf); $("c-demo").textContent = "Vorführung"; showAufbau(); }
 /* Zielwinkel pro Wiederholung, mit Rauschen wie bei echter Erkennung */
 function demoAngle(t) {
   const targets = [mv.norm[0] * .82, mv.norm[0] * .86, mv.norm[0] * .8].map(x => Math.round(x));

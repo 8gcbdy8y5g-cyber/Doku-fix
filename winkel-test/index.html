@@ -91,6 +91,12 @@ button{font-family:inherit}
 .lage b{display:block;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--tape);margin-bottom:1px}
 .howto{display:grid;gap:8px;background:var(--fill);border-radius:14px;padding:10px}
 .howto canvas{width:100%;height:auto;display:block}
+.aufbau{display:grid;gap:8px;background:var(--card);border-radius:18px;padding:12px;margin-bottom:12px}
+.aufsvg{background:#fff;border-radius:12px;overflow:hidden}
+.aufsvg svg{display:block;width:100%;height:auto;max-height:42vh}
+.auftxt{margin:0;font-size:14.5px;font-weight:600;max-width:65ch}
+.paste{display:grid;gap:8px;margin-top:10px}
+.paste textarea{width:100%;min-height:72px;border-radius:10px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);font:14px var(--font);padding:8px}
 .how3d{background:#fff;border-radius:10px;overflow:hidden}
 .how3d svg{display:block;width:100%;height:auto;max-height:52vh}
 .howstep{font-weight:600;font-size:14.5px;min-height:42px;margin:0}
@@ -168,6 +174,11 @@ details .body p{margin:0;max-width:65ch}
 
   <div class="wide">
     <section id="v-cam" aria-label="Kameramessung">
+      <div class="aufbau" id="aufbau" hidden>
+        <div class="lbl" style="margin:0">So aufstellen</div>
+        <div class="aufsvg" id="aufsvg" role="img" aria-label="Aufbau: wo das Gerät steht"></div>
+        <p class="auftxt" id="auftxt"></p>
+      </div>
       <div class="stage" id="stage">
         <canvas id="cv" width="720" height="960" aria-label="Kamerabild mit erkannten Messpunkten"></canvas>
         <video id="vid" playsinline muted></video>
@@ -242,6 +253,16 @@ details .body p{margin:0;max-width:65ch}
       <button class="btn main" id="copy">Text kopieren</button>
       <button class="btn ghost" id="clear">Liste leeren</button>
     </div>
+    <div class="btns" style="margin-top:8px">
+      <button class="btn" id="send">An anderes Gerät senden</button>
+      <button class="btn" id="recv">Vom anderen Gerät einfügen</button>
+    </div>
+    <div class="paste" id="pastebox" hidden>
+      <label class="small" for="pastetxt">Hier lange tippen und „Einfügen“ wählen:</label>
+      <textarea id="pastetxt" placeholder="WINKEL1:…"></textarea>
+      <button class="btn main" id="pasteok">Übernehmen</button>
+    </div>
+    <p class="small" style="margin:8px 0 0">Übertragung zwischen iPhone und iPad über die gemeinsame Zwischenablage (gleiche Apple-ID, Handoff an). Es geht nichts über einen Server.</p>
   </section>
 
   <details id="d-vgl">
