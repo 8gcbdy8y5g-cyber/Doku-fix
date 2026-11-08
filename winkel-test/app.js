@@ -191,7 +191,7 @@ function renderCfg() {
   document.querySelectorAll("#ton button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === cfg.ton));
   $("modelltxt").textContent = { lite: "Schnellstes Modell, für ältere Geräte.", full: "Standard: guter Mittelweg aus Tempo und Genauigkeit.", heavy: "Genauestes Modell, braucht ein aktuelles iPhone oder iPad." }[cfg.model] + (heavyOk ? "" : " „Genau“ gibt es nur auf der Testseite.");
 }
-document.querySelectorAll("#modell button").forEach(b => b.onclick = () => { cfg.model = b.dataset.v; store.set("cfg", cfg); renderCfg(); pose = null; poseP = null; });
+document.querySelectorAll("#modell button").forEach(b => b.onclick = () => { cfg.model = b.dataset.v; store.set("cfg", cfg); renderCfg(); pose = null; poseP = null; ERK.key = ""; ERK.ready = null; });
 document.querySelectorAll("#wdh button").forEach(b => b.onclick = () => { cfg.reps = +b.dataset.v; store.set("cfg", cfg); renderCfg(); renderReps(); });
 document.querySelectorAll("#ton button").forEach(b => b.onclick = () => { cfg.ton = b.dataset.v; store.set("cfg", cfg); renderCfg(); unlockAudio(); beep(); });
 fetch("mp/pose_landmarker_heavy.task.wasm", { method: "HEAD" }).then(r => { heavyOk = r.ok; if (!heavyOk && cfg.model === "heavy") cfg.model = "full"; renderCfg(); }).catch(() => { heavyOk = false; renderCfg(); });
@@ -238,6 +238,60 @@ let hist = [], holds = [], segMax = {}, quality = { level: "–", vis: 0, plane:
 let curPts = null, curRaw = null;
 
 function tracked() { return mv.cam && mv.cam.hand; }
+/* Erkennung läuft bevorzugt in einem Hintergrund-Strang (erkennung.js), damit die Oberfläche nie einfriert.
+   Klappt das nicht, Rückfall auf den Hauptstrang. Bilder werden vorher auf 640 px verkleinert. */
+const ERK = { w: undefined, mode: "", key: "", ready: null, pend: new Map(), id: 0, how: "" };
+const small = document.createElement("canvas"), sctx2 = small.getContext("2d");
+function modelPath() { return tracked() ? "mp/hand_landmarker.task.wasm" : "mp/pose_landmarker_" + cfg.model + ".task.wasm"; }
+function abs(p) { return new URL(p, location.href).href; }
+function call(msg, transfer, ms) {
+  return new Promise((res, rej) => {
+    const id = ++ERK.id; msg.id = id; ERK.pend.set(id, { res, rej });
+    if (ms) setTimeout(() => { if (ERK.pend.has(id)) { ERK.pend.delete(id); rej(new Error("Zeitüberschreitung")); } }, ms);
+    ERK.w.postMessage(msg, transfer || []);
+  });
+}
+function startWorker() {
+  if (ERK.w !== undefined) return ERK.w;
+  try {
+    const w = new Worker("erkennung.js", { type: "module" });
+    ERK.loaded = new Promise((res, rej) => { ERK.onLoaded = res; setTimeout(() => rej(new Error("Hintergrund-Strang startet nicht")), 20000); });
+    w.onmessage = e => { const m = e.data; if (m.type === "loaded") { ERK.onLoaded(); return; } const p = ERK.pend.get(m.id); if (!p) return; ERK.pend.delete(m.id);
+      if (m.type === "error") p.rej(new Error(m.msg)); else p.res(m.type === "ready" ? m : m.r); };
+    w.onerror = e => { console.error("Erkennung", e.message); ERK.pend.forEach(p => p.rej(new Error("Hintergrund-Strang fehlgeschlagen"))); ERK.pend.clear(); };
+    ERK.w = w;
+  } catch (e) { ERK.w = null; }
+  return ERK.w;
+}
+function ensureDetector() {
+  const key = (tracked() ? "hand" : "pose") + "|" + modelPath();
+  if (ERK.key === key && ERK.ready) return ERK.ready;
+  ERK.key = key;
+  ERK.ready = (async () => {
+    /* erst Grafikchip, dann Prozessor – jeweils in einem frischen Hintergrund-Strang */
+    for (const del of ["GPU"]) {
+      if (ERK.mode === "main") break;
+      if (!startWorker()) break;
+      try { await ERK.loaded; const r = await call({ type: "init", del, kind: tracked() ? "hand" : "pose", model: abs(modelPath()), wasm: abs("mp/wasm") }, null, 30000); ERK.mode = "worker"; ERK.how = r.how; ERK.del = del; return true; }
+      catch (e) { console.warn("Erkennung im Hintergrund nicht möglich:", e.message); try { ERK.w.terminate(); } catch (x) {} ERK.w = null; }
+    }
+    ERK.mode = "main"; await getDetector("VIDEO"); ERK.how = "Hauptstrang"; return true;
+  })();
+  ERK.ready.catch(() => { ERK.key = ""; ERK.ready = null; });
+  return ERK.ready;
+}
+/* Ein Bild auswerten. source: Video, Canvas oder Bild; mode: VIDEO oder IMAGE */
+async function detectFrame(source, mode, ts) {
+  const sw = source.videoWidth || source.width, sh = source.videoHeight || source.height;
+  const k = Math.min(1, 640 / Math.max(sw, sh)); const w = Math.round(sw * k), h = Math.round(sh * k);
+  if (small.width !== w || small.height !== h) { small.width = w; small.height = h; }
+  sctx2.drawImage(source, 0, 0, w, h);
+  if (ERK.mode === "worker") {
+    const bm = await createImageBitmap(small); return call({ type: "frame", bitmap: bm, mode, ts }, [bm], 15000);
+  }
+  const d = await getDetector(mode); await new Promise(r => setTimeout(r, 30));
+  return mode === "VIDEO" ? d.detectForVideo(small, ts) : d.detect(small);
+}
 async function loadVision() {
   if (vision) return vision;
   const mod = await import("./mp/vision_bundle.mjs");
@@ -256,7 +310,7 @@ async function getDetector(runMode) {
 }
 
 function resetCam() {
-  tracker = new W.RepTracker({ reps: cfg.reps }); filt.reset(); sSign = 0; hist = []; holds = []; segMax = {}; lastRaw = null; dropped = 0; accepted = 0; review = null; curPts = null; curRaw = null;
+  tracker = new W.RepTracker({ reps: cfg.reps }); filt.reset(); sSign = 0; hist = []; holds = []; segMax = {}; lastRaw = null; dropped = 0; accepted = 0; review = null; curPts = null; curRaw = null; lastDraw = null;
   $("rnote").hidden = true; $("c-done").hidden = !(camOn || demoOn);
   renderReps(); setLive(null); drawSpark();
   if (!camOn && !demoOn && !photo) drawIdle();
@@ -298,23 +352,29 @@ $("c-start").onclick = async () => {
   await new Promise(r => { if (vid.videoWidth) r(); else vid.onloadedmetadata = r; });
   cv.width = vid.videoWidth; cv.height = vid.videoHeight; camOn = true; keepAwake(true);
   $("c-start").textContent = "Kamera stoppen"; $("c-flip").hidden = false; $("c-done").hidden = false;
-  resetCam(); setQ("warn", "Erkennung lädt …");
-  try { await getDetector("VIDEO"); setQ("warn", "Suche " + (tracked() ? "Hand" : "Person") + " …"); }
-  catch (e) { console.error(e); setQ("bad", "Erkennung nicht verfügbar"); toast("Die Erkennung lädt hier nicht. Foto nehmen und Punkte von Hand setzen."); }
-  loop();
+  resetCam(); detOk = false; if (!loopOn) loop();
+  const t0 = Date.now(), tick = setInterval(() => { if (!detOk && camOn) setQ("warn", "Erkennung lädt … " + Math.round((Date.now() - t0) / 1000) + " s (beim ersten Mal bis 30 s)"); else clearInterval(tick); }, 1000);
+  setQ("warn", "Erkennung lädt …");
+  try { await ensureDetector(); detOk = true; setQ("warn", "Suche " + (tracked() ? "Hand" : "Person") + " …"); }
+  catch (e) { console.error(e); clearInterval(tick); setQ("bad", "Erkennung nicht verfügbar"); toast("Die Erkennung lädt hier nicht. Foto nehmen und Punkte von Hand setzen."); }
 };
 $("c-flip").onclick = async () => { facing = facing === "environment" ? "user" : "environment"; stopCam(); $("c-start").click(); };
 $("c-done").onclick = () => finishCam(true);
 function stopCam() { if (stream) stream.getTracks().forEach(t => t.stop()); stream = null; camOn = false; keepAwake(false); $("c-flip").hidden = true; }
 function stopAll() { stopCam(); stopDemo(); stopSensor(); }
 
+let detOk = false, busy = false, lastDraw = null, loopOn = false;
 function loop() {
-  if (!camOn) return;
+  if (!camOn) { loopOn = false; return; }
+  loopOn = true;
   if (vid.readyState >= 2 && !review) {
-    const det = tracked() ? hand : pose;
     ctx.drawImage(vid, 0, 0, cv.width, cv.height);
-    let ts = performance.now(); if (ts <= lastTs) ts = lastTs + 1; lastTs = ts;
-    if (det) { try { const r = det.detectForVideo(vid, ts); handleResult(r, ts / 1000); } catch (e) { console.error(e); } }
+    if (lastDraw) drawPose(lastDraw.L, lastDraw.F, lastDraw.bad);
+    if (detOk && !busy) {
+      let ts = performance.now(); if (ts <= lastTs) ts = lastTs + 1; lastTs = ts; busy = true;
+      detectFrame(vid, "VIDEO", ts).then(r => { if (camOn && !review && r) handleResult(r, ts / 1000); })
+        .catch(e => console.error(e)).finally(() => { busy = false; });
+    }
     if (++frameN % 20 === 0) checkLight();
     drawLevel();
   }
@@ -374,12 +434,12 @@ function qualityChecks(L, F) {
 }
 function handleResult(r, t) {
   const L = landmarksOf(r);
-  if (!L) { setQ("bad", tracked() ? "Keine Hand im Bild" : "Keine Person im Bild"); curPts = null; return; }
+  if (!L) { setQ("bad", tracked() ? "Keine Hand im Bild" : "Keine Person im Bild"); curPts = null; lastDraw = null; return; }
   const F = computeFrame(L);
   const issues = qualityChecks(L, F);
   const hard = issues.find(i => i[0] === "bad");
   curPts = F.pts; curRaw = F.raw;
-  drawPose(L, F, hard);
+  lastDraw = { L, F, bad: hard };
   if (hard) { dropped++; setQ("bad", hard[1]); return; }
   /* Ausreißer: Sprung über 35° von einem Bild zum nächsten */
   if (lastRaw != null && Math.abs(F.raw - lastRaw) > 35) { dropped++; lastRaw = F.raw; return; }
@@ -587,7 +647,9 @@ async function runPhoto() {
   photo.pts = [[.45, .2], [.5, .5], [.5, .5], [.42, .8]].map(p => [p[0] * w, p[1] * h]); photo.manual = false; photo.auto = false;
   drawPhoto(); setQ("warn", "Erkennung läuft …");
   try {
-    const det = await getDetector("IMAGE"); const r = det.detect(photo.c); const L = landmarksOf(r);
+    const t0 = Date.now(), tick = setInterval(() => setQ("warn", "Erkennung läuft … " + Math.round((Date.now() - t0) / 1000) + " s"), 1000);
+    let r; try { await ensureDetector(); r = await detectFrame(photo.c, "IMAGE"); } finally { clearInterval(tick); }
+    const L = landmarksOf(r);
     if (L) { const idx = defIdx(mv.cam, side); photo.pts = idx.map(i => [L.lm[i].x * w, L.lm[i].y * h]); photo.auto = true; setQ("ok", "Punkte erkannt · bei Bedarf ziehen"); }
     else setQ("warn", "Nichts erkannt · Punkte von Hand setzen");
   } catch (err) { console.error(err); setQ("warn", "Erkennung nicht verfügbar · Punkte von Hand"); }
