@@ -30,11 +30,42 @@ function toast(t) { const e = $("toast"); e.textContent = t; e.classList.add("on
 
 /* ---------------- Rückmeldung: Ton und Ansage ---------------- */
 let actx = null;
-function unlockAudio() { try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === "suspended") actx.resume(); } catch (e) {} }
-function beep(f = 880, d = 0.12, v = 0.18) {
-  if (cfg.ton === "aus" || !actx) return;
-  try { const o = actx.createOscillator(), g = actx.createGain(); o.frequency.value = f; o.type = "sine"; g.gain.setValueAtTime(v, actx.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + d); o.connect(g).connect(actx.destination); o.start(); o.stop(actx.currentTime + d + 0.02); } catch (e) {}
+/* Töne: iOS spielt per Web Audio erzeugte Töne bei Stummschalter nicht ab. Darum (1) Audiositzung auf „Wiedergabe“,
+   (2) fertige WAV-Töne über Audio-Elemente, die beim ersten Tippen freigeschaltet werden, (3) Web Audio nur als Rückfall. */
+const TON_DEF = { 660: [[660, .14]], 880: [[880, .14]], 990: [[990, .06]], 1046: [[1046, .12]], 1175: [[1175, .12], [0, .05], [1568, .18]] };
+const TON = {}; let audioReady = false;
+function wavUrl(segs, vol = .9) {
+  const sr = 22050, n = Math.round(segs.reduce((a, s) => a + s[1], 0) * sr), buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
+  const str = (o, t) => [...t].forEach((c, i) => v.setUint8(o + i, c.charCodeAt(0)));
+  str(0, "RIFF"); v.setUint32(4, 36 + n * 2, true); str(8, "WAVEfmt "); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, sr, true); v.setUint32(28, sr * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true); str(36, "data"); v.setUint32(40, n * 2, true);
+  let i = 0;
+  for (const [f, d] of segs) { const m = Math.round(d * sr); for (let k = 0; k < m && i < n; k++, i++) {
+    const env = Math.min(1, k / (sr * .006), (m - k) / (sr * .02));
+    v.setInt16(44 + i * 2, f ? Math.sin(2 * Math.PI * f * k / sr) * env * vol * 32767 : 0, true); } }
+  return URL.createObjectURL(new Blob([buf], { type: "audio/wav" }));
 }
+function unlockAudio() {
+  try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (e) {}
+  try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === "suspended") actx.resume();
+    const b = actx.createBuffer(1, 1, 22050), src = actx.createBufferSource(); src.buffer = b; src.connect(actx.destination); src.start(0); } catch (e) {}
+  if (audioReady) return; audioReady = true;
+  for (const f in TON_DEF) { try { const a = new Audio(wavUrl(TON_DEF[f])); a.preload = "auto"; a.setAttribute("playsinline", ""); a.muted = true;
+    const p = a.play(); if (p && p.then) p.then(() => { a.pause(); a.currentTime = 0; a.muted = false; }).catch(() => { a.muted = false; }); else a.muted = false;
+    TON[f] = a; } catch (e) {} }
+}
+function beep(f = 880, d = 0.12, v = 0.18) {
+  if (cfg.ton === "aus") return;
+  const a = TON[f];
+  if (a) { try { a.muted = false; a.currentTime = 0; const p = a.play(); if (p && p.catch) p.catch(() => webBeep(f, d, v)); return; } catch (e) {} }
+  webBeep(f, d, v);
+}
+function webBeep(f, d, v) {
+  if (!actx) return;
+  try { const o = actx.createOscillator(), g = actx.createGain(); o.frequency.value = f; o.type = "sine"; g.gain.setValueAtTime(Math.max(v, .35), actx.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + d); o.connect(g).connect(actx.destination); o.start(); o.stop(actx.currentTime + d + 0.02); } catch (e) {}
+}
+/* Sichtbares Signal, falls kein Ton zu hören ist */
+function blitz(id) { const e = $(id); if (!e) return; e.classList.remove("blitz"); void e.offsetWidth; e.classList.add("blitz"); }
 function speak(t) {
   if (cfg.ton !== "sprache" || !("speechSynthesis" in window)) return;
   try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = "de-DE"; u.rate = 1.05; speechSynthesis.speak(u); } catch (e) {}
@@ -231,7 +262,8 @@ function renderCfg() {
 }
 document.querySelectorAll("#modell button").forEach(b => b.onclick = () => { cfg.model = b.dataset.v; store.set("cfg", cfg); renderCfg(); pose = null; poseP = null; ERK.key = ""; ERK.ready = null; });
 document.querySelectorAll("#wdh button").forEach(b => b.onclick = () => { cfg.reps = +b.dataset.v; store.set("cfg", cfg); renderCfg(); renderReps(); });
-document.querySelectorAll("#ton button").forEach(b => b.onclick = () => { cfg.ton = b.dataset.v; store.set("cfg", cfg); renderCfg(); unlockAudio(); beep(); });
+document.querySelectorAll("#ton button").forEach(b => b.onclick = () => { cfg.ton = b.dataset.v; store.set("cfg", cfg); renderCfg(); unlockAudio(); beep(1175); if (cfg.ton === "sprache") setTimeout(() => speak("115 Grad"), 450); });
+$("tontest").onclick = () => { unlockAudio(); beep(1175); setTimeout(() => speak("115 Grad"), 450); blitz("tontest"); };
 fetch("mp/pose_landmarker_heavy.task.wasm", { method: "HEAD" }).then(r => { heavyOk = r.ok; if (!heavyOk && cfg.model === "heavy") cfg.model = "full"; renderCfg(); }).catch(() => { heavyOk = false; renderCfg(); });
 
 /* =================================================================
@@ -501,7 +533,7 @@ function onTrackerEvent(ev, F, issues) {
     if (!sSign) sSign = Math.sign(ev.rep.value) || 1;
     const best = holds.length ? holds[holds.length - 1] : null;
     ev.rep.snap = best; ev.rep.clin = sSign * ev.rep.abs;
-    beep(1175, .15); const v = Math.round(ev.rep.clin); speak(v + " Grad"); sayBig(v + "°  ·  Wdh. " + ev.n);
+    beep(1175, .15); blitz("stage"); const v = Math.round(ev.rep.clin); speak(v + " Grad"); sayBig(v + "°  ·  Wdh. " + ev.n);
     renderReps(); holds = [];
     if (ev.done) finishCam(false);
   }
@@ -765,7 +797,7 @@ function sensorTick(t) {
   if (t - (sensorTick.lastDraw || 0) > 40) { sensorTick.lastDraw = t; drawDial(live == null ? null : Math.abs(live), stillFor > .3 ? "ruhig" : "Bewegung"); senStat(still, off); }
   if (t - sen.lastCap < 900) return;
   /* Zustandsautomat */
-  if (sen.state === "null" && still && stillFor > .6) { sen.g0 = still; sen.prev = null; sen.unwrap = 0; sen.axis = null; sen.locked = false; sen.state = "move"; sen.lastCap = t; beep(660, .1); speak("Null. Jetzt bewegen."); senText("Nullpunkt gesetzt. Jetzt bis zur Endstellung bewegen und dort ruhig halten."); senSteps(2); }
+  if (sen.state === "null" && still && stillFor > .6) { sen.g0 = still; sen.prev = null; sen.unwrap = 0; sen.axis = null; sen.locked = false; sen.state = "move"; sen.lastCap = t; beep(660, .1); blitz("dialwrap"); speak("Null. Jetzt bewegen."); senText("Nullpunkt gesetzt. Jetzt bis zur Endstellung bewegen und dort ruhig halten."); senSteps(2); }
   else if (sen.state === "move" && still && stillFor > .6 && live != null && Math.abs(live) >= 8) capture(still, false);
   else if (sen.state === "back" && still && stillFor > .5 && live != null && Math.abs(live) < 6) { sen.state = "move"; sen.lastCap = t; beep(660, .06, .1); senText("Nächste Wiederholung: wieder bis zum Ende bewegen und halten."); }
   else if (sen.state === "abs" && still && stillFor > .6 && live != null && live > 5) capture(still, false);
@@ -775,7 +807,7 @@ function sensorTick(t) {
 function capture(g, manual) {
   const t = performance.now(); sen.lastCap = t;
   if (sen.state === "null") { sen.g0 = g; sen.prev = null; sen.unwrap = 0; sen.state = "move"; beep(660, .1); senText("Nullpunkt gesetzt. Jetzt bewegen und halten."); senSteps(2); return; }
-  if (sen.state === "seg1") { sen.gA = g; sen.state = "seg2"; beep(660, .1); speak("Jetzt umsetzen"); senText(mv.sen.tip2 + " Bei sehr kleinen Winkeln einfach auf die Fläche tippen."); senSteps(2); return; }
+  if (sen.state === "seg1") { sen.gA = g; sen.state = "seg2"; beep(660, .1); blitz("dialwrap"); speak("Jetzt umsetzen"); senText(mv.sen.tip2 + " Bei sehr kleinen Winkeln einfach auf die Fläche tippen."); senSteps(2); return; }
   let v = null, off = 0;
   if (sen.state === "move" || sen.state === "back") { const a = senAngle(g); v = Math.abs(a); off = sen.axis != null ? Math.abs(W.offAxis(g, sen.axis) - W.offAxis(sen.g0, sen.axis)) : 0; }
   if (sen.state === "abs") { v = senAngle(g); off = Math.abs(Math.asin(Math.max(-1, Math.min(1, g[0] / W.len(g)))) * W.D); }
@@ -785,7 +817,7 @@ function capture(g, manual) {
     else if (mv.dir === "-") v = -v; }
   if (v == null) return;
   sen.reps.push({ v, off, manual });
-  beep(1175, .15); speak(Math.round(Math.abs(v)) + " Grad");
+  beep(1175, .15); blitz("dialwrap"); speak(Math.round(Math.abs(v)) + " Grad");
   const n = sen.reps.length, need = sen.mode === "two" ? 1 : cfg.reps;
   sensorResult();
   if (n >= need) { sen.state = "fertig"; senSteps(3); senText("Fertig. Mit „Neu beginnen“ wiederholen oder übernehmen."); keepAwake(false); return; }

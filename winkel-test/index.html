@@ -142,6 +142,9 @@ details[open]>summary::after{transform:rotate(-135deg)}
 details .body{padding:0 0 16px;display:grid;gap:10px;font-size:14px}
 details .body p{margin:0;max-width:65ch}
 .set{display:grid;gap:6px}
+@keyframes blitz{0%{box-shadow:0 0 0 0 var(--ok);background-color:var(--ok-soft)}100%{box-shadow:0 0 0 14px transparent}}
+.blitz{animation:blitz .7s ease-out}
+@media (prefers-reduced-motion:reduce){.blitz{animation:none;outline:3px solid var(--ok)}}
 .toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:600;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20;max-width:90vw}
 .toast.on{opacity:1}
 .review-note{font-size:13px;color:var(--muted);margin:8px 2px 0}
@@ -280,7 +283,9 @@ details .body p{margin:0;max-width:65ch}
       <div class="set"><span class="lbl">Wiederholungen je Messung</span>
         <div class="seg" id="wdh"><button data-v="1">1</button><button data-v="2">2</button><button data-v="3">3</button></div></div>
       <div class="set"><span class="lbl">Rückmeldung</span>
-        <div class="seg" id="ton"><button data-v="sprache">Ton und Ansage</button><button data-v="ton">Nur Ton</button><button data-v="aus">Aus</button></div></div>
+        <div class="seg" id="ton"><button data-v="sprache">Ton und Ansage</button><button data-v="ton">Nur Ton</button><button data-v="aus">Aus</button></div>
+        <button class="btn ghost" id="tontest" style="margin-top:6px">Ton testen</button>
+        <p class="small" style="margin:0">Die Töne kommen auch bei Stummschalter. Lautstärke über die Seitentasten. Beim Auslösen blinkt die Messfläche zusätzlich grün.</p></div>
     </div>
   </details>
 
