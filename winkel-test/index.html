@@ -1,4 +1,4 @@
-<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style></head><body><title>Winkelmessung</title>
+<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Winkel"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style></head><body><title>Winkelmessung</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="theme-color" content="#f3f5f8">
 <style>
@@ -145,6 +145,7 @@ details .body p{margin:0;max-width:65ch}
 @keyframes blitz{0%{box-shadow:0 0 0 0 var(--ok);background-color:var(--ok-soft)}100%{box-shadow:0 0 0 14px transparent}}
 .blitz{animation:blitz .7s ease-out}
 @media (prefers-reduced-motion:reduce){.blitz{animation:none;outline:3px solid var(--ok)}}
+.doku{display:flex;gap:10px;align-items:center;justify-content:space-between;background:var(--tape);color:var(--on-tape);border-radius:14px;padding:10px 12px;font-weight:700;font-size:15px}
 .toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:600;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20;max-width:90vw}
 .toast.on{opacity:1}
 .review-note{font-size:13px;color:var(--muted);margin:8px 2px 0}
@@ -158,6 +159,7 @@ details .body p{margin:0;max-width:65ch}
     <p class="sub">Kamera, Handy-Sensor oder Foto. Gemessen wird erst, wenn die Endstellung ruhig gehalten wird.</p>
   </header>
 
+  <div class="doku" id="dokubar" hidden><span id="dokutxt"></span><button class="btn ghost" id="dokuzu" style="flex:0 0 auto;min-height:36px;padding:8px 12px">Schließen</button></div>
   <section class="pick" aria-label="Auswahl">
     <div class="chips" id="gelenke" role="group" aria-label="Gelenk"></div>
     <div class="chips" id="bewegungen" role="group" aria-label="Bewegung"></div>
@@ -241,6 +243,7 @@ details .body p{margin:0;max-width:65ch}
         <span class="small" id="diff">optional, zum Vergleich</span>
       </div>
       <div class="btns" style="margin-top:12px">
+        <button class="btn main" id="todoku" hidden disabled>In Doku-Fix übernehmen</button>
         <button class="btn main" id="take" disabled>Übernehmen</button>
         <button class="btn" id="next">Nächste Bewegung</button>
       </div>

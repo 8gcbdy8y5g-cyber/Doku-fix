@@ -132,7 +132,7 @@ function showResult() {
   $("normtxt").textContent = t;
   const T = $("qtags"); T.innerHTML = "";
   if (r) (r.tags || []).forEach(([cls, txt]) => { const e = document.createElement("span"); e.className = "tag " + cls; e.textContent = txt; T.appendChild(e); });
-  $("take").disabled = !r; showDiff();
+  $("take").disabled = !r; $("todoku").disabled = !r; showDiff();
 }
 function howTxt(r) {
   let h = methTxt(r.m);
@@ -883,8 +883,34 @@ function howFrame() {
 }
 $("s-howto").onclick = () => howto(!howOn);
 
+/* ---------------- Messen für Doku-Fix ----------------
+   Doku-Fix öffnet die Seite mit #doku=PAAR.richtung.bewegung.seite (z. B. #doku=KNIE_EXT_FLEX.b.k-flex.r).
+   Der Wert geht per Nachricht an Doku-Fix zurück (gleiche Adresse, kein Server). */
+let DOKU = null;
+function dokuStart() {
+  const m = /doku=([A-Z_]+)\.([ab])\.([a-z-]+)\.([rl])/.exec(location.hash || ""); if (!m) return;
+  const f = findMv(m[3]); if (!f) return;
+  DOKU = { ziel: m[1] + "." + m[2], mv: m[3] };
+  joint = f.j; mv = f.m; side = m[4]; method = mv.rec; if (method === "cam" && !mv.cam) method = "sen";
+  $("dokubar").hidden = false; $("todoku").hidden = false; $("take").hidden = true;
+  if (window.parent && window.parent !== window) $("dokuzu").hidden = true; /* im Fenster schließt Doku-Fix selbst */
+  $("dokutxt").textContent = "Für Doku-Fix: " + f.j.n + (f.j.side ? " " + sideTxt(side) : "") + " · " + f.m.n;
+}
+$("todoku").onclick = () => {
+  if (!result || !DOKU) return;
+  const msg = { typ: "winkel-ergebnis", ziel: DOKU.ziel, wert: Math.round(result.v), methode: methTxt(result.m), wdh: result.n, spannweite: Math.round(result.range || 0), bewegung: mv.k, seite: side };
+  /* auch in die eigene Liste, damit der Abgleich mit dem Goniometer weiterläuft */
+  $("take").click();
+  if (window.parent && window.parent !== window) { window.parent.postMessage(msg, location.origin); return; }
+  try { localStorage.setItem("doku-fix-winkel-uebergabe", JSON.stringify({ ...msg, ts: Date.now() })); } catch (e) {}
+  toast("Wert gespeichert, zurück zu Doku-Fix"); setTimeout(() => history.back(), 600);
+};
+$("dokuzu").onclick = () => { if (window.parent && window.parent !== window) window.parent.postMessage({ typ: "winkel-schliessen" }, location.origin); else history.back(); };
+/* Eigener Offline-Speicher, nur auf der echten Seite (nicht im Artefakt) */
+if ("serviceWorker" in navigator && /github\.io$/.test(location.hostname)) { try { navigator.serviceWorker.register("sw.js"); } catch (e) {} }
+
 /* ---------------- Start ---------------- */
 $("quellen").textContent = "Richtwerte: " + Object.values(SRC).join("; ") + ".";
-renderCfg(); renderPick(); resetCam(); renderList(); drawLevel();
+dokuStart(); renderCfg(); renderPick(); resetCam(); renderList(); drawLevel();
 const mq = matchMedia("(prefers-color-scheme: dark)"); mq.addEventListener && mq.addEventListener("change", () => { if (!camOn && !demoOn && !photo) drawIdle(); drawSpark(); if (method === "sen") drawDial(null, ""); });
 })();
