@@ -63,12 +63,21 @@ function beep(f = 880, d = 0.12, v = 0.18) {
   if (ONE && TON_URL[f]) { try { ONE.src = TON_URL[f]; ONE.currentTime = 0; const p = ONE.play(); if (p && p.catch) p.catch(() => webBeep(f, d, v)); return; } catch (e) {} }
   webBeep(f, d, v);
 }
+/* Vibration: iOS kennt navigator.vibrate nicht, gibt aber seit iOS 18 bei einem Schalter-Feld (switch) ein kurzes Haptik-Signal.
+   Darum ein unsichtbarer Schalter, der per Klick umgelegt wird; auf Android normal über vibrate. */
+let HAP = null;
+function haptik(n = 1) {
+  try { if (navigator.vibrate) { navigator.vibrate(n > 1 ? [60, 80, 60] : 60); return; } } catch (e) {}
+  try { if (!HAP) { HAP = document.createElement("label"); HAP.setAttribute("aria-hidden", "true"); HAP.style.cssText = "position:fixed;left:0;top:0;width:1px;height:1px;overflow:hidden;opacity:0.01;pointer-events:none;z-index:-1";
+      const i = document.createElement("input"); i.type = "checkbox"; i.setAttribute("switch", ""); i.tabIndex = -1; HAP.appendChild(i); document.body.appendChild(HAP); }
+    HAP.click(); if (n > 1) setTimeout(() => HAP.click(), 140); if (n > 2) setTimeout(() => HAP.click(), 280); } catch (e) {}
+}
 /* Großes Bildschirm-Signal für Start und Ende, damit man es auch aus dem Augenwinkel sieht */
 function signal(gross, klein, art) {
   let e = $("signal");
   if (!e) { e = document.createElement("div"); e.id = "signal"; e.setAttribute("role", "status"); e.innerHTML = "<b></b><span></span>"; document.body.appendChild(e); }
   e.querySelector("b").textContent = gross; e.querySelector("span").textContent = klein || "";
-  e.className = "on " + (art || "start"); clearTimeout(signal.t); signal.t = setTimeout(() => { e.className = art || "start"; }, art === "ende" ? 1600 : 1100);
+  e.className = "on " + (art || "start"); haptik(art === "ende" ? 3 : 1); clearTimeout(signal.t); signal.t = setTimeout(() => { e.className = art || "start"; }, art === "ende" ? 1600 : 1100);
 }
 function webBeep(f, d, v) {
   if (!actx) return;
