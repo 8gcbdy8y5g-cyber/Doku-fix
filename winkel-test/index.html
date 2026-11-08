@@ -91,6 +91,8 @@ button{font-family:inherit}
 .lage b{display:block;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--tape);margin-bottom:1px}
 .howto{display:grid;gap:8px;background:var(--fill);border-radius:14px;padding:10px}
 .howto canvas{width:100%;height:auto;display:block}
+.how3d{background:#fff;border-radius:10px;overflow:hidden}
+.how3d svg{display:block;width:100%;height:auto;max-height:52vh}
 .howstep{font-weight:600;font-size:14.5px;min-height:42px;margin:0}
 .howkey{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
 .howkey span{display:inline-flex;align-items:center;gap:5px}
@@ -201,7 +203,8 @@ details .body p{margin:0;max-width:65ch}
       </div>
       <button class="btn ghost" id="s-howto" aria-expanded="false">So wird gemessen ▸</button>
       <div class="howto" id="howto" hidden>
-        <canvas id="howcv" width="640" height="420" aria-label="Animation: so wird das Handy angelegt und die Messung ausgeführt"></canvas>
+        <div id="how3d" class="how3d" role="img" aria-label="Animation: so wird das Handy angelegt und die Messung ausgeführt"></div>
+        <canvas id="howcv" width="640" height="420" aria-hidden="true"></canvas>
         <p class="howstep" id="howstep"></p>
         <div class="howkey"><span><i></i>Bildschirm</span><span>▲ Oberkante des Handys</span><span>Kamerainsel = oben</span></div>
       </div>
@@ -275,5 +278,7 @@ details .body p{margin:0;max-width:65ch}
 <script src="kern.js"></script>
 <script src="katalog.js"></script>
 <script src="anleitung.js"></script>
+<script src="figur3.js"></script>
+<script src="anleitung3d.js"></script>
 <script src="app.js"></script>
 </body></html>

@@ -795,13 +795,20 @@ function howto(on) {
   howOn = on; $("howto").hidden = !on; $("s-howto").setAttribute("aria-expanded", on); $("s-howto").textContent = on ? "So wird gemessen ▾" : "So wird gemessen ▸";
   cancelAnimationFrame(howRaf); if (on) { howT0 = performance.now(); howFrame(); }
 }
+let howLast = 0;
 function howFrame() {
   if (!howOn) return;
   const css = getComputedStyle(document.documentElement), tok = n => css.getPropertyValue(n).trim();
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const t = reduce ? 3.8 : (performance.now() - howT0) / 1000;
-  const ph = ANL.draw($("howcv").getContext("2d"), mv.k, t, { body: tok("--figur"), joint: tok("--gelenk"), screen: tok("--tape"), accent: tok("--tape"), floor: tok("--line"), muted: tok("--muted") });
-  if (ph) $("howstep").textContent = ph.step;
+  const now = performance.now(), t = reduce ? 3.8 : (now - howT0) / 1000;
+  const use3d = window.ANL3 && ANL3.S[mv.k];
+  $("how3d").hidden = !use3d; $("howcv").hidden = !!use3d;
+  if (use3d) {
+    if (now - howLast > 40) { howLast = now; try { const r = ANL3.svg(mv.k, t); $("how3d").innerHTML = r.svg; $("howstep").textContent = r.step; } catch (e) { console.error(e); } }
+  } else {
+    const ph = ANL.draw($("howcv").getContext("2d"), mv.k, t, { body: tok("--figur"), joint: tok("--gelenk"), screen: tok("--tape"), accent: tok("--tape"), floor: tok("--line"), muted: tok("--muted") });
+    if (ph) $("howstep").textContent = ph.step;
+  }
   if (!reduce) howRaf = requestAnimationFrame(howFrame);
 }
 $("s-howto").onclick = () => howto(!howOn);
