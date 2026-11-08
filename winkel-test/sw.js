@@ -1,6 +1,6 @@
 // Winkelmessung: eigener Service Worker, damit die App offline startet.
 // Erst Netz (neue Fassung kommt an), ohne Netz die gespeicherte Datei.
-const CACHE = 'winkel-v6';
+const CACHE = 'winkel-v7';
 const KERN = ['./', './index.html', './kern.js', './katalog.js', './app.js', './erkennung.js', './anleitung.js', './anleitung3d.js', './figur3.js', './fonts/outfit-latin-wght-normal.woff2',
   './manifest.webmanifest', './icon-180.png', './icon-192.png', './icon-512.png',
   './mp/vision_bundle.mjs', './mp/wasm/vision_wasm_module_internal.js', './mp/wasm/vision_wasm_module_internal.wasm',
