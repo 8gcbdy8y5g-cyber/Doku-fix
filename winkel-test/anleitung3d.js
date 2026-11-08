@@ -288,7 +288,7 @@ function aufbau(key, side) {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb.map(v => v.toFixed(1)).join(" ")}">${parts.map(p => p.d).join("")}${linie}</svg>`;
   const seite = a.dir === "F" ? "" : (L ? "links " : "rechts ");
   const wer = th.name[0].toUpperCase() + th.name.slice(1);
-  const text = `${wer} ${seite}${a.wo}, ${a.dist} entfernt. Gerät ${a.hoehe} ${quer ? "quer" : "hochkant"} mit beiden Händen ruhig halten, Libelle grün.`;
+  const text = `${wer} halten: Gerät ${seite}${a.wo}, ${a.dist} entfernt, ${a.hoehe}, ${quer ? "quer" : "hochkant"}, mit beiden Händen ruhig. Libelle grün.`;
   const alt = "Ohne freie Hände: an eine Stuhllehne oder mit der Hülle auf einem Hocker anlehnen.";
   return { svg, text, alt };
 }
