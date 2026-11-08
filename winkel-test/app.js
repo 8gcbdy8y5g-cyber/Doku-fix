@@ -676,6 +676,8 @@ function sensorPrepare() {
   sen = { mode: sm.mode, state: "aus", g0: null, gA: null, axis: null, locked: false, live: null, prev: null, unwrap: 0, reps: [], stillSince: 0, offW: 0, lastCap: 0 };
   $("s-start").hidden = false; $("s-reset").hidden = true; $("s-start").textContent = "Sensor starten";
   senText(sm.mode === "two" ? sm.tip1 : sm.tip);
+  const an = window.ANL && ANL.A[mv.k]; $("lage").textContent = an ? an.lage : ""; $("lagebox").hidden = !an;
+  $("s-howto").hidden = !an; if (!an) howto(false);
   drawDial(null, ""); senSteps(0); senStat();
 }
 function stopSensor() { if (sen) sen.state = "aus"; keepAwake(false); }
@@ -741,7 +743,8 @@ function capture(g, manual) {
   if (sen.state === "abs") { v = senAngle(g); off = Math.abs(Math.asin(Math.max(-1, Math.min(1, g[0] / W.len(g)))) * W.D); }
   if (sen.state === "seg2") { v = Math.abs(W.wrap180(W.planeAngle(g, 2) - W.planeAngle(sen.gA, 2))); off = Math.max(Math.abs(W.offAxis(g, 2)), Math.abs(W.offAxis(sen.gA, 2)));
     /* bei Extensionsmessung: Restbeugung als Defizit (Neutralstellung nicht erreicht) */
-    if (mv.dir === "-") v = -v; }
+    if (mv.k === "o-de" || mv.k === "o-pf") v = mv.dir === "+" ? 90 - v : v - 90;
+    else if (mv.dir === "-") v = -v; }
   if (v == null) return;
   sen.reps.push({ v, off, manual });
   beep(1175, .15); speak(Math.round(Math.abs(v)) + " Grad");
@@ -785,6 +788,23 @@ function drawDial(v, sub) {
    <text x="${cx}" y="${cy + 14}" text-anchor="middle" font-size="54" font-weight="700" fill="${fg}" font-family="-apple-system,Helvetica,sans-serif" style="font-variant-numeric:tabular-nums">${v == null ? "–" : Math.round(v) + "°"}</text>
    <text x="${cx}" y="${cy + 42}" text-anchor="middle" font-size="14" fill="${muted}" font-family="-apple-system,Helvetica,sans-serif">${sub || (sen && sen.state !== "aus" ? "" : "Sensor aus")}</text>`;
 }
+
+/* ---------------- Animation „So wird gemessen“ ---------------- */
+let howOn = false, howRaf = 0, howT0 = 0;
+function howto(on) {
+  howOn = on; $("howto").hidden = !on; $("s-howto").setAttribute("aria-expanded", on); $("s-howto").textContent = on ? "So wird gemessen ▾" : "So wird gemessen ▸";
+  cancelAnimationFrame(howRaf); if (on) { howT0 = performance.now(); howFrame(); }
+}
+function howFrame() {
+  if (!howOn) return;
+  const css = getComputedStyle(document.documentElement), tok = n => css.getPropertyValue(n).trim();
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const t = reduce ? 3.8 : (performance.now() - howT0) / 1000;
+  const ph = ANL.draw($("howcv").getContext("2d"), mv.k, t, { body: tok("--figur"), joint: tok("--gelenk"), screen: tok("--tape"), accent: tok("--tape"), floor: tok("--line"), muted: tok("--muted") });
+  if (ph) $("howstep").textContent = ph.step;
+  if (!reduce) howRaf = requestAnimationFrame(howFrame);
+}
+$("s-howto").onclick = () => howto(!howOn);
 
 /* ---------------- Start ---------------- */
 $("quellen").textContent = "Richtwerte: " + Object.values(SRC).join("; ") + ".";
