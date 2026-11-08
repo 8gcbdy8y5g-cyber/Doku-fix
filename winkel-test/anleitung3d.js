@@ -48,7 +48,7 @@ function handySvg(cam, H, dx, dy, alpha, dims) {
   if (vis > 0) {
     s += poly(front, "#20262e");
     const scr = [[-w / 2 + .45, -h / 2 + .45], [w / 2 - .45, -h / 2 + .45], [w / 2 - .45, h / 2 - .45], [-w / 2 + .45, h / 2 - .45]].map(([x, y]) => P(x, y, d / 2 + .01));
-    s += poly(scr, "var(--tape,#146C99)");
+    s += poly(scr, "var(--tape,#4f6d10)");
     const isl = [[-1.5, -h / 2 + 1.0], [1.5, -h / 2 + 1.0], [1.5, -h / 2 + 1.75], [-1.5, -h / 2 + 1.75]].map(([x, y]) => P(x, -y, d / 2 + .02));
     s += poly(isl, "#11161c");
   } else {
@@ -58,7 +58,7 @@ function handySvg(cam, H, dx, dy, alpha, dims) {
   }
   /* Oberkante zusätzlich mit kleinem Pfeil markieren */
   const top = P(0, h / 2 + 1.0, 0), tip = P(0, h / 2 + 3.2, 0), l = P(-1.3, h / 2 + 1.0, 0), r = P(1.3, h / 2 + 1.0, 0);
-  s += `<path d="M${tip[0].toFixed(2)} ${tip[1].toFixed(2)}L${l[0].toFixed(2)} ${l[1].toFixed(2)}L${r[0].toFixed(2)} ${r[1].toFixed(2)}Z" fill="var(--tape,#146C99)"/>`;
+  s += `<path d="M${tip[0].toFixed(2)} ${tip[1].toFixed(2)}L${l[0].toFixed(2)} ${l[1].toFixed(2)}L${r[0].toFixed(2)} ${r[1].toFixed(2)}Z" fill="var(--tape,#4f6d10)"/>`;
   return `<g opacity="${alpha}">${s}</g>`;
 }
 
@@ -157,7 +157,7 @@ function bild(key, t, rahmen) {
   if (sz.wand) { const zx = z.punkte.zehenR[0] + dx + 9; liege += `<rect x="${zx.toFixed(1)}" y="-140" width="4" height="140" fill="var(--line,#dfe4eb)"/>`; }
   if (sz.tisch) { const e = z.punkte.ellbogenR, h = z.punkte.handgelenkR; const y = Math.max(e[1], h[1]) + dy + 4; liege += `<rect x="${(Math.min(e[0], h[0]) + dx - 14).toFixed(1)}" y="${y.toFixed(1)}" width="${(Math.abs(h[0] - e[0]) + 14).toFixed(1)}" height="4" rx="1.5" fill="var(--line,#dfe4eb)"/>`; }
   const handy = H && alpha > .01 ? handySvg(cam, H, dx, dy, alpha.toFixed(2)) : "";
-  const ton = ph.beep && H ? (() => { const q = cam(H.c); return `<text x="${(q[0] + dx + 6).toFixed(1)}" y="${(-q[1] + dy - 10).toFixed(1)}" font-size="7" font-weight="700" fill="var(--tape,#146C99)" font-family="-apple-system,Helvetica,sans-serif">♪</text>`; })() : "";
+  const ton = ph.beep && H ? (() => { const q = cam(H.c); return `<text x="${(q[0] + dx + 6).toFixed(1)}" y="${(-q[1] + dy - 10).toFixed(1)}" font-size="7" font-weight="700" fill="var(--tape,#4f6d10)" font-family="-apple-system,Helvetica,sans-serif">♪</text>`; })() : "";
   const vb = rahmen || [z.box[0] + dx - 12, z.box[1] + dy - 12, z.box[2] - z.box[0] + 24, z.box[3] - z.box[1] + 24];
   const fb = sz.fokus ? sz.fokus.map(k => [z.punkte[k][0] + dx, z.punkte[k][1] + dy]) : null;
   return { fb, svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb.map(v => v.toFixed(1)).join(" ")}">${liege}<g transform="translate(${dx.toFixed(2)} ${dy.toFixed(2)})">${z.svg}</g>${nase}${handy}${ton}</svg>`, step: ph.step, box: [z.box[0] + dx, z.box[1] + dy, z.box[2] + dx, z.box[3] + dy] };
@@ -275,8 +275,8 @@ function aufbau(key, side) {
   parts.sort((A, B) => A.z - B.z);
   /* Sichtlinie und Abstand */
   const pc = pr(Cg), pj = pr(J), mid = [(pc[0] + pj[0]) / 2, (pc[1] + pj[1]) / 2], fs = a.nah ? 6 : 9;
-  const linie = `<path d="M${pc[0].toFixed(1)} ${pc[1].toFixed(1)}L${pj[0].toFixed(1)} ${pj[1].toFixed(1)}" stroke="var(--tape,#146C99)" stroke-width="1.6" stroke-dasharray="3 3" fill="none"/><circle cx="${pj[0].toFixed(1)}" cy="${pj[1].toFixed(1)}" r="3.2" fill="var(--tape,#146C99)" stroke="#fff" stroke-width="1"/>`
-    + `<g font-family="-apple-system,Helvetica,sans-serif" font-weight="700" font-size="${fs}"><rect x="${(mid[0] - fs * 2.7).toFixed(1)}" y="${(mid[1] - fs * 1.8).toFixed(1)}" width="${(fs * 5.4).toFixed(1)}" height="${(fs * 1.45).toFixed(1)}" rx="3" fill="var(--tape,#146C99)"/><text x="${mid[0].toFixed(1)}" y="${(mid[1] - fs * .72).toFixed(1)}" text-anchor="middle" fill="#fff">${a.dist}</text></g>`;
+  const linie = `<path d="M${pc[0].toFixed(1)} ${pc[1].toFixed(1)}L${pj[0].toFixed(1)} ${pj[1].toFixed(1)}" stroke="var(--tape,#4f6d10)" stroke-width="1.6" stroke-dasharray="3 3" fill="none"/><circle cx="${pj[0].toFixed(1)}" cy="${pj[1].toFixed(1)}" r="3.2" fill="var(--tape,#4f6d10)" stroke="#fff" stroke-width="1"/>`
+    + `<g font-family="-apple-system,Helvetica,sans-serif" font-weight="700" font-size="${fs}"><rect x="${(mid[0] - fs * 2.7).toFixed(1)}" y="${(mid[1] - fs * 1.8).toFixed(1)}" width="${(fs * 5.4).toFixed(1)}" height="${(fs * 1.45).toFixed(1)}" rx="3" fill="var(--tape,#4f6d10)"/><text x="${mid[0].toFixed(1)}" y="${(mid[1] - fs * .72).toFixed(1)}" text-anchor="middle" fill="#fff">${a.dist}</text></g>`;
   /* Rahmen über beide Figuren */
   const bx = [zP.box, zT.box];
   const xs = bx.flatMap(b => [b[0], b[2]]).concat([pc[0]]), ys = bx.flatMap(b => [b[1], b[3]]).concat([pc[1], pr([0, 0, 0])[1]]);

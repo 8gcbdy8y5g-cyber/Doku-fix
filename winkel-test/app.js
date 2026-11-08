@@ -572,7 +572,7 @@ function qualityTags(range, n, issues) {
 }
 
 /* --- Zeichnen --- */
-function tapeColor() { return getComputedStyle(document.documentElement).getPropertyValue("--tape").trim() || "#146C99"; }
+function tapeColor() { return getComputedStyle(document.documentElement).getPropertyValue("--tape").trim() || "#4f6d10"; }
 const BONES = [[11, 12], [11, 23], [12, 24], [23, 24], [11, 13], [13, 15], [12, 14], [14, 16], [23, 25], [25, 27], [24, 26], [26, 28], [27, 29], [29, 31], [27, 31], [28, 30], [30, 32], [28, 32]];
 const HBONES = [[0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [5, 6], [6, 7], [7, 8], [5, 9], [9, 10], [10, 11], [11, 12], [9, 13], [13, 14], [14, 15], [15, 16], [13, 17], [0, 17], [17, 18], [18, 19], [19, 20]];
 function drawPose(L, F, bad) {

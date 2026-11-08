@@ -3,31 +3,32 @@
 <meta name="theme-color" content="#f3f5f8">
 <style>
 /* Eine Spalte wie Doku-Fix: Gelenk → Bewegung → Methode → Messfläche → Ergebnis → Messungen. Apple-Stil, Tape-Blau. */
-/* Farben aus Doku-Fix übernommen (Apple-Grautöne, Tape-Petrol 146C99 / dunkel 5BB8E8) */
+/* W&W-Optik wie in Doku-Fix: Anthrazit 1A1A1A, Karten 212121, Lindgrün DDF6A2, hell warmes Weiß F3F5EE mit Olivgrün 4F6D10, Schrift Outfit */
+@font-face{font-family:"Outfit";font-style:normal;font-display:swap;font-weight:100 900;src:url(fonts/outfit-latin-wght-normal.woff2) format("woff2")}
 :root{
-  --bg:#F2F2F7; --card:#FFFFFF; --fg:#000000; --muted:#6C6C70; --line:#D1D1D6; --fill:#E5E5EA;
-  --tape:#146C99; --tape-soft:#E3EEF4; --on-tape:#FFFFFF;
-  --ok:#248A3D; --ok-soft:#DDF3E3; --warn:#B25000; --warn-soft:#FCEBD9; --bad:#C4001A; --bad-soft:#FBE1E4;
-  --stage:#0B0B0D; --figur:#C7CDD4; --gelenk:#9AA7B4;
-  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif;
-  --round:"SF Pro Rounded",ui-rounded,-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+  --bg:#f3f5ee; --card:#ffffff; --fg:#1a1a1a; --muted:#5f6556; --line:#e1e4d8; --fill:#e9ece2;
+  --tape:#4f6d10; --tape-soft:#eef6d9; --on-tape:#ffffff; --hit:#ddf6a2; --on-hit:#1a1a1a;
+  --ok:#2f7d32; --ok-soft:#e3f2d9; --warn:#b25000; --warn-soft:#fcebd9; --bad:#c4001a; --bad-soft:#fbe1e4;
+  --stage:#141414; --figur:#c9cdbf; --gelenk:#9aa08e;
+  --font:"Outfit",-apple-system,system-ui,"Helvetica Neue",Arial,sans-serif;
+  --round:"Outfit",-apple-system,system-ui,"Helvetica Neue",Arial,sans-serif;
   --mono:ui-monospace,"SF Mono",Menlo,monospace;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#000000; --card:#1C1C1E; --fg:#FFFFFF; --muted:#AEAEB2; --line:#38383A; --fill:#2C2C2E;
-  --tape:#5BB8E8; --tape-soft:#0D2F40; --on-tape:#002A3D;
-  --ok:#30D158; --ok-soft:rgba(48,209,88,.18); --warn:#FFB340; --warn-soft:rgba(255,179,64,.18); --bad:#FF6961; --bad-soft:rgba(255,105,97,.18);
-  --stage:#000000; --figur:#3A3A3C; --gelenk:#636366; color-scheme:dark}}
+  --bg:#1a1a1a; --card:#212121; --fg:#f3f6ec; --muted:#a3a99a; --line:#333333; --fill:#2a2a2a;
+  --tape:#ddf6a2; --tape-soft:#2e3423; --on-tape:#1a1a1a; --hit:#ddf6a2; --on-hit:#1a1a1a;
+  --ok:#9be07a; --ok-soft:rgba(155,224,122,.16); --warn:#ffb340; --warn-soft:rgba(255,179,64,.16); --bad:#ff7a6e; --bad-soft:rgba(255,122,110,.16);
+  --stage:#0f0f0f; --figur:#3a3a3a; --gelenk:#5a5a5a; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#000000; --card:#1C1C1E; --fg:#FFFFFF; --muted:#AEAEB2; --line:#38383A; --fill:#2C2C2E;
-  --tape:#5BB8E8; --tape-soft:#0D2F40; --on-tape:#002A3D;
-  --ok:#30D158; --ok-soft:rgba(48,209,88,.18); --warn:#FFB340; --warn-soft:rgba(255,179,64,.18); --bad:#FF6961; --bad-soft:rgba(255,105,97,.18);
-  --stage:#000000; --figur:#3A3A3C; --gelenk:#636366; color-scheme:dark}
+  --bg:#1a1a1a; --card:#212121; --fg:#f3f6ec; --muted:#a3a99a; --line:#333333; --fill:#2a2a2a;
+  --tape:#ddf6a2; --tape-soft:#2e3423; --on-tape:#1a1a1a; --hit:#ddf6a2; --on-hit:#1a1a1a;
+  --ok:#9be07a; --ok-soft:rgba(155,224,122,.16); --warn:#ffb340; --warn-soft:rgba(255,179,64,.16); --bad:#ff7a6e; --bad-soft:rgba(255,122,110,.16);
+  --stage:#0f0f0f; --figur:#3a3a3a; --gelenk:#5a5a5a; color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:15px;line-height:1.4;-webkit-tap-highlight-color:transparent;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:10px 48px}
 main{width:100%;max-width:none;margin:0;display:flex;flex-direction:column;gap:14px}
-h1{font-size:34px;font-weight:700;letter-spacing:.01em;margin:6px 0 0;text-wrap:balance}
+h1{font-size:36px;font-weight:900;text-transform:uppercase;line-height:1;letter-spacing:-.01em;margin:6px 0 0;text-wrap:balance}
 h2{font-size:20px;font-weight:700;letter-spacing:-.01em;margin:0;text-wrap:balance}
 .sub{color:var(--muted);margin:2px 0 0;font-size:14px;max-width:60ch}
 .lbl{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
@@ -93,12 +94,12 @@ button{font-family:inherit}
 .howto{display:grid;gap:8px;background:var(--fill);border-radius:14px;padding:10px}
 .howto canvas{width:100%;height:auto;display:block}
 .aufbau{display:grid;gap:8px;background:var(--card);border-radius:18px;padding:12px;margin-bottom:12px}
-.aufsvg{--fill:#E5E5EA;--line:#D1D1D6;--card:#FFFFFF;--muted:#6C6C70;--fg:#000;background:#F7F7FA;border-radius:12px;overflow:hidden}
+.aufsvg{--tape:#4f6d10;--on-tape:#fff;--fill:#E5E5EA;--line:#D1D1D6;--card:#FFFFFF;--muted:#6C6C70;--fg:#000;background:#F7F7FA;border-radius:12px;overflow:hidden}
 .aufsvg svg{display:block;width:100%;height:auto;max-height:42vh}
 .auftxt{margin:0;font-size:14.5px;font-weight:600;max-width:65ch}
 .paste{display:grid;gap:8px;margin-top:10px}
 .paste textarea{width:100%;min-height:72px;border-radius:10px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);font:14px var(--font);padding:8px}
-.how3d{--fill:#E5E5EA;--line:#D1D1D6;--card:#FFFFFF;--muted:#6C6C70;--fg:#000;background:#F7F7FA;border-radius:10px;overflow:hidden}
+.how3d{--tape:#4f6d10;--on-tape:#fff;--fill:#E5E5EA;--line:#D1D1D6;--card:#FFFFFF;--muted:#6C6C70;--fg:#000;background:#F7F7FA;border-radius:10px;overflow:hidden}
 .how3d svg{display:block;width:100%;height:auto;max-height:52vh}
 .howstep{font-weight:600;font-size:14.5px;min-height:42px;margin:0}
 .howkey{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
@@ -155,6 +156,19 @@ details .body p{margin:0;max-width:65ch}
   .wide{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(320px,1fr);gap:18px;align-items:start}
   .stage canvas{max-height:78vh} .aufsvg svg{max-height:52vh} }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* W&W-Bedienelemente: Pillenform, Auswahl und Hauptknopf in Lindgrün */
+.chip{border-radius:999px;padding-inline:16px}
+.chip[aria-pressed="true"]{background:var(--hit);border-color:var(--hit);color:var(--on-hit)}
+.chip[aria-pressed="true"] small{color:#3d4a24}
+.seg{border-radius:999px}.seg button{border-radius:999px}
+.seg button[aria-pressed="true"]{background:var(--hit);color:var(--on-hit);box-shadow:none}
+.btn{border-radius:999px;font-weight:700}
+.btn.main{background:var(--hit);color:var(--on-hit);text-transform:uppercase;letter-spacing:.04em;font-weight:800}
+.lbl,details>summary{font-weight:800}
+.doku{background:var(--hit);color:var(--on-hit);border-radius:999px}
+.card,.sensor,.aufbau,details{border-radius:20px}
+::selection{background:#ddf6a2;color:#1a1a1a}
+
 </style>
 
 <main>
