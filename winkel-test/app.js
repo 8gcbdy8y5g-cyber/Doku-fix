@@ -79,7 +79,7 @@ function showAufbau() {
   const box = $("aufbau"); if (!box) return;
   const a = window.ANL3 && ANL3.aufbau && (method === "cam" || method === "foto") && !camOn && !demoOn ? ANL3.aufbau(mv.k, side) : null;
   box.hidden = !a; if (!a) return;
-  $("aufsvg").innerHTML = a.svg; $("auftxt").textContent = a.text;
+  $("aufsvg").innerHTML = a.svg; $("auftxt").textContent = a.text; $("aufalt").textContent = a.alt || "";
 }
 
 /* ---------------- Ergebnis ---------------- */

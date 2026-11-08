@@ -108,7 +108,7 @@ const J = [
  { k: "knie", n: "Knie", side: true, mv: [
   { k: "k-flex", n: "Flexion", pair: "Ext/Flex", dir: "+", norm: [120, 150], src: "nnm", rec: "cam",
     ev: "Kamera seitlich, kameranahe Seite: Grenzen etwa ±9°. Sensor zweistufig ebenfalls gut (ICC > 0,90).",
-    cam: { view: "seitlich", ref: ["hip", "kn"], mov: ["kn", "an"], zero: 0, tip: "Seite zur Kamera, Kamera auf Kniehöhe, Hüfte bis Fuß im Bild. Kurze Hose oder eng anliegend. Maximal beugen und halten." },
+    cam: { view: "seitlich", ref: ["hip", "kn"], mov: ["kn", "an"], zero: 0, tip: "Rückenlage, gemessenes Bein zur Kamera, Hüfte bis Fuß im Bild. Kurze Hose oder eng anliegend. Ferse Richtung Gesäß gleiten lassen, maximal beugen und halten." },
     sen: { mode: "two", tip1: "Handy längs außen auf den Oberschenkel, Oberkante Richtung Hüfte, still halten.", tip2: "Jetzt Handy genauso außen auf den Unterschenkel, Oberkante Richtung Knie, still halten." } },
   { k: "k-ext", n: "Extension", pair: "Ext/Flex", dir: "-", norm: [0, 10], src: "nnm", rec: "sen",
     ev: "Kleine Winkel: Sensor zweistufig oder Standbild prüfen.",

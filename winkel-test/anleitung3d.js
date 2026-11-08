@@ -178,77 +178,119 @@ function rahmen(key) {
   return cacheR[key] = [cx - w / 2, cy - h / 2, w, h];
 }
 function svg(key, t) { if (!S[key]) return null; return bild(key, t, rahmen(key)); }
-/* ---------- Aufbau für Kamera und Foto: wo das Gerät steht ---------- */
+/* ---------- Aufbau für Kamera und Foto: wo das Gerät gehalten wird (ohne Stativ) ---------- */
+const LIEGE_H = 70;
 const AUF = {
-  "s-flex": { pose: { ellbogenR: 2, schulterAbdR: 2 }, joint: "schulter", dir: "S", hoehe: "auf Schulterhöhe", wo: "seitlich neben den Patienten, gemessener Arm zur Kamera", dist: "2–3 m" },
-  "s-ext": { pose: { ellbogenR: 2, schulterAbdR: 2 }, joint: "schulter", dir: "S", hoehe: "auf Schulterhöhe", wo: "seitlich neben den Patienten, gemessener Arm zur Kamera", dist: "2–3 m" },
+  "s-flex": { pose: { ellbogenR: 2, schulterAbdR: 2, ellbogenL: 2, schulterAbdL: 2 }, joint: "schulter", dir: "S", hoehe: "auf Schulterhöhe", wo: "seitlich neben den Patienten, gemessener Arm zur Kamera", dist: "2–3 m" },
+  "s-ext": { pose: { ellbogenR: 2, schulterAbdR: 2, ellbogenL: 2, schulterAbdL: 2 }, joint: "schulter", dir: "S", hoehe: "auf Schulterhöhe", wo: "seitlich neben den Patienten, gemessener Arm zur Kamera", dist: "2–3 m" },
   "s-abd": { pose: {}, joint: "schulter", dir: "F", hoehe: "auf Brusthöhe", wo: "frontal vor den Patienten (oder genau hinter ihn)", dist: "2–3 m" },
   "e-flex": { pose: { ellbogenR: 25, ellbogenL: 25 }, joint: "ellbogen", dir: "S", hoehe: "auf Ellenbogenhöhe", wo: "seitlich, gemessener Arm zur Kamera, Unterarm in Supination", dist: "1,5–2 m" },
   "e-ext": { pose: { ellbogenR: 25, ellbogenL: 25 }, joint: "ellbogen", dir: "S", hoehe: "auf Ellenbogenhöhe", wo: "seitlich, gemessener Arm zur Kamera", dist: "1,5–2 m" },
   "f-mcp": { pose: { ellbogenR: 90, ellbogenL: 90, unterarmRotR: 90, unterarmRotL: 90 }, joint: "hand", dir: "S", hoehe: "auf Handhöhe", wo: "seitlich auf die Hand, Daumen zeigt zur Decke", dist: "30–50 cm", nah: true },
   "f-pip": { pose: { ellbogenR: 90, ellbogenL: 90, unterarmRotR: 90, unterarmRotL: 90 }, joint: "hand", dir: "S", hoehe: "auf Handhöhe", wo: "seitlich auf die Hand, Daumen zeigt zur Decke", dist: "30–50 cm", nah: true },
   "f-dip": { pose: { ellbogenR: 90, ellbogenL: 90, unterarmRotR: 90, unterarmRotL: 90 }, joint: "hand", dir: "S", hoehe: "auf Handhöhe", wo: "seitlich auf die Hand, Daumen zeigt zur Decke", dist: "30–50 cm", nah: true },
-  "hu-flex": { pose: LIEGEN, liege: true, joint: "huefte", dir: "S", hoehe: "knapp über Liegenhöhe", wo: "seitlich neben die Liege, Becken bis Knie und Schulter im Bild", dist: "2–2,5 m" },
-  "hu-ext": { pose: BAUCH, liege: true, joint: "huefte", dir: "S", hoehe: "knapp über Liegenhöhe", wo: "seitlich neben die Liege, Becken und Oberschenkel im Bild", dist: "2–2,5 m" },
+  "hu-flex": { pose: { ...LIEGEN, hueftFlexR: 70, knieR: 80, osgR: 5 }, liege: true, joint: "huefte", dir: "S", hoehe: "etwas über Liegenhöhe", wo: "seitlich neben die Liege, Becken, Knie und Schulter im Bild", dist: "1,5–2 m" },
+  "hu-ext": { pose: BAUCH, liege: true, joint: "huefte", dir: "S", hoehe: "etwas über Liegenhöhe", wo: "seitlich neben die Liege, Becken und Oberschenkel im Bild", dist: "1,5–2 m" },
   "hu-abd": { pose: {}, joint: "huefte", dir: "F", hoehe: "auf Hüfthöhe", wo: "frontal vor den Patienten, Becken gerade", dist: "2–3 m" },
-  "k-flex": { pose: {}, joint: "knie", dir: "S", hoehe: "auf Kniehöhe", wo: "seitlich neben den Patienten, gemessenes Bein zur Kamera, Hüfte bis Fuß im Bild", dist: "2–3 m" },
-  "k-ext": { pose: LIEGEN, liege: true, joint: "knie", dir: "S", hoehe: "auf Kniehöhe", wo: "seitlich neben die Liege, gemessenes Bein zur Kamera", dist: "2 m" },
-  "o-de": { pose: SITZ, sitz: true, joint: "sprunggelenk", dir: "S", hoehe: "auf Knöchelhöhe", wo: "seitlich auf den Fuß, gemessener Fuß zur Kamera", dist: "1–1,5 m" },
-  "o-pf": { pose: SITZ, sitz: true, joint: "sprunggelenk", dir: "S", hoehe: "auf Knöchelhöhe", wo: "seitlich auf den Fuß, gemessener Fuß zur Kamera", dist: "1–1,5 m" }
+  "k-flex": { pose: { ...LIEGEN, hueftFlexR: 50, knieR: 95, osgR: 5 }, liege: true, joint: "knie", dir: "S", hoehe: "auf Kniehöhe", wo: "seitlich neben die Liege, gemessenes Bein zur Kamera, Hüfte bis Fuß im Bild", dist: "1,5–2 m" },
+  "k-ext": { pose: LIEGEN, liege: true, joint: "knie", dir: "S", hoehe: "knapp über Liegenhöhe", wo: "seitlich neben die Liege, gemessenes Bein zur Kamera", dist: "1,5–2 m" },
+  "o-de": { pose: SITZ, sitz: true, joint: "sprunggelenk", dir: "S", hoehe: "auf Knöchelhöhe", wo: "seitlich auf den Fuß, Patient sitzt an der Liegenkante", dist: "1 m" },
+  "o-pf": { pose: SITZ, sitz: true, joint: "sprunggelenk", dir: "S", hoehe: "auf Knöchelhöhe", wo: "seitlich auf den Fuß, Patient sitzt an der Liegenkante", dist: "1 m" }
 };
 const TABLET = { h: 24.8, b: 17.9, d: 0.7 };
+const minY = P => { let m = Infinity; for (const k in P) m = Math.min(m, P[k][1]); return m; };
+/* Haltung des Therapeuten: Körper (stehen, knien, hocken) und Arme so wählen, dass die Hände auf Zielhöhe sind */
+const KOERPER = [["stehend", {}], ["kniend", { knieL: 95, knieR: 95 }], ["in der Hocke", { hueftFlexL: 115, hueftFlexR: 115, knieL: 135, knieR: 135, becken: 22 }]];
+const haltCache = {};
+function therapeut(zielH, nah) {
+  const key = Math.round(zielH / 4) + (nah ? "n" : "");
+  if (haltCache[key]) return haltCache[key];
+  let best = null;
+  KOERPER.forEach(([name, kp], ki) => {
+    for (let fl = 10; fl <= 95; fl += 7) for (const el of [20, 45, 70, 95]) {
+      const pose = { ...kp, schulterFlexL: fl, schulterFlexR: fl, ellbogenL: el, ellbogenR: el, schulterAbdL: 14, schulterAbdR: 14, hws: 8 };
+      const { P } = F.skelett(pose), boden = minY(P) - 8;
+      const hh = (P.handL[1] + P.handR[1]) / 2 - boden, vor = (P.handL[2] + P.handR[2]) / 2;
+      if (vor < 22) continue; /* Gerät muss vor dem Körper sein */
+      const score = Math.abs(hh - zielH) + ki * 9 + (el > 80 ? 4 : 0);
+      if (!best || score < best.score) best = { score, pose, name, boden, hand: [(P.handL[0] + P.handR[0]) / 2, hh, vor] };
+    }
+  });
+  return haltCache[key] = best;
+}
+function box3(pr, x0, x1, y0, y1, z0, z1, fill, dunkel) {
+  const V = (x, y, z) => pr([x, y, z]);
+  const faces = [
+    [[x0, y1, z0], [x1, y1, z0], [x1, y1, z1], [x0, y1, z1]],
+    [[x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1]],
+    [[x0, y0, z0], [x1, y0, z0], [x1, y1, z0], [x0, y1, z0]],
+    [[x0, y0, z0], [x0, y0, z1], [x0, y1, z1], [x0, y1, z0]],
+    [[x1, y0, z0], [x1, y0, z1], [x1, y1, z1], [x1, y1, z0]]];
+  return faces.map((f, i) => { const q = f.map(v => V(...v)); return { z: q.reduce((s, p) => s + p[2], 0) / 4, d: `<path d="M${q.map(p => p[0].toFixed(1) + " " + p[1].toFixed(1)).join("L")}Z" fill="${i ? dunkel : fill}"/>` }; })
+    .sort((A, B) => A.z - B.z).map(f => f.d).join("");
+}
 function aufbau(key, side) {
   const a = AUF[key]; if (!a) return null;
-  const L = side === "l", sx = L ? 1 : -1; /* rechte Körperseite liegt bei -X */
-  const pose = { ...a.pose };
+  const L = side === "l", sx = L ? 1 : -1;
+  /* Patient in Weltkoordinaten (Boden y = 0) */
+  const pose0 = { ...a.pose }, P0 = F.skelett(pose0).P;
+  let py;
+  if (a.liege) py = LIEGE_H - (minY(P0) - 1);
+  else if (a.sitz) py = LIEGE_H + 9;
+  else py = -(minY(P0) - 8);
+  const pose = { ...pose0, y: py };
   const { P } = F.skelett(pose);
   const J = P[a.joint + (L ? "L" : "R")];
-  /* Richtung vom Patienten zum Gerät */
   const dir = a.dir === "F" ? [0, 0, 1] : [sx, 0, 0];
-  const lie = a.liege, frontLie = lie && pose.becken > 0;
-  const gross = a.nah ? 42 : 120;            /* gezeichneter Abstand in cm (verkürzt) */
-  const C = add(J, mul(dir, gross));
-  const H = { c: C, t: [0, 1, 0], n: dir };    /* Bildschirm zeigt zum Therapeuten, Kamera auf der Rückseite zum Patienten */
-  /* Blick von schräg hinten über das Gerät auf den Patienten */
+  const abstand = a.nah ? 38 : 115;          /* gezeichneter Abstand (verkürzt) */
+  /* Therapeut hält das Gerät: Hände auf Gelenkhöhe, steht hinter dem Gerät, schaut zum Patienten */
+  const th = therapeut(Math.max(35, J[1]), a.nah);
+  const fz = [-dir[0], 0, -dir[2]], rot = Math.atan2(fz[0], fz[2]) * 180 / Math.PI;
+  const tp0 = { ...th.pose, beckenRot: rot }, T0 = F.skelett(tp0).P;
+  const handMid = [(T0.handL[0] + T0.handR[0]) / 2, (T0.handL[1] + T0.handR[1]) / 2, (T0.handL[2] + T0.handR[2]) / 2];
+  const C = [J[0] + dir[0] * abstand, J[1], J[2] + dir[2] * abstand];
+  const tpose = { ...tp0, x: C[0] - handMid[0] + dir[0] * 4, y: -(minY(T0) - 8), z: C[2] - handMid[2] + dir[2] * 4 };
+  const TP = F.skelett(tpose).P;
+  const Cg = [(TP.handL[0] + TP.handR[0]) / 2 - dir[0] * 4, (TP.handL[1] + TP.handR[1]) / 2 + 4, (TP.handL[2] + TP.handR[2]) / 2 - dir[2] * 4];
+  const quer = !!a.liege;
+  const H = { c: Cg, t: quer ? (a.dir === "F" ? [1, 0, 0] : [0, 0, 1]) : [0, 1, 0], n: dir };
+  /* Blick schräg von der Seite, sodass Patient, Gerät und Therapeut zu sehen sind */
   const baseYaw = a.dir === "F" ? 0 : (L ? -90 : 90);
-  const yaw = baseYaw + (a.dir === "F" ? 38 : (L ? -42 : 42)), pitch = a.nah ? 18 : 26;
+  const yaw = baseYaw + (a.dir === "F" ? 62 : (L ? -62 : 62)), pitch = a.nah ? 16 : 22;
   const cam = F.kamera(yaw, pitch);
-  const z = F.zeichne(pose, { ansicht: yaw, neigung: pitch });
-  const pr = v => { const q = cam(v); return [q[0], -q[1]]; };
-  /* Boden: tiefster Punkt der Figur */
-  let floorY = Infinity; for (const k in P) floorY = Math.min(floorY, P[k][1]); floorY -= 8;
-  const svgParts = [];
-  /* Liege bzw. Bank */
-  if (lie || a.sitz) {
-    const y0 = lie ? floorY + 2 : P.huefteR[1] - 9, x0 = -32, x1 = 32;
-    const zs = lie ? [-110, 105] : [-25, 18];
-    const q = [[x0, y0, zs[0]], [x1, y0, zs[0]], [x1, y0, zs[1]], [x0, y0, zs[1]]].map(pr);
-    svgParts.push(`<path d="M${q.map(p => p[0].toFixed(1) + " " + p[1].toFixed(1)).join("L")}Z" fill="var(--line,#dfe4eb)"/>`);
+  const pr = v => { const q = cam(v); return [q[0], -q[1], q[2]]; };
+  const zP = F.zeichne(pose, { ansicht: yaw, neigung: pitch, farben: {} });
+  const zT = F.zeichne(tpose, { ansicht: yaw, neigung: pitch, farben: { shirt: "#5f7f99", shirtFern: "#52708a", haut: "#d9a27a", hautFern: "#bf8b66" } });
+  const parts = [];
+  /* Boden */
+  parts.push({ z: -1e9, d: (() => { const q = [[-160, 0, -160], [160, 0, -160], [160, 0, 160], [-160, 0, 160]].map(pr); return `<path d="M${q.map(p => p[0].toFixed(1) + " " + p[1].toFixed(1)).join("L")}Z" fill="var(--fill,#eef1f5)"/>`; })() });
+  if (a.liege || a.sitz) {
+    const zz = a.liege ? [-105, 100] : [-62, 36];
+    parts.push({ z: -1e8, d: box3(pr, -34, 34, 0, LIEGE_H, zz[0], zz[1], "#cfd8e2", "#b5c1ce") });
   }
-  /* Stativ bis zum Boden bzw. zur Liege */
-  const fuss = [C[0], (lie ? floorY - 60 : floorY), C[2]], beine = [[-14, 0, -10], [14, 0, -10], [0, 0, 14]];
-  const st = pr(add(C, [0, -TABLET.h / 2, 0]));
-  beine.forEach(o => { const f = pr(add(fuss, o)); svgParts.push(`<path d="M${st[0].toFixed(1)} ${st[1].toFixed(1)}L${f[0].toFixed(1)} ${f[1].toFixed(1)}" stroke="#6b7684" stroke-width="1.6" stroke-linecap="round"/>`); });
-  /* Sichtlinie */
-  const pc = pr(C), pj = pr(J);
-  svgParts.push(`<path d="M${pc[0].toFixed(1)} ${pc[1].toFixed(1)}L${pj[0].toFixed(1)} ${pj[1].toFixed(1)}" stroke="var(--tape,#1d74d8)" stroke-width="1.6" stroke-dasharray="3 3" fill="none"/>`);
-  svgParts.push(`<circle cx="${pj[0].toFixed(1)}" cy="${pj[1].toFixed(1)}" r="3.2" fill="var(--tape,#1d74d8)" stroke="#fff" stroke-width="1"/>`);
-  const mid = [(pc[0] + pj[0]) / 2, (pc[1] + pj[1]) / 2];
-  const lab = `<g font-family="-apple-system,Helvetica,sans-serif" font-weight="700" font-size="${a.nah ? 6 : 9}"><rect x="${(mid[0] - (a.nah ? 18 : 24)).toFixed(1)}" y="${(mid[1] - (a.nah ? 12 : 16)).toFixed(1)}" width="${a.nah ? 36 : 48}" height="${a.nah ? 9 : 13}" rx="3" fill="var(--tape,#1d74d8)"/><text x="${mid[0].toFixed(1)}" y="${(mid[1] - (a.nah ? 5.5 : 6.5)).toFixed(1)}" text-anchor="middle" fill="#fff">${a.dist}</text></g>`;
-  const tab = handySvg(cam, H, 0, 0, 1, a.nah ? { h: 14.7, b: 7.1, d: 0.85 } : TABLET);
-  /* Rahmen */
-  const pts = z.box ? [[z.box[0], z.box[1]], [z.box[2], z.box[3]], pc, pr(fuss)] : [pc];
-  const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
-  const m = a.nah ? 10 : 18, w0 = Math.max(...xs) - Math.min(...xs) + 2 * m, h0 = Math.max(...ys) - Math.min(...ys) + 2 * m;
-  let w = w0, h = h0; if (w / h < 1.5) w = h * 1.5; else h = w / 1.5;
+  const depth = v => cam(v)[2];
+  parts.push({ z: depth(P.becken), d: zP.svg });
+  parts.push({ z: depth(TP.becken), d: zT.svg });
+  parts.push({ z: depth(Cg) + 0.5, d: handySvg(cam, H, 0, 0, 1, a.nah ? { h: 14.7, b: 7.1, d: 0.85 } : TABLET) });
+  parts.sort((A, B) => A.z - B.z);
+  /* Sichtlinie und Abstand */
+  const pc = pr(Cg), pj = pr(J), mid = [(pc[0] + pj[0]) / 2, (pc[1] + pj[1]) / 2], fs = a.nah ? 6 : 9;
+  const linie = `<path d="M${pc[0].toFixed(1)} ${pc[1].toFixed(1)}L${pj[0].toFixed(1)} ${pj[1].toFixed(1)}" stroke="var(--tape,#1d74d8)" stroke-width="1.6" stroke-dasharray="3 3" fill="none"/><circle cx="${pj[0].toFixed(1)}" cy="${pj[1].toFixed(1)}" r="3.2" fill="var(--tape,#1d74d8)" stroke="#fff" stroke-width="1"/>`
+    + `<g font-family="-apple-system,Helvetica,sans-serif" font-weight="700" font-size="${fs}"><rect x="${(mid[0] - fs * 2.7).toFixed(1)}" y="${(mid[1] - fs * 1.8).toFixed(1)}" width="${(fs * 5.4).toFixed(1)}" height="${(fs * 1.45).toFixed(1)}" rx="3" fill="var(--tape,#1d74d8)"/><text x="${mid[0].toFixed(1)}" y="${(mid[1] - fs * .72).toFixed(1)}" text-anchor="middle" fill="#fff">${a.dist}</text></g>`;
+  /* Rahmen über beide Figuren */
+  const bx = [zP.box, zT.box];
+  const xs = bx.flatMap(b => [b[0], b[2]]).concat([pc[0]]), ys = bx.flatMap(b => [b[1], b[3]]).concat([pc[1], pr([0, 0, 0])[1]]);
+  if (a.liege || a.sitz) [[-34, 0, -105], [34, 0, 100]].forEach(v => { const q = pr(v); xs.push(q[0]); ys.push(q[1]); });
+  const m = a.nah ? 8 : 14; let w = Math.max(...xs) - Math.min(...xs) + 2 * m, h = Math.max(...ys) - Math.min(...ys) + 2 * m;
+  if (w / h < 1.5) w = h * 1.5; else h = w / 1.5;
   const cx = (Math.max(...xs) + Math.min(...xs)) / 2, cy = (Math.max(...ys) + Math.min(...ys)) / 2;
   const vb = [cx - w / 2, cy - h / 2, w, h];
-  /* Zeichenreihenfolge: Gerät vor oder hinter der Figur je nach Tiefe */
-  const vorn = cam(C)[2] > cam(J)[2];
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb.map(v => v.toFixed(1)).join(" ")}">${svgParts.join("")}${vorn ? z.svg + tab : tab + z.svg}${lab}</svg>`;
-  const seite = a.dir === "F" ? "" : (L ? "links" : "rechts") + " ";
-  const text = `Gerät ${seite}${a.wo}, ${a.dist} entfernt, ${a.hoehe}. Hochkant und senkrecht stellen (Libelle grün).`;
-  return { svg, text };
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb.map(v => v.toFixed(1)).join(" ")}">${parts.map(p => p.d).join("")}${linie}</svg>`;
+  const seite = a.dir === "F" ? "" : (L ? "links " : "rechts ");
+  const wer = th.name[0].toUpperCase() + th.name.slice(1);
+  const text = `${wer} ${seite}${a.wo}, ${a.dist} entfernt. Gerät ${a.hoehe} ${quer ? "quer" : "hochkant"} mit beiden Händen ruhig halten, Libelle grün.`;
+  const alt = "Ohne freie Hände: an eine Stuhllehne oder mit der Hülle auf einem Hocker anlehnen.";
+  return { svg, text, alt };
 }
 root.ANL3 = { S, svg, aufbau, AUF };
 })(typeof window !== "undefined" ? window : globalThis);
