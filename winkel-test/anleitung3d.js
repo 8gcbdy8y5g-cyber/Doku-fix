@@ -177,7 +177,72 @@ function rahmen(key) {
   const cx = (b[0] + b[2]) / 2, cy = (b[1] + b[3]) / 2;
   return cacheR[key] = [cx - w / 2, cy - h / 2, w, h];
 }
-function svg(key, t) { if (!S[key]) return null; return bild(key, t, rahmen(key)); }
+
+/* ---------- Pronation / Supination: eigene Nahansicht der Faust ----------
+   Links klein die Figur von vorn (Ellenbogen 90° am Rumpf), rechts groß die Faust von vorn:
+   Handy hochkant wie ein Stab, Daumen oben, Fingerkuppen und Bildschirm zeigen zur Körpermitte.
+   Die Faust dreht um die Unterarmachse; der Bogenpfeil zeigt die Richtung. Rechter Arm von vorn:
+   Körpermitte liegt im Bild rechts, Pronation dreht die Oberkante also nach rechts. */
+for (const k of ["u-pro", "u-sup"]) S[k + "~"] = { ...S[k], ansicht: 38, neigung: 6, fokus: ["kopfTop", "schulterL", "schulterR", "huefteR", "handR"], rand: 6, format: 0.62 };
+const HAUT = "#e3a97b", HAUT_D = "#c88f65", HAUT_H = "#efc39c", NAGEL = "#f6dccb";
+function dreh(key, t) {
+  const sz = S[key], ph = phase(sz, t), pro = key === "u-pro";
+  const ziel = pro ? 80 : -80, a = ziel * ph.move;
+  const ctx = bild(key + "~", t, rahmen(key + "~"));
+  const inner = ctx.svg.replace("<svg ", '<svg x="4" y="22" width="96" height="156" preserveAspectRatio="xMidYMid meet" ');
+  const cx = 196, cy = 112, R = (x, y) => { const r = a * Math.PI / 180, c = Math.cos(r), s0 = Math.sin(r); return [cx + x * c - y * s0, cy + x * s0 + y * c]; };
+  const f = n => n.toFixed(1);
+  /* Unterarm von vorn: kommt schräg von hinten, Handgelenk als Oval hinter der Faust */
+  let g = `<ellipse cx="${cx - 4}" cy="${cy - 6}" rx="25" ry="30" fill="${HAUT_D}"/>`;
+  /* gedrehte Gruppe: Handy, Faust, Finger, Daumen */
+  let r = "";
+  /* Handy als Stab: schmale Kante zu uns, Bildschirm-Seite (rechts = Körpermitte) farbig */
+  r += `<rect x="-4" y="-66" width="8" height="132" rx="2.5" fill="#3b434d"/>`;
+  r += `<rect x="2.2" y="-63" width="2.2" height="126" rx="1" fill="var(--tape,#4f6d10)"/>`;
+  r += `<path d="M0 -76L-5 -68L5 -68Z" fill="var(--tape,#4f6d10)"/>`;
+  /* Handrücken / Faustkörper */
+  r += `<rect x="-30" y="-27" width="46" height="56" rx="14" fill="${HAUT}" stroke="${HAUT_D}" stroke-width="1.2"/>`;
+  /* vier Finger quer, von oben Zeigefinger bis unten Kleinfinger; Kuppen zur Körpermitte (rechts) mit Nagel */
+  const fing = [[-24, -10, 12], [-11, 3, 12], [2, 15, 11.5], [14.5, 25, 10]];
+  fing.forEach(([y0, y1, w], i) => {
+    const h = y1 - y0, x0 = -28, x1 = 18 - i * 1.5;
+    r += `<rect x="${x0}" y="${y0}" width="${x1 - x0}" height="${h}" rx="${h / 2}" fill="${i % 2 ? HAUT : HAUT_H}" stroke="${HAUT_D}" stroke-width="1"/>`;
+    r += `<ellipse cx="${x1 - 3.2}" cy="${(y0 + y1) / 2}" rx="2.6" ry="${h / 2 - 2}" fill="${NAGEL}" stroke="${HAUT_D}" stroke-width=".6"/>`;
+    r += `<circle cx="${x0 + 5}" cy="${(y0 + y1) / 2}" r="1.6" fill="${HAUT_D}" opacity=".7"/>`;
+  });
+  /* Daumen oben quer über dem Zeigefinger, Spitze zur Körpermitte, Nagel sichtbar */
+  r += `<g transform="rotate(-8 -10 -31)"><rect x="-36" y="-39" width="48" height="15" rx="7.5" fill="${HAUT_H}" stroke="#a8714a" stroke-width="1.6"/>`;
+  r += `<ellipse cx="6.5" cy="-31.5" rx="4.4" ry="5" fill="${NAGEL}" stroke="#a8714a" stroke-width=".8"/></g>`;
+  g += `<g transform="translate(${cx} ${cy}) rotate(${f(a)})">${r}</g>`;
+  /* Bogenpfeil um die Unterarmachse */
+  const RA = 84, b0 = -90, b1 = -90 + ziel, bn = -90 + a, P = w => [cx + RA * Math.cos(w * Math.PI / 180), cy + RA * Math.sin(w * Math.PI / 180)];
+  const [sx, sy] = P(b0), [ex, ey] = P(b1), [nx, ny] = P(bn), sw = pro ? 1 : 0;
+  g += `<path d="M${f(sx)} ${f(sy)}A${RA} ${RA} 0 0 ${sw} ${f(ex)} ${f(ey)}" fill="none" stroke="var(--tape,#4f6d10)" stroke-width="2" stroke-dasharray="3 4" opacity=".35"/>`;
+  if (Math.abs(a) > 2) g += `<path d="M${f(sx)} ${f(sy)}A${RA} ${RA} 0 0 ${sw} ${f(nx)} ${f(ny)}" fill="none" stroke="var(--tape,#4f6d10)" stroke-width="3.2" stroke-linecap="round"/>`;
+  { const tg = (bn + (pro ? 90 : -90)) * Math.PI / 180, ux = Math.cos(tg), uy = Math.sin(tg), px = -uy, py = ux;
+    const hx = nx + ux * 8, hy = ny + uy * 8;
+    g += `<path d="M${f(hx)} ${f(hy)}L${f(nx - ux * 2 + px * 6)} ${f(ny - uy * 2 + py * 6)}L${f(nx - ux * 2 - px * 6)} ${f(ny - uy * 2 - py * 6)}Z" fill="var(--tape,#4f6d10)"/>`; }
+  /* Beschriftungen, bleiben aufrecht */
+  const T = (x, y, txt, anchor = "middle", w = 700, size = 8.5, col = "var(--fg,#1a1a1a)") => `<text x="${f(x)}" y="${f(y)}" text-anchor="${anchor}" font-size="${size}" font-weight="${w}" fill="${col}" font-family="Outfit,-apple-system,Helvetica,sans-serif">${txt}</text>`;
+  const [dx0, dy0] = R(-30, -44), [kx, ky] = R(-34, 32);
+  g += `<path d="M${f(dx0)} ${f(dy0)}L${f(dx0 - 14)} ${f(dy0 - 10)}" stroke="var(--muted,#6C6C70)" stroke-width=".8"/>` + T(dx0 - 16, dy0 - 12, "Daumen", "end");
+  g += `<path d="M${f(kx)} ${f(ky)}L${f(kx - 12)} ${f(ky + 10)}" stroke="var(--muted,#6C6C70)" stroke-width=".8"/>` + T(kx - 14, ky + 16, "Kleinfinger", "end", 600, 7.5);
+  /* Handfläche: Pfeil von der Fingerkuppen-Seite nach außen, zeigt immer, wohin die Handfläche gerade schaut */
+  { const [p0x, p0y] = R(28, 2), [p1x, p1y] = R(48, 2), rr = a * Math.PI / 180, ux = Math.cos(rr), uy = Math.sin(rr), px = -uy, py = ux;
+    g += `<path d="M${f(p0x)} ${f(p0y)}L${f(p1x)} ${f(p1y)}" stroke="#C2621A" stroke-width="2.4" stroke-linecap="round"/>`;
+    g += `<path d="M${f(p1x + ux * 6)} ${f(p1y + uy * 6)}L${f(p1x + px * 4.5)} ${f(p1y + py * 4.5)}L${f(p1x - px * 4.5)} ${f(p1y - py * 4.5)}Z" fill="#C2621A"/>`;
+    const lx = p1x + ux * 12, ly = p1y + uy * 12, hor = Math.abs(ux) > .6;
+    g += hor ? T(p1x + ux * 9, p1y + uy * 9 + 3, "Handfläche", ux > 0 ? "start" : "end", 800, 8, "#C2621A") : T(lx, uy > 0 ? ly + 8 : ly - 2, "Handfläche", "middle", 800, 8.5, "#C2621A"); }
+  if (ph.move < .15) g += T(205, 186, "Bildschirm zeigt zum Körper", "middle", 600, 7.5, "var(--tape,#4f6d10)");
+  g += T(296, 196, "Körpermitte →", "end", 600, 7.5, "var(--muted,#6C6C70)") + T(118, 196, "← außen", "start", 600, 7.5, "var(--muted,#6C6C70)");
+  const ende = pro ? "Handfläche nach unten" : "Handfläche nach oben";
+  g += T(205, 16, ph.move > .5 ? ende : "Faust von vorn: Daumen oben", "middle", 800, 10);
+  const links = T(52, 16, "Ellenbogen 90°", "middle", 700, 8) + T(52, 194, "am Rumpf", "middle", 600, 7.5, "var(--muted,#6C6C70)");
+  const trenn = `<path d="M108 22V180" stroke="var(--line,#D1D1D6)" stroke-width="1"/>`;
+  const ton = ph.beep ? T(cx + 30, cy - 80, "♪", "middle", 700, 14, "var(--tape,#4f6d10)") : "";
+  return { svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200">${inner}${links}${trenn}${g}${ton}</svg>`, step: ph.step, box: [0, 0, 300, 200] };
+}
+function svg(key, t) { if (!S[key]) return null; if (key === "u-pro" || key === "u-sup") return dreh(key, t); return bild(key, t, rahmen(key)); }
 /* ---------- Aufbau für Kamera und Foto: wo das Gerät gehalten wird (ohne Stativ) ---------- */
 const LIEGE_H = 70;
 const AUF = {
