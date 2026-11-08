@@ -34,7 +34,7 @@ h1{font-size:30px;font-weight:800;letter-spacing:-.02em;margin:4px 0 0;text-wrap
 .card{background:var(--card);border-radius:16px;padding:14px}
 .stage{position:relative;background:var(--stage);border-radius:16px;overflow:hidden;touch-action:none}
 .stage canvas{display:block;width:100%;height:auto}
-.stage video{display:none}
+.stage video{position:absolute;left:0;top:0;width:2px;height:2px;opacity:0;pointer-events:none}
 .badge{position:absolute;left:10px;top:10px;background:rgba(0,0,0,.55);color:#fff;font:600 12px var(--font);padding:5px 9px;border-radius:8px}
 .tip{font-size:13px;color:var(--muted);margin:8px 2px 0}
 .row{display:flex;gap:8px;flex-wrap:wrap}
@@ -345,21 +345,23 @@ cv.addEventListener("pointerup",()=>drag=-1);cv.addEventListener("pointercancel"
 
 /* Pose-Erkennung (MediaPipe, läuft auf dem Gerät) */
 function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement("script");s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s)})}
-async function ensurePose(){
+let poseLoading=null;
+function ensurePose(){return poseLoading||(poseLoading=loadPose())}
+async function loadPose(){
   if(pose||poseState==="fail")return pose;
   poseState="loading";$("badge").textContent="Erkennung lädt …";
   try{
     await loadScript("mp/pose.js");
-    pose=new window.Pose({locateFile:f=>"mp/"+f+(/\.(data|binarypb|tflite)$/.test(f)?".wasm":"")});
-    pose.setOptions({modelComplexity:1,smoothLandmarks:true,minDetectionConfidence:.5,minTrackingConfidence:.5});
-    pose.onResults(onResults);
-    await pose.initialize();
-    poseState="ready";
-  }catch(e){pose=null;poseState="fail";toast("Automatische Erkennung nicht verfügbar, Punkte von Hand setzen")}
+    const P=new window.Pose({locateFile:f=>"mp/"+f+(/\.(data|binarypb|tflite)$/.test(f)?".wasm":"")});
+    P.setOptions({modelComplexity:1,smoothLandmarks:true,minDetectionConfidence:.5,minTrackingConfidence:.5});
+    P.onResults(onResults);
+    await P.initialize();
+    pose=P;poseState="ready";
+  }catch(e){console.error("POSEFAIL",e&&(e.stack||e.message||e));pose=null;poseState="fail";toast("Automatische Erkennung nicht verfügbar, Punkte von Hand setzen")}
   badge();return pose;
 }
 function onResults(r){
-  if(!r.poseLandmarks){if(srcKind==="photo")toast("Keine Person erkannt, Punkte von Hand setzen");return}
+  if(!r.poseLandmarks){if(srcKind==="photo")toast("Keine Person erkannt, Punkte von Hand setzen");if(srcKind==="live")$("badge").textContent="Live · keine Person im Bild";return}
   lastLm=r.poseLandmarks;
   if(!manual)applyLandmarks(lastLm,false);
   if(srcKind==="photo"||frozen)render();
@@ -370,6 +372,8 @@ function applyLandmarks(lm,force){
   pts=idx.map(i=>[lm[i].x*cv.width,lm[i].y*cv.height]);
   if(force)manual=false;
   computeCam();
+  const jn=joint.n+" "+(side==="r"?"rechts":"links");
+  if(srcKind==="live"&&!frozen)$("badge").textContent=Math.min(...vis)<.5?"Live · "+jn+" nicht gut im Bild":"Live · misst "+jn;
   $("tip").textContent=Math.min(...vis)<.5?"Ein Messpunkt ist schlecht sichtbar. Punkt prüfen und bei Bedarf verschieben.":joint.tip;
 }
 function badge(){
@@ -400,8 +404,9 @@ $("b-live").onclick=async()=>{
   vid.srcObject=stream;await vid.play().catch(()=>{});
   await new Promise(r=>{if(vid.videoWidth)r();else vid.onloadedmetadata=r});
   srcKind="live";frozen=false;manual=false;sizeCanvas(vid.videoWidth,vid.videoHeight);
-  pts=null;$("b-live").textContent="Kamera aus";$("b-freeze").hidden=false;$("b-freeze").textContent="Anhalten";$("b-auto").hidden=true;badge();
-  ensurePose();
+  pts=null;lastLm=null;$("b-live").textContent="Kamera aus";$("b-freeze").hidden=false;$("b-freeze").textContent="Anhalten";$("b-auto").hidden=true;badge();
+  await ensurePose();
+  if(poseState==="ready")$("badge").textContent="Live · suche "+joint.n+" "+(side==="r"?"rechts":"links")+" …";
 };
 function stopLive(){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}$("b-live").textContent="Live-Kamera";$("b-freeze").hidden=true;frozen=false}
 $("b-freeze").onclick=()=>{frozen=!frozen;$("b-freeze").textContent=frozen?"Weiter":"Anhalten";if(frozen)render();else manual=false;badge();computeCam()};
