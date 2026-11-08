@@ -785,11 +785,16 @@ function manualCapture() {
 function senAngle(g) {
   if (sen.mode === "abs") return Math.atan2(Math.hypot(g[2], g[0] * 0), Math.abs(g[1])) * W.D; /* Neigung der Längsachse gegen das Lot in der y-z-Ebene */
   if (!sen.g0) return null;
-  let ax = sen.axis;
-  if (!sen.locked) { const tot = W.vecAngle(sen.g0, g); if (tot > 8) { ax = W.pickAxis(sen.g0, g); sen.axis = ax; if (tot > 15) sen.locked = true; } else ax = sen.axis ?? 2; }
-  const a = W.wrap180(W.planeAngle(g, ax) - W.planeAngle(sen.g0, ax));
-  if (sen.prev != null) { const d = W.wrap180(a - sen.prev); sen.unwrap += d; } else sen.unwrap = a;
-  sen.prev = a; return sen.unwrap;
+  /* Winkel zwischen Schwerkraft am Nullpunkt und jetzt. Kein Fortschreiben über ±180°, keine Achsenwahl:
+     So kann der Wert nicht davonlaufen, egal wie das Handy in der Hand liegt (vorher z. B. 177° bei Pronation). */
+  const tot = W.vecAngle(sen.g0, g);
+  if (!sen.locked && tot > 20) { const c = W.cross(sen.g0, g), l = W.len(c) || 1; sen.axVec = c.map(v => v / l); sen.locked = true; }
+  return tot;
+}
+/* Verkippung aus der Bewegungsebene: Anteil der Schwerkraft auf der (beim ersten deutlichen Bewegen festgelegten) Drehachse */
+function senOff(g) {
+  if (!sen.axVec) return null; const l = W.len(g) || 1;
+  return Math.asin(Math.max(-1, Math.min(1, W.dot(g, sen.axVec) / l))) * W.D;
 }
 function sensorTick(t) {
   if (!sen || sen.state === "aus") return;
@@ -799,7 +804,7 @@ function sensorTick(t) {
   const stillFor = sen.stillSince ? (t - sen.stillSince) / 1000 : 0;
   /* Live-Wert */
   let live = null, off = null;
-  if (sen.state === "move" || sen.state === "back") { live = senAngle(g); if (sen.axis != null) off = W.offAxis(g, sen.axis) - W.offAxis(sen.g0, sen.axis); }
+  if (sen.state === "move" || sen.state === "back") { live = senAngle(g); off = senOff(g); }
   if (sen.state === "abs") { live = senAngle(g); off = Math.asin(Math.max(-1, Math.min(1, g[0] / (W.len(g) || 1)))) * W.D; }
   if (sen.state === "seg2" && sen.gA) { live = Math.abs(W.wrap180(W.planeAngle(g, 2) - W.planeAngle(sen.gA, 2))); off = W.offAxis(g, 2); }
   sen.live = live; sen.off = off;
@@ -807,7 +812,7 @@ function sensorTick(t) {
   if (t - (sensorTick.lastDraw || 0) > 40) { sensorTick.lastDraw = t; drawDial(live == null ? null : Math.abs(live), stillFor > .3 ? "ruhig" : "Bewegung"); senStat(still, off); }
   if (t - sen.lastCap < 900) return;
   /* Zustandsautomat */
-  if (sen.state === "null" && still && stillFor > .6) { sen.g0 = still; sen.prev = null; sen.unwrap = 0; sen.axis = null; sen.locked = false; sen.state = "move"; sen.lastCap = t; beep(660, .1); blitz("dialwrap"); signal("START", "Nullpunkt gesetzt · jetzt bewegen", "start"); speak("Null. Jetzt bewegen."); senText("Nullpunkt gesetzt. Jetzt bis zur Endstellung bewegen und dort ruhig halten."); senSteps(2); }
+  if (sen.state === "null" && still && stillFor > .6) { sen.g0 = still; sen.prev = null; sen.unwrap = 0; sen.axis = null; sen.axVec = null; sen.locked = false; sen.state = "move"; sen.lastCap = t; beep(660, .1); blitz("dialwrap"); signal("START", "Nullpunkt gesetzt · jetzt bewegen", "start"); speak("Null. Jetzt bewegen."); senText("Nullpunkt gesetzt. Jetzt bis zur Endstellung bewegen und dort ruhig halten."); senSteps(2); }
   else if (sen.state === "move" && still && stillFor > .6 && live != null && Math.abs(live) >= 8) capture(still, false);
   else if (sen.state === "back" && still && stillFor > .5 && live != null && Math.abs(live) < 6) { sen.state = "move"; sen.lastCap = t; beep(660, .06, .1); signal("START", "Wiederholung " + (sen.reps.length + 1), "start"); senText("Nächste Wiederholung: wieder bis zum Ende bewegen und halten."); }
   else if (sen.state === "abs" && still && stillFor > .6 && live != null && live > 5) capture(still, false);
@@ -816,10 +821,10 @@ function sensorTick(t) {
 }
 function capture(g, manual) {
   const t = performance.now(); sen.lastCap = t;
-  if (sen.state === "null") { sen.g0 = g; sen.prev = null; sen.unwrap = 0; sen.state = "move"; beep(660, .1); signal("START", "Nullpunkt gesetzt · jetzt bewegen", "start"); senText("Nullpunkt gesetzt. Jetzt bewegen und halten."); senSteps(2); return; }
+  if (sen.state === "null") { sen.g0 = g; sen.prev = null; sen.unwrap = 0; sen.axVec = null; sen.locked = false; sen.state = "move"; beep(660, .1); signal("START", "Nullpunkt gesetzt · jetzt bewegen", "start"); senText("Nullpunkt gesetzt. Jetzt bewegen und halten."); senSteps(2); return; }
   if (sen.state === "seg1") { sen.gA = g; sen.state = "seg2"; beep(660, .1); blitz("dialwrap"); signal("1 ✓", "Jetzt umsetzen", "start"); speak("Jetzt umsetzen"); senText(mv.sen.tip2 + " Bei sehr kleinen Winkeln einfach auf die Fläche tippen."); senSteps(2); return; }
   let v = null, off = 0;
-  if (sen.state === "move" || sen.state === "back") { const a = senAngle(g); v = Math.abs(a); off = sen.axis != null ? Math.abs(W.offAxis(g, sen.axis) - W.offAxis(sen.g0, sen.axis)) : 0; }
+  if (sen.state === "move" || sen.state === "back") { const a = senAngle(g); v = Math.abs(a); off = Math.abs(senOff(g) || 0); }
   if (sen.state === "abs") { v = senAngle(g); off = Math.abs(Math.asin(Math.max(-1, Math.min(1, g[0] / W.len(g)))) * W.D); }
   if (sen.state === "seg2") { v = Math.abs(W.wrap180(W.planeAngle(g, 2) - W.planeAngle(sen.gA, 2))); off = Math.max(Math.abs(W.offAxis(g, 2)), Math.abs(W.offAxis(sen.gA, 2)));
     /* bei Extensionsmessung: Restbeugung als Defizit (Neutralstellung nicht erreicht) */
