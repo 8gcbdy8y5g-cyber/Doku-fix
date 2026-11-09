@@ -230,8 +230,90 @@ input::placeholder{color:var(--muted);opacity:.8;font-weight:500}
 .later .ava{width:36px;height:36px;font-size:14px}
 
 .toast{position:fixed;left:50%;bottom:max(24px,env(safe-area-inset-bottom));transform:translate(-50%,16px);opacity:0;background:var(--fg);color:var(--bg);
-  padding:12px 18px;border-radius:999px;font-weight:700;pointer-events:none;transition:opacity .2s ease,transform .26s var(--ease-out);z-index:10}
+  padding:12px 18px;border-radius:999px;font-weight:700;pointer-events:none;white-space:nowrap;transition:opacity .2s ease,transform .26s var(--ease-out);z-index:10}
 .toast.on{opacity:1;transform:translate(-50%,0)}
+
+
+/* Seiten und Messknöpfe im Test */
+.sides{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.side{border:1px solid var(--line);background:var(--bg);border-radius:var(--r-m);padding:12px 14px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:0;
+  transition:background-color .18s ease,border-color .18s ease,transform .16s var(--ease-out)}
+.side:active{transform:scale(.97)}
+.side span{font-weight:700;font-size:14px;color:var(--muted)}
+.side b{font-size:34px;font-weight:900;line-height:1.1}
+.side small{font-size:13px;color:var(--muted);font-weight:600}
+.side[aria-pressed="true"]{border-color:var(--tape);background:var(--tape-soft);box-shadow:inset 0 0 0 1px var(--tape)}
+.mess-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mess-btns .btn{padding:0 14px}
+.hand{display:flex;flex-direction:column;gap:12px}
+.hand[hidden]{display:none}
+
+/* Messung: Vollbild */
+.mess{position:fixed;inset:0;z-index:20;background:var(--bg);overflow:auto;opacity:0;transform:translateY(24px);
+  transition:opacity .22s ease,transform .3s var(--ease-drawer)}
+.mess.on{opacity:1;transform:none}
+.mess-in{min-height:100%;display:flex;flex-direction:column;
+  padding:max(12px,env(safe-area-inset-top)) max(18px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(18px,env(safe-area-inset-left))}
+.mess-bar{display:flex;align-items:center;gap:10px;min-height:48px;margin-bottom:8px}
+.mess-bar .grow{flex:1}
+.mess-grid{display:flex;flex-direction:column;gap:16px;flex:1}
+.mess-l,.mess-r{display:flex;flex-direction:column;gap:14px}
+.mess h1{font-size:clamp(28px,6vw,40px)}
+.mess-bild{background:#f7f7f2;border-radius:var(--r-m);padding:8px 10px}
+.mess-bild svg{display:block;width:100%;height:auto;max-height:200px}
+.mess-steps{margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.mess-steps li{list-style:none;display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start;padding:8px 0;color:var(--muted);font-size:15.5px;transition:color .2s ease}
+.mess-steps li p{margin:3px 0 0}
+.mess-steps li>span{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:14px;background:var(--fill);color:var(--muted);transition:background-color .2s ease,color .2s ease}
+.mess-steps li.now{color:var(--fg)}
+.mess-steps li.now>span{background:var(--hit);color:var(--on-hit)}
+.mess-steps li.done>span{background:var(--tape-soft);color:var(--tape)}
+.mess-steps b{color:var(--fg);font-weight:700}
+.mess-stage{position:relative;border-radius:var(--r-l);overflow:hidden;background:#141414;color:#f3f6ec;user-select:none;-webkit-user-select:none}
+.mess-stage.dial{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:260px;cursor:pointer}
+.dial-num{display:flex;align-items:flex-start}
+.dial-num[hidden]{display:none}
+.dial-num b{font-size:clamp(96px,26vw,150px);font-weight:900;line-height:.9;letter-spacing:-.03em}
+.dial-num small{font-size:40px;font-weight:700;color:#a3a99a;margin-top:6px}
+.dial-sub{font-weight:700;color:#a3a99a}
+.dial-q{position:absolute;left:14px;top:12px;font-size:13px;font-weight:700;color:#ddf6a2}
+.mess-stage.cam canvas{display:block;width:100%;height:auto;max-height:62vh;object-fit:contain;background:#000}
+.mess-stage.cam video{position:absolute;width:2px;height:2px;opacity:0;pointer-events:none;left:0;top:0}
+.cam-num{position:absolute;right:14px;bottom:10px;display:flex;align-items:flex-start;text-shadow:0 2px 12px rgba(0,0,0,.6)}
+.cam-num[hidden]{display:none}
+.cam-num b{font-size:72px;font-weight:900;line-height:.9}
+.cam-num small{font-size:26px;font-weight:700;margin-top:4px}
+.cam-q{position:absolute;left:12px;top:12px;display:flex;align-items:center;gap:8px;background:rgba(20,20,20,.75);padding:7px 12px;border-radius:999px;font-size:13.5px;font-weight:700;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.cam-q em{font-style:normal}
+.cam-q i{width:9px;height:9px;border-radius:50%;background:#8a8f84}
+.cam-q i.ok{background:#9be07a}.cam-q i.warn{background:#ffb340}.cam-q i.bad{background:#ff7a6e}
+.mess-stage.cam{min-height:220px}
+.mess-reps{display:flex;align-items:center;gap:12px;font-weight:700;font-size:15px}
+.mess-reps .dots{display:flex;gap:6px}
+.mess-reps i{width:14px;height:14px;border-radius:50%;border:2px solid var(--line);transition:background-color .2s ease,border-color .2s ease}
+.mess-reps i.on{background:var(--hit);border-color:var(--hit)}
+.mess-hint{margin:0;color:var(--muted);font-size:14.5px;min-height:2.9em}
+.mess-act{margin-top:auto}
+#signal{position:fixed;inset:0;z-index:50;display:grid;place-content:center;justify-items:center;gap:8px;text-align:center;pointer-events:none;opacity:0;transition:opacity .35s;padding:24px}
+#signal.on{opacity:1;transition:opacity .06s}
+#signal.start{background:rgba(221,246,162,.95);color:#1a1a1a}
+#signal.ende{background:rgba(26,26,26,.95);color:#ddf6a2}
+#signal b{font:900 clamp(64px,22vw,160px)/1 var(--font);letter-spacing:-.02em;text-transform:uppercase}
+#signal span{font:700 20px/1.3 var(--font)}
+@media (min-width:900px){
+  .mess-in{padding-left:40px;padding-right:max(40px,env(safe-area-inset-right))}
+  .mess-grid{display:grid;grid-template-columns:minmax(300px,380px) minmax(0,1fr);gap:24px 48px;align-items:start}
+  .mess-stage.dial{min-height:380px}
+  .mess-r{min-height:calc(100dvh - 110px)}
+}
+@media (max-width:899px){
+  .mess-l,.mess-r{display:contents}
+  .mess h1{order:1}.mess-stage{order:2}.mess-reps{order:3}.mess-hint{order:4}.mess-steps{order:5}.mess-bild{order:6}
+  .mess-stage.dial{min-height:200px}
+  .mess-act{order:99;position:sticky;bottom:0;background:linear-gradient(to top,var(--bg) 70%,transparent);margin:0 -18px;padding:18px 18px max(4px,env(safe-area-inset-bottom))}
+}
+@media (prefers-reduced-motion:reduce){.mess{transform:none}.side:active{transform:none}}
 
 /* iPad: Liste links, Inhalt rechts; Ablauf zweispaltig */
 @media (min-width:900px){
@@ -275,6 +357,8 @@ input::placeholder{color:var(--muted);opacity:.8;font-weight:500}
 <body>
 <div class="app" id="app"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="kern.js"></script>
+<script src="messung.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

@@ -18,6 +18,8 @@ const I = {
   plus: '<svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
   check: '<svg class="i" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg>',
   bike: '<svg class="i" viewBox="0 0 24 24"><circle cx="5.5" cy="16" r="3.5"/><circle cx="18.5" cy="16" r="3.5"/><path d="M5.5 16l4-7h6l3 7M9.5 9L12 16h3.5M8 6.5h3"/></svg>',
+  sensor: '<svg class="i" viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M3 9.5a9 9 0 0 0 0 5M21 9.5a9 9 0 0 1 0 5"/></svg>',
+  cam: '<svg class="i" viewBox="0 0 24 24"><path d="M3 8.5A1.5 1.5 0 0 1 4.5 7H7l1.5-2.5h7L17 7h2.5A1.5 1.5 0 0 1 21 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5z"/><circle cx="12" cy="13" r="3.5"/></svg>',
   edit: '<svg class="i" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4"/></svg>'
 };
 
@@ -53,7 +55,7 @@ const TESTS = [
   { k: 'troch', n: 'Trochanterhöhe', sub: 'Maßband · Startwert für die Sattelhöhe', pflicht: true, unit: 'cm', step: .5, min: 60, max: 115, def: 90, d: 1,
     how: 'Stand barfuß, Füße hüftbreit. Vom Boden bis zur Oberkante des Trochanter major messen.' },
   { k: 'ake', n: 'Knie-Extension 90/90', sub: 'Rückenlage · steuert die Lenkerüberhöhung', pflicht: true, unit: '°', step: 1, min: 0, max: 90, def: 20, d: 0,
-    how: 'Rückenlage, Hüfte 90° gebeugt und gehalten. Knie aktiv strecken. Eingetragen wird das Streckdefizit, also was zur vollen Streckung fehlt. Mit Nullpunkt messen und Wert hier eintragen.',
+    how: 'Rückenlage, Hüfte 90° gebeugt und gehalten. Knie aktiv strecken. Gemessen wird das Streckdefizit, also was zur vollen Streckung fehlt. Beide Seiten, je 3 Wiederholungen, der Median zählt.',
     rate: v => v <= 20 ? ['ok', 'unauffällig'] : v <= 30 ? ['warn', 'leicht verkürzt'] : ['bad', 'Defizit'] },
   { k: 'schober', n: 'Modifizierter Schober', sub: 'Maßband · Beweglichkeit der LWS', pflicht: true, unit: 'cm', step: .5, min: 0, max: 12, def: 5, d: 1,
     how: 'Marke am Übergang LWS/Kreuzbein, dazu 10 cm darüber und 5 cm darunter. Eingetragen wird der Zuwachs bei maximaler Vorneigung.',
@@ -86,7 +88,12 @@ const dokuText = (f, fit) => {
   if (fit.ziele?.length) a.push(`Ziel: ${fit.ziele.join(', ')}.`);
   a.push(fit.beschw?.length ? `Beschwerden beim Fahren: ${fit.beschw.join(', ')}.` : 'Keine Beschwerden beim Fahren.');
   if (t.troch != null) a.push(`Trochanterhöhe ${de(t.troch)} cm, daraus Startwert Sattelhöhe ${de(s.sattel)} cm (Tretlagermitte bis Satteloberkante, Kurbel ${de(s.kurbel, s.kurbel % 1 ? 1 : 0)} mm).`);
-  if (t.ake != null) a.push(`Knie-Extension 90/90 mit ${deInt(t.ake)}° Streckdefizit.`);
+  if (t.ake != null) {
+    const S = t.akeS || {}, M = t.akeM || {}, sd = ['l', 'r'].filter(k => S[k] != null);
+    const wie = [...new Set(sd.map(k => M[k]).filter(Boolean))];
+    const mit = wie.length === 1 ? (wie[0] === 'von Hand' ? '' : ` (${wie[0]}, Median aus 3 Wdh.)`) : '';
+    a.push(sd.length ? `Knie-Extension 90/90${mit}: Streckdefizit ${sd.map(k => (k === 'l' ? 'links ' : 'rechts ') + deInt(S[k]) + '°').join(', ')}.` : `Knie-Extension 90/90 mit ${deInt(t.ake)}° Streckdefizit.`);
+  }
   if (t.schober != null) a.push(`Modifizierter Schober ${de(t.schober)} cm.`);
   if (s.lenker) a.push(`Lenkerüberhöhung ${s.lenker}.`);
   if (t.bld != null) a.push(t.bld === 0 ? 'Keine Beinlängendifferenz.' : `Beinlängendifferenz ${deInt(t.bld)} mm, ${t.bldSeite === 'l' ? 'links' : 'rechts'} kürzer.`);
@@ -272,6 +279,14 @@ function testRow(tk, fit, open) {
     const s = v || {};
     ctl = ['l', 'r'].map(side => `<div class="row-ctl"><label>${side === 'l' ? 'Links' : 'Rechts'}</label><span class="seg" data-vf="${side}">${['Varus', 'neutral', 'Valgus'].map(x => `<button aria-pressed="${s[side] === x}" data-v="${x}">${x}</button>`).join('')}</span></div>`).join('')
       + `<button class="link" data-vf-skip>Überspringen</button>`;
+  } else if (tk.k === 'ake') {
+    const S = fit.t.akeS || {}, M = fit.t.akeM || {}, se = akeSide(fit), cur = S[se] ?? tk.def;
+    ctl = `<div class="sides">${['l', 'r'].map(k => `<button class="side" aria-pressed="${se === k}" data-akeside="${k}"><span>${k === 'l' ? 'Links' : 'Rechts'}</span><b>${S[k] != null ? deInt(S[k]) + '°' : '–'}</b><small>${S[k] != null ? esc(M[k] || 'eingetragen') : 'offen'}</small></button>`).join('')}</div>
+      <div class="mess-btns"><button class="btn" data-mess="sensor">${I.sensor}Sensor</button><button class="btn ghost" data-mess="kamera">${I.cam}Kamera</button></div>
+      <button class="link" data-hand>${I.edit}Von Hand eintragen</button>
+      <div class="hand" data-handbox hidden><div class="stepper"><button data-step="-1" aria-label="weniger">−</button>
+        <span class="num"><input inputmode="decimal" data-val value="${cur}" aria-label="Streckdefizit ${se === 'l' ? 'links' : 'rechts'}"><span>Grad Streckdefizit ${se === 'l' ? 'links' : 'rechts'}</span></span>
+        <button data-step="1" aria-label="mehr">+</button></div><button class="btn wide" data-take>Wert übernehmen</button></div>`;
   } else {
     const cur = v ?? tk.def;
     ctl = `<div class="stepper"><button data-step="-1" aria-label="weniger">−</button>
@@ -283,14 +298,24 @@ function testRow(tk, fit, open) {
   return `<div class="test ${done ? 'done' : ''} ${open ? 'open' : ''}" data-test="${tk.k}">
     <button class="test-h" aria-expanded="${!!open}">
       <span class="tick"><span class="dot"></span>${I.check}</span>
-      <span class="t"><b>${esc(tk.n)}</b><span>${esc(tk.sub)}</span></span>
+      <span class="t"><b>${esc(tk.n)}</b><span>${esc(tk.k === 'ake' && fit.t.akeS ? ['l', 'r'].filter(k => fit.t.akeS[k] != null).map(k => (k === 'l' ? 'links ' : 'rechts ') + deInt(fit.t.akeS[k]) + '°').join(' · ') + ' · der höhere Wert zählt' : tk.sub)}</span></span>
       <span class="val">${shown ? esc(shown) : `<span class="link" style="pointer-events:none">${tk.k === 'vorfuss' ? 'Eintragen' : 'Messen'}</span>`}${rt ? `<small class="c-${rt[0]}">${rt[1]}</small>` : ''}</span>
     </button>
     <div class="test-b"><div><div class="test-in"><p class="how">${esc(tk.how)}</p>${ctl}</div></div></div>
   </div>`;
 }
 
-let offenTest = null;
+let offenTest = null, akeSel = null;
+const akeSide = fit => { const S = fit.t.akeS || {}; if (akeSel) return akeSel; return S.l == null ? 'l' : S.r == null ? 'r' : 'l'; };
+function setAke(fit, side, v, wie) {
+  const S = fit.t.akeS = fit.t.akeS || {}, M = fit.t.akeM = fit.t.akeM || {};
+  S[side] = Math.round(Math.min(90, Math.max(0, v))); M[side] = wie;
+  fit.t.ake = Math.max(...['l', 'r'].filter(k => S[k] != null).map(k => S[k]));
+  save();
+  const other = side === 'l' ? 'r' : 'l';
+  if (S[other] == null) { akeSel = other; offenTest = 'ake'; }
+  else { akeSel = null; offenTest = (TESTS.find(t => t.pflicht && fit.t[t.k] == null) || TESTS.find(t => t.k === 'vorfuss' && !fit.t.vorfuss) || {}).k || ''; }
+}
 function vUnters(f, fit) {
   const r = rad(f, fit.radId), offen = pflichtOffen(fit), s = startwerte(fit, r);
   if (offenTest === null) offenTest = (TESTS.find(t => t.pflicht && fit.t[t.k] == null) || {}).k || '';
@@ -325,7 +350,7 @@ function bind() {
   app.querySelectorAll('[data-new-fit]').forEach(b => b.onclick = () => {
     const f = fahrer(b.dataset.newFit);
     const fit = { id: uid(), datum: new Date().toISOString(), radId: f.raeder[0]?.id, ziele: [], beschw: [], t: {}, schritt: 1, fertig: false };
-    (f.fits = f.fits || []).push(fit); save(); offenTest = null; go(`#/fit/${fit.id}/1`);
+    (f.fits = f.fits || []).push(fit); save(); offenTest = null; akeSel = null; go(`#/fit/${fit.id}/1`);
   });
   const segs = root => root.querySelectorAll('[data-seg]').forEach(s => s.querySelectorAll('button').forEach(b => b.onclick = () => {
     s.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b)); }));
@@ -390,7 +415,7 @@ function bindZiel(f, fit) {
     fit.radId = b.dataset.v; save();
     b.parentNode.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b));
   });
-  $('#weiter').onclick = () => { if (fit.schritt < 2) fit.schritt = 2; save(); offenTest = null; go(`#/fit/${fit.id}/2`); };
+  $('#weiter').onclick = () => { if (fit.schritt < 2) fit.schritt = 2; save(); offenTest = null; akeSel = null; go(`#/fit/${fit.id}/2`); };
 }
 
 function bindUnters(f, fit) {
@@ -405,6 +430,7 @@ function bindUnters(f, fit) {
     };
     const inp = el.querySelector('[data-val]');
     const commit = (v, weiter) => {
+      if (tk.k === 'ake') { if (weiter) { setAke(fit, akeSide(fit), v, 'von Hand'); rerender(); } return; }
       v = Math.min(tk.max, Math.max(tk.min, Math.round(v / tk.step) * tk.step));
       fit.t[tk.k] = +v.toFixed(2);
       if (tk.k === 'bld' && !fit.t.bldSeite) fit.t.bldSeite = 'r';
@@ -418,13 +444,21 @@ function bindUnters(f, fit) {
       const show = v => { inp.value = tk.d ? de(v, tk.d) : v; const s = el.querySelector('[data-bldside]'); if (s) s.hidden = !(v > 0); };
       el.querySelectorAll('[data-step]').forEach(b => b.onclick = () => {
         const v = Math.min(tk.max, Math.max(tk.min, +(cur() + tk.step * +b.dataset.step).toFixed(2)));
-        show(v); if (fit.t[tk.k] != null) commit(v, false);
+        show(v); if (fit.t[tk.k] != null && tk.k !== 'ake') commit(v, false);
       });
-      inp.onchange = () => { const v = Math.min(tk.max, Math.max(tk.min, cur())); show(v); if (fit.t[tk.k] != null) commit(v, false); };
+      inp.onchange = () => { const v = Math.min(tk.max, Math.max(tk.min, cur())); show(v); if (fit.t[tk.k] != null && tk.k !== 'ake') commit(v, false); };
       inp.onfocus = () => inp.select();
       const take = el.querySelector('[data-take]');
       if (take) take.onclick = () => commit(cur(), true);
     }
+    el.querySelectorAll('[data-akeside]').forEach(b => b.onclick = () => { akeSel = b.dataset.akeside; offenTest = 'ake'; rerender(); });
+    const hand = el.querySelector('[data-hand]');
+    if (hand) hand.onclick = () => { const bx = el.querySelector('[data-handbox]'); bx.hidden = !bx.hidden; hand.setAttribute('aria-expanded', !bx.hidden); };
+    el.querySelectorAll('[data-mess]').forEach(b => b.onclick = () => {
+      const side = akeSide(fit);
+      if (!window.RFMess) { toast('Messung nicht geladen'); return; }
+      RFMess.open({ art: b.dataset.mess, seite: side, onDone: v => { setAke(fit, side, v, b.dataset.mess === 'kamera' ? 'Kamera' : 'Sensor'); rerender(); toast(`${side === 'l' ? 'Links' : 'Rechts'} ${v}° eingetragen`); } });
+    });
     el.querySelectorAll('[data-seg-bld] button').forEach(b => b.onclick = () => {
       fit.t.bldSeite = b.dataset.v; save(); b.parentNode.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b));
       const d = $('#doku'); if (d) d.textContent = dokuText(f, fit);
