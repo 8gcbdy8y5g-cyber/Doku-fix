@@ -138,7 +138,7 @@ function render() {
     const [f, fit] = fitById(p[1]);
     if (!fit) { go('#/'); return; }
     side = false;
-    body = p[2] === '2' ? vUnters(f, fit) : p[2] === '3' || p[2] === '4' ? vAufbau(f, fit) : p[2] === '5' ? vErgebnis(f, fit) : vZiel(f, fit);
+    body = p[2] === '2' ? vUnters(f, fit) : p[2] === '3' || p[2] === '4' ? vAufbau(f, fit) : p[2] === '5' ? vErgebnis(f, fit) : p[2] === '7' ? vVorschlag(f, fit) : p[2] === '7e' ? vAendern(f, fit) : p[2] === '8' ? vVergleich(f, fit) : vZiel(f, fit);
   } else { go('#/'); return; }
 
   const hasSide = side && D.fahrer.length > 0;
@@ -397,7 +397,10 @@ function bindAufbau(f, fit) {
   $('#kamstart').onclick = () => {
     if (!window.RFAuf) { toast('Aufnahme nicht geladen'); return; }
     RFAuf.open({ fahrer: f, fit, quelle: window.__rfQuelle, onDone: res => {
-      (fit.mess = fit.mess || []).push(res); fit.schritt = 5; save(); go(`#/fit/${fit.id}/5`);
+      (fit.mess = fit.mess || []).push(res);
+      const offen = (fit.aend || []).find(a => a.nachIdx == null);
+      if (offen) { offen.nachIdx = fit.mess.length - 1; fit.schritt = 8; save(); go(`#/fit/${fit.id}/8`); return; }
+      fit.schritt = 5; save(); go(`#/fit/${fit.id}/5`);
     } });
   };
 }
@@ -414,8 +417,9 @@ const ERG = [
 ];
 const ampel = (v, z) => !z ? null : v >= z[0] && v <= z[1] ? 'ok' : (v < z[0] ? z[0] - v : v - z[1]) <= 5 ? 'warn' : 'bad';
 function knieSatz(v) {
-  if (v < 30) return `Knie unten ${deInt(v)}°, stärker gebeugt als 30–40°. Der Sattel steht eher zu tief.`;
-  if (v > 40) return `Knie unten ${deInt(v)}°, gestreckter als 30–40°. Der Sattel steht eher zu hoch.`;
+  if (v < 30) return `Knie unten ${deInt(v)}°, gestreckter als 30–40°. Der Sattel steht eher zu hoch.`;
+  /* Beugung klein = Bein fast gestreckt = Sattel hoch */
+  if (v > 40) return `Knie unten ${deInt(v)}°, stärker gebeugt als 30–40°. Der Sattel steht eher zu tief.`;
   return `Knie unten ${deInt(v)}°, im Zielbereich 30–40°. Die Sattelhöhe passt.`;
 }
 const messText = m => {
@@ -433,7 +437,7 @@ function vErgebnis(f, fit) {
       <h1>Ergebnis seitlich</h1>
       <p class="lead">${esc(knieSatz(kn))}</p>
       <div class="big-knie ${ampel(kn, [30, 40])}"><span>Knie unten</span><b>${deInt(kn)}°</b><small>± ${de(w.knieUnten.sd)}° über ${m.n} Umdrehungen · Ziel 30–40°</small></div>
-      <div class="actions"><button class="btn ghost" id="neu">Neu messen</button><button class="btn" data-go="#/f/${f.id}">Fertig</button></div>
+      <div class="actions"><button class="btn ghost" id="neu">Neu messen</button><button class="btn" data-go="#/fit/${fit.id}/7">Vorschläge</button></div>
     </div>
     <div class="right">
       ${m.bild ? `<div class="still"><img src="${m.bild}" alt="Standbild mit eingezeichneten Winkeln, Pedal unten"></div>` : ''}
@@ -452,6 +456,143 @@ function bindErgebnis(f, fit) {
   const k = $('#kopie');
   if (k && m) k.onclick = async () => { try { await navigator.clipboard.writeText(messText(m)); k.textContent = 'Kopiert'; k.classList.add('ok'); setTimeout(() => { k.textContent = 'Kopieren'; k.classList.remove('ok'); }, 1600); } catch { toast('Kopieren nicht möglich'); } };
   if (!m) bindAufbau(f, fit);
+}
+
+/* ---------- Schritt 7 und 8: Vorschläge, Änderung, Vergleich (Entwurf, fachlich prüfen) ---------- */
+const AEND = {
+  sattelhoehe: { n: 'Sattelhöhe', u: 'mm', tx: v => `Sattel ${Math.abs(v)} mm ${v < 0 ? 'tiefer' : 'höher'}`, step: 1 },
+  sattelversatz: { n: 'Sattel vor/zurück', u: 'mm', tx: v => `Sattel ${Math.abs(v)} mm ${v < 0 ? 'nach vorn' : 'nach hinten'}`, step: 1 },
+  sattelneigung: { n: 'Sattelneigung', u: '°', tx: v => `Sattelspitze ${Math.abs(v)}° ${v < 0 ? 'nach unten' : 'nach oben'}`, step: 1 },
+  cleat: { n: 'Cleat längs', u: 'mm', tx: v => `Cleat ${Math.abs(v)} mm ${v < 0 ? 'nach vorn' : 'nach hinten'}`, step: 1 },
+  front: { n: 'Front höher/tiefer', u: 'mm', tx: v => `Lenker ${Math.abs(v)} mm ${v < 0 ? 'tiefer' : 'höher'}`, step: 5 },
+  vorbau: { n: 'Vorbaulänge', u: 'mm', tx: v => `Vorbau ${Math.abs(v)} mm ${v < 0 ? 'kürzer' : 'länger'}`, step: 10 }
+};
+/* 1° Kniebeugung entspricht bei normaler Beinlänge etwa 2,5 mm Sattelhöhe (Geometrie Oberschenkel/Unterschenkel je ~45 cm) */
+const MM_PRO_GRAD = 2.5;
+function vorschlaege(f, fit) {
+  const m = (fit.mess || []).slice(-1)[0]; if (!m) return [];
+  const w = m.werte, b = fit.beschw || [], t = fit.t || {}, out = [];
+  /* Fuß zuerst */
+  if (b.includes('Füße')) out.push({ g: 0, typ: 'cleat', wert: 2, titel: 'Cleat 2 mm nach hinten', grund: 'Brennende oder taube Füße kommen oft von einem zu weit vorn sitzenden Cleat. Kleine Schritte, 2 mm reichen für den Anfang.', q: 'Erfahrungswert' });
+  const vf = t.vorfuss; if (vf && !vf.skip && (vf.l === 'Varus' || vf.r === 'Varus' || vf.l === 'Valgus' || vf.r === 'Valgus') && b.includes('Knie seitlich'))
+    out.push({ g: 0, typ: null, titel: 'Keil am Cleat prüfen', grund: `Vorfuß ${vf.l === vf.r ? vf.l : 'li. ' + (vf.l || '–') + ', re. ' + (vf.r || '–')} und Knie seitlich. Ob ein Keil hilft, zeigt erst die Frontansicht.`, q: 'Hannaford' });
+  /* Sattel */
+  const K = w.knieUnten.m;
+  if (K < 30 || K > 40) {
+    let mm = Math.round(Math.min(10, Math.max(3, Math.abs(K - 35) * MM_PRO_GRAD)));
+    const v = K < 30 ? -mm : mm;
+    let grund = `Knie unten ${deInt(K)}° statt 30–40°${K < 30 ? ', das Bein ist unten fast gestreckt' : ', das Knie bleibt unten zu stark gebeugt'}.`;
+    if (K < 30 && w.sprungUnten.m > 123) grund += ` Die Fußspitze zeigt unten stark nach unten (${deInt(w.sprungUnten.m)}°), oft ein Ausgleich für einen zu hohen Sattel.`;
+    if (b.includes('Knie vorn') && K > 40) grund += ' Passt zu den Beschwerden vorn am Knie.';
+    if (b.includes('Knie hinten') && K < 30) grund += ' Passt zu den Beschwerden hinten am Knie.';
+    grund += ' Höchstens 10 mm auf einmal, dann neu messen; lieber etwas zu tief als zu hoch.';
+    out.push({ g: 1, typ: 'sattelhoehe', wert: v, titel: AEND.sattelhoehe.tx(v), grund, q: 'Bini 2011 · Ferrer-Roca 2012 · Hogg' });
+  }
+  if (b.includes('LWS')) out.push({ g: 1, typ: 'sattelneigung', wert: -3, titel: 'Sattelspitze 3° nach unten', grund: 'Bei Rückenschmerzen entlastet eine nach vorn geneigte Sattelfläche, in Studien bis 10–15°. In kleinen Schritten anfangen.', q: 'Barrajón 2026' });
+  /* Lenker */
+  const nacken = b.includes('Nacken') || b.includes('Taube Hände');
+  if (w.rumpf.m < 30 || (nacken && (t.ake > 30 || w.ellbogen.m < 11)))
+    out.push({ g: 2, typ: 'front', wert: 10, titel: 'Lenker 10 mm höher', grund: `Rumpf ${deInt(w.rumpf.m)}° zur Waagerechten, Ellenbogen ${deInt(w.ellbogen.m)}°${t.ake != null ? `, Knie-Extension mit ${deInt(t.ake)}° Defizit` : ''}${nacken ? ', dazu Nacken oder taube Hände' : ''}. Spacer unter den Vorbau.`, q: 'Holliday & Swart 2021 · Erfahrungswert' });
+  else if (w.schulter.m > 119) out.push({ g: 2, typ: 'vorbau', wert: -10, titel: 'Vorbau 10 mm kürzer', grund: `Schulter ${deInt(w.schulter.m)}° (Richtwert 105–119°), die Arme sind lang gestreckt.`, q: 'Holliday & Swart 2021' });
+  out.sort((a, c) => a.g - c.g);
+  return out;
+}
+const GRP = ['Zuerst · Fuß', 'Dann · Sattel', 'Zum Schluss · Lenker'];
+function vVorschlag(f, fit) {
+  const vs = vorschlaege(f, fit), m = (fit.mess || []).slice(-1)[0];
+  if (!m) return vAufbau(f, fit);
+  return `<div class="flow">
+    <div class="left">
+      <div class="bar"><button class="back" data-go="#/fit/${fit.id}/5">${I.back}Ergebnis</button></div>
+      ${stepsBar(7)}
+      <h1>Schritt für Schritt</h1>
+      <p class="lead">Die Reihenfolge folgt dem Bikefit: Fuß, Sattel, Lenker. Immer nur eine Änderung, dann neu messen. Du entscheidest.</p>
+      <p class="note">Entwurf, fachlich prüfen. Zielbereiche sind Richtwerte, kein Ersatz für den Blick auf den tretenden Fahrer.</p>
+      <div class="actions">${vs.length && vs[0].typ ? `<button class="btn" data-go="#/fit/${fit.id}/7e">Vorschlag 1 umsetzen</button>` : `<button class="btn" data-go="#/f/${f.id}">Fertig</button>`}</div>
+    </div>
+    <div class="right">
+      ${vs.length ? vs.map((v, i) => `<div class="vor ${i === 0 ? 'erst' : ''}">
+        <div class="vor-h"><span class="n">${i + 1}</span><span>${i === 0 ? 'Zuerst' : 'Danach'} · ${['Fuß', 'Sattel', 'Lenker'][v.g]}</span></div>
+        <b>${esc(v.titel)}</b><p>${esc(v.grund)}</p><small>${esc(v.q)}</small>
+        ${i > 0 && v.typ ? `<button class="link" data-wahl="${i}">Stattdessen diesen umsetzen</button>` : ''}</div>`).join('')
+        : `<div class="vor erst"><b>Nichts ändern</b><p>Knie unten ${deInt(m.werte.knieUnten.m)}° liegt im Zielbereich, und keine Beschwerde spricht für eine Änderung. Nach 6 bis 8 Wochen Fahren noch einmal messen.</p><small>Hogg</small></div>`}
+    </div></div>`;
+}
+let wahl = 0;
+function bindVorschlag(f, fit) { wahl = 0; app.querySelectorAll('[data-wahl]').forEach(b => b.onclick = () => { wahl = +b.dataset.wahl; go(`#/fit/${fit.id}/7e`); }); }
+function vAendern(f, fit) {
+  const vs = vorschlaege(f, fit).filter(v => v.typ), v = vs[Math.min(wahl, vs.length - 1)] || { typ: 'sattelhoehe', wert: 0 };
+  const r = rad(f, fit.radId);
+  return `<div class="flow">
+    <div class="left">
+      <div class="bar"><button class="back" data-go="#/fit/${fit.id}/7">${I.back}Vorschläge</button></div>
+      ${stepsBar(7)}
+      <h1>Was hast du geändert?</h1>
+      <p class="lead">Trag ein, was du am Rad wirklich verstellt hast. Nur so passt der Vergleich vorher und nachher.</p>
+      <div class="tipp"><b>Tipp</b><span>Vorher die Sattelstütze mit Klebeband markieren. Dann ist der Weg zurück jederzeit möglich.</span></div>
+      <div class="actions"><button class="btn" id="geaendert">Geändert, neu messen</button></div>
+    </div>
+    <div class="right">
+      <div class="aend" data-typ="${v.typ}">
+        <div class="aend-h"><b id="atitel">${esc(AEND[v.typ].n)}</b><span>Vorschlag ${esc(v.titel || '')}</span></div>
+        <div class="stepper"><button data-astep="-1" aria-label="weniger">−</button>
+          <span class="num"><input inputmode="numeric" id="awert" value="${v.wert}" aria-label="Änderung"><span id="aunit">${AEND[v.typ].u}${v.typ === 'sattelhoehe' && r?.sattel ? ' · jetzt ' + de(r.sattel) + ' cm' : ''}</span></span>
+          <button data-astep="1" aria-label="mehr">+</button></div>
+        <p class="note" id="arich">${esc(AEND[v.typ].tx(v.wert || 0))}</p>
+      </div>
+      <h2>Stattdessen etwas anderes verstellt?</h2>
+      <div class="chips" id="atypen">${Object.entries(AEND).map(([k, a]) => `<button class="chip" aria-pressed="${k === v.typ}" data-v="${k}">${I.check}${a.n}</button>`).join('')}</div>
+      <div class="warn-box">Mehr als eine Änderung auf einmal? Dann lässt sich nicht sagen, welche gewirkt hat.</div>
+    </div></div>`;
+}
+function bindAendern(f, fit) {
+  const box = $('.aend'), inp = $('#awert');
+  const upd = () => { const t = box.dataset.typ, v = parseInt(inp.value, 10) || 0; $('#arich').textContent = v ? AEND[t].tx(v) : 'Keine Änderung eingetragen'; };
+  app.querySelectorAll('[data-astep]').forEach(b => b.onclick = () => { const t = box.dataset.typ; inp.value = (parseInt(inp.value, 10) || 0) + AEND[t].step * +b.dataset.astep; upd(); });
+  inp.oninput = upd;
+  app.querySelectorAll('#atypen button').forEach(b => b.onclick = () => {
+    box.dataset.typ = b.dataset.v; $('#atitel').textContent = AEND[b.dataset.v].n; $('#aunit').textContent = AEND[b.dataset.v].u; inp.value = 0; upd();
+    app.querySelectorAll('#atypen button').forEach(x => x.setAttribute('aria-pressed', x === b));
+  });
+  $('#geaendert').onclick = () => {
+    const typ = box.dataset.typ, wert = parseInt(inp.value, 10) || 0;
+    if (!wert) { toast('Bitte eintragen, um wie viel du verstellt hast'); return; }
+    const r = rad(f, fit.radId);
+    if (typ === 'sattelhoehe' && r && r.sattel) r.sattel = Math.round((r.sattel + wert / 10) * 10) / 10;
+    (fit.aend = fit.aend || []).push({ typ, wert, datum: new Date().toISOString(), vorIdx: fit.mess.length - 1, nachIdx: null });
+    fit.schritt = 3; save(); go(`#/fit/${fit.id}/3`); toast('Gespeichert. Jetzt neu messen.');
+  };
+}
+const VGL = [['knieUnten', 'Knie unten', [30, 40]], ['knieOben', 'Knie oben'], ['sprungUnten', 'Sprunggelenk unten', [109, 123]], ['rumpf', 'Rumpf', [30, 60]], ['schulter', 'Schulter', [105, 119]], ['ellbogen', 'Ellenbogen', [11, 27]]];
+function vergleichText(fit, a) {
+  const v = fit.mess[a.vorIdx].werte, n = fit.mess[a.nachIdx].werte;
+  return `Bikefit, Videoanalyse seitlich beim Treten. Änderung: ${AEND[a.typ].tx(a.wert)}. Kniebeugung unten von ${deInt(v.knieUnten.m)}° auf ${deInt(n.knieUnten.m)}° (Ziel 30–40°), Sprunggelenk unten von ${deInt(v.sprungUnten.m)}° auf ${deInt(n.sprungUnten.m)}°, Rumpf von ${deInt(v.rumpf.m)}° auf ${deInt(n.rumpf.m)}°, Ellenbogen von ${deInt(v.ellbogen.m)}° auf ${deInt(n.ellbogen.m)}°.`;
+}
+function vVergleich(f, fit) {
+  const a = (fit.aend || []).filter(x => x.nachIdx != null).slice(-1)[0];
+  if (!a) return vVorschlag(f, fit);
+  const v = fit.mess[a.vorIdx].werte, n = fit.mess[a.nachIdx].werte, r = rad(f, fit.radId);
+  const kv = v.knieUnten.m, kn = n.knieUnten.m, ok = kn >= 30 && kn <= 40;
+  return `<div class="flow">
+    <div class="left">
+      <div class="bar"><button class="back" data-go="#/fit/${fit.id}/7">${I.back}Vorschläge</button></div>
+      ${stepsBar(8)}
+      <h1>Vorher, nachher</h1>
+      <p class="lead">Nach ${esc(AEND[a.typ].tx(a.wert))}: Knie unten von ${deInt(kv)}° auf ${deInt(kn)}°. ${ok ? 'Jetzt im Zielbereich.' : 'Noch nicht im Zielbereich, ein weiterer kleiner Schritt kann helfen.'}</p>
+      ${r?.sattel ? `<div class="ziel-last"><div><span>Sattelhöhe jetzt</span><b>${de(r.sattel)} <small>cm</small></b></div><div><span>Änderungen</span><b>${fit.aend.length}</b></div></div>` : ''}
+      <div class="actions"><button class="btn ghost" data-go="#/fit/${fit.id}/7">Nächste Änderung</button><button class="btn" data-go="#/f/${f.id}">Fertig</button></div>
+    </div>
+    <div class="right">
+      <div class="erg vgl"><div class="erg-row head"><div>Wert</div><div>Vorher</div><div>Nachher</div><div>Ziel</div></div>
+        ${VGL.map(([k, nm, z]) => { const a1 = ampel(v[k].m, z), a2 = ampel(n[k].m, z);
+          return `<div class="erg-row"><div class="t"><b>${nm}</b></div><div class="v sm ${a1 ? 'c-' + a1 : ''}">${deInt(v[k].m)}°</div><div class="v ${a2 ? 'c-' + a2 : ''}">${deInt(n[k].m)}°</div><div class="z">${z ? z[0] + '–' + z[1] + '°' : '–'}</div></div>`; }).join('')}</div>
+      <div class="copy"><div class="head"><h2>Text für die Doku</h2><button id="kopie">Kopieren</button></div><p>${esc(vergleichText(fit, a))}</p></div>
+      <p class="note">PDF-Bericht und Frontansicht kommen als Nächstes.</p>
+    </div></div>`;
+}
+function bindVergleich(f, fit) {
+  const a = (fit.aend || []).filter(x => x.nachIdx != null).slice(-1)[0], k = $('#kopie');
+  if (k && a) k.onclick = async () => { try { await navigator.clipboard.writeText(vergleichText(fit, a)); k.textContent = 'Kopiert'; k.classList.add('ok'); setTimeout(() => { k.textContent = 'Kopieren'; k.classList.remove('ok'); }, 1600); } catch { toast('Kopieren nicht möglich'); } };
 }
 
 /* ---------- Ereignisse ---------- */
@@ -508,7 +649,7 @@ function bind() {
   const h = location.hash.split('/');
   if (h[1] === 'fit') {
     const [f, fit] = fitById(h[2]);
-    if (h[3] === '1') bindZiel(f, fit); else if (h[3] === '2') bindUnters(f, fit); else if (h[3] === '5') bindErgebnis(f, fit); else bindAufbau(f, fit);
+    if (h[3] === '1') bindZiel(f, fit); else if (h[3] === '2') bindUnters(f, fit); else if (h[3] === '5') bindErgebnis(f, fit); else if (h[3] === '7') bindVorschlag(f, fit); else if (h[3] === '7e') bindAendern(f, fit); else if (h[3] === '8') bindVergleich(f, fit); else bindAufbau(f, fit);
   }
 }
 

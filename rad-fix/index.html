@@ -441,6 +441,30 @@ input::placeholder{color:var(--muted);opacity:.8;font-weight:500}
 }
 @media (max-width:899px){.live-werte{grid-template-columns:repeat(2,minmax(0,1fr))}.live-werte>div:nth-child(3){border-left:0}.live-werte>div:nth-child(n+3){border-top:1px solid var(--line)}}
 
+/* Schritt 7 und 8 */
+.vor{background:var(--card);border-radius:var(--r-l);padding:18px 20px;display:flex;flex-direction:column;gap:6px;box-shadow:var(--shadow)}
+.vor-h{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.vor-h .n{width:30px;height:30px;border-radius:50%;background:var(--fill);color:var(--fg);display:grid;place-items:center;font-size:14px;letter-spacing:0}
+.vor b{font-size:22px;font-weight:800;line-height:1.2}
+.vor p{margin:0;font-size:15.5px;color:var(--muted);max-width:60ch}
+.vor small{font-size:12.5px;font-weight:700;color:var(--muted)}
+.vor.erst{background:var(--hit);color:var(--on-hit)}
+.vor.erst b{font-size:28px;font-weight:900}
+.vor.erst p,.vor.erst small,.vor.erst .vor-h{color:var(--hit-ink)}
+.vor.erst .vor-h .n{background:#1a1a1a;color:var(--hit)}
+.tipp{background:rgba(26,26,26,.06);border-radius:var(--r-m);padding:12px 14px;display:flex;flex-direction:column;gap:2px;font-size:15px}
+.tipp b{font-size:13px}
+.aend{background:var(--card);border-radius:var(--r-l);padding:18px;display:flex;flex-direction:column;gap:12px;box-shadow:inset 0 0 0 2px var(--sig)}
+.aend-h{display:flex;justify-content:space-between;gap:12px;align-items:baseline;flex-wrap:wrap}
+.aend-h b{font-size:20px;font-weight:800}
+.aend-h span{font-size:14px;font-weight:700;color:var(--muted)}
+.warn-box{background:var(--warn-soft);border-radius:var(--r-m);padding:12px 14px;font-size:15px}
+.vgl .erg-row{grid-template-columns:minmax(0,1.4fr) repeat(3,minmax(0,.8fr))}
+.vgl .erg-row>div:not(.t){text-align:right}
+.vgl .head>div:first-child{text-align:left}
+.vgl .head{font-size:12.5px;font-weight:800;color:var(--muted);letter-spacing:.04em;padding-top:10px;padding-bottom:10px}
+.vgl .v.sm{font-size:20px;font-weight:700}
+
 /* iPad: Liste links, Inhalt rechts; Ablauf zweispaltig */
 @media (min-width:900px){
   .app.has-side .side{display:flex;flex-direction:column;gap:14px;width:var(--side);flex:0 0 var(--side);border-right:1px solid var(--line);

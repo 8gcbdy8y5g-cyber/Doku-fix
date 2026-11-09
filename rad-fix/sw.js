@@ -1,6 +1,6 @@
 // Rad-Fix: eigener Service Worker, damit die App offline startet.
 // Erst Netz (neue Fassung kommt an), ohne Netz die gespeicherte Datei.
-const CACHE = 'radfix-v3';
+const CACHE = 'radfix-v4';
 const KERN = ['./', './index.html', './app.js', './kern.js', './messung.js', './aufnahme.js', './erkennung.js', './mp/vision_bundle.mjs', './fonts/outfit-latin-wght-normal.woff2', './manifest.webmanifest', './icon.svg', './icon-180.png', './icon-192.png', './icon-512.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(KERN)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k.startsWith('radfix-') && k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
