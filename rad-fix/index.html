@@ -11,6 +11,8 @@
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <title>Rad-Fix</title>
+<script>/* Gestaltungsvorschlag zum Ansehen: ?look=a|b|c, sonst Standard */
+try{const q=new URLSearchParams(location.search).get('look');if(q!==null){q?localStorage.setItem('radfix.look',q):localStorage.removeItem('radfix.look')}const l=localStorage.getItem('radfix.look');if(l)document.documentElement.dataset.look=l}catch(e){}</script>
 <style>
 @font-face{font-family:"Outfit";font-style:normal;font-display:swap;font-weight:100 900;src:url(fonts/outfit-latin-wght-normal.woff2) format("woff2")}
 :root{
@@ -236,13 +238,13 @@ input::placeholder{color:var(--muted);opacity:.8;font-weight:500}
 
 /* Seiten und Messknöpfe im Test */
 .sides{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.side{border:1px solid var(--line);background:var(--bg);border-radius:var(--r-m);padding:12px 14px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:0;
+.lr{border:1px solid var(--line);background:var(--bg);border-radius:var(--r-m);padding:12px 14px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:0;
   transition:background-color .18s ease,border-color .18s ease,transform .16s var(--ease-out)}
-.side:active{transform:scale(.97)}
-.side span{font-weight:700;font-size:14px;color:var(--muted)}
-.side b{font-size:34px;font-weight:900;line-height:1.1}
-.side small{font-size:13px;color:var(--muted);font-weight:600}
-.side[aria-pressed="true"]{border-color:var(--tape);background:var(--tape-soft);box-shadow:inset 0 0 0 1px var(--tape)}
+.lr:active{transform:scale(.97)}
+.lr span{font-weight:700;font-size:14px;color:var(--muted)}
+.lr b{font-size:34px;font-weight:900;line-height:1.1}
+.lr small{font-size:13px;color:var(--muted);font-weight:600}
+.lr[aria-pressed="true"]{border-color:var(--tape);background:var(--tape-soft);box-shadow:inset 0 0 0 1px var(--tape)}
 .mess-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .mess-btns .btn{padding:0 14px}
 .hand{display:flex;flex-direction:column;gap:12px}
@@ -313,7 +315,65 @@ input::placeholder{color:var(--muted);opacity:.8;font-weight:500}
   .mess-stage.dial{min-height:200px}
   .mess-act{order:99;position:sticky;bottom:0;background:linear-gradient(to top,var(--bg) 70%,transparent);margin:0 -18px;padding:18px 18px max(4px,env(safe-area-inset-bottom))}
 }
-@media (prefers-reduced-motion:reduce){.mess{transform:none}.side:active{transform:none}}
+@media (prefers-reduced-motion:reduce){.mess{transform:none}.lr:active{transform:none}}
+
+
+/* ===== Vorschlag A · Pedalbahn: gleiche Farben, eigenes Motiv aus dem Symbol ===== */
+[data-look="a"] h1::after{content:"";display:block;width:84px;height:6px;margin-top:16px;
+  background:radial-gradient(circle,var(--hit) 2.6px,transparent 3.2px) 0 50%/12px 6px repeat-x}
+[data-look="a"] .ava{box-shadow:0 0 0 2px var(--bg),0 0 0 4px transparent;outline:2px dotted var(--line);outline-offset:3px}
+[data-look="a"] .row[aria-current="page"] .ava{outline-color:var(--hit)}
+[data-look="a"] .ring{display:flex;align-items:center;gap:14px}
+[data-look="a"] .ring svg{width:64px;height:64px;flex:0 0 auto}
+[data-look="a"] .ring b{display:block;font-size:15px;font-weight:800}
+[data-look="a"] .ring span{display:block;font-size:13.5px;color:var(--muted);font-weight:600}
+[data-look="a"] .btn:not(.ghost):not(.quiet)::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor;opacity:.85;margin-right:2px}
+
+/* ===== Vorschlag B · Trikot: Lindgrün als Fläche, Fahrer als Startnummer ===== */
+[data-look="b"] .view>h1,[data-look="b"] .empty h1{background:var(--hit);color:var(--on-hit);padding:22px 22px 20px;border-radius:24px;margin-top:6px}
+@media (max-width:899px){[data-look="b"] .flow h1{background:var(--hit);color:var(--on-hit);padding:20px 20px 18px;border-radius:22px}}
+[data-look="b"] .ava{width:50px;height:40px;border-radius:7px;background:#f3f6ec;color:#1a1a1a;font-weight:900;font-size:17px;position:relative}
+[data-look="b"] .ava::before,[data-look="b"] .ava::after{content:"";position:absolute;top:5px;width:4px;height:4px;border-radius:50%;background:#1a1a1a;opacity:.45}
+[data-look="b"] .ava::before{left:6px}[data-look="b"] .ava::after{right:6px}
+[data-look="b"] .row .ava svg{width:20px;height:20px}
+[data-look="b"] .row[aria-current="page"] .ava{background:var(--hit)}
+[data-look="b"] .side .row[aria-current="page"]{background:var(--card)}
+@media (min-width:900px){
+  [data-look="b"] .flow>.left{background:var(--hit);color:var(--on-hit);border-radius:28px;padding:22px 26px 26px;top:16px;min-height:calc(100dvh - 92px)}
+  [data-look="b"] .flow>.left h1{background:none;padding:0;color:var(--on-hit);font-size:40px}
+  [data-look="b"] .flow>.left .lead{color:var(--hit-ink)}
+  [data-look="b"] .flow>.left .back{color:var(--on-hit)}
+  [data-look="b"] .flow>.left .steps li{background:rgba(26,26,26,.15)}
+  [data-look="b"] .flow>.left .steps li.done,[data-look="b"] .flow>.left .steps li.now{background:#1a1a1a}
+  [data-look="b"] .flow>.left .steps span{color:var(--hit-ink)}
+  [data-look="b"] .flow>.left .btn{background:#1a1a1a;color:var(--hit)}
+  [data-look="b"] .flow>.left .btn:disabled{opacity:.35}
+  [data-look="b"] .flow>.left .todo{background:rgba(26,26,26,.08);box-shadow:none}
+  [data-look="b"] .flow>.left .todo span{color:var(--hit-ink)}
+  [data-look="b"] .flow>.left .start{background:#1a1a1a;color:#f3f6ec}
+  [data-look="b"] .flow>.left .start p,[data-look="b"] .flow>.left .start .src{color:#a3a99a}
+  [data-look="b"] .flow>.left .start .split{border-color:#333}
+  [data-look="b"] .flow>.left .start .big b{color:var(--hit)}
+}
+
+/* ===== Vorschlag C · Radcomputer: Datenfelder wie am Lenker ===== */
+:root[data-look="c"]{--bg:#121416;--card:#1b1e21;--raise:#22262a;--fill:#24282c;--line:#2e3337;--r-l:14px;--r-m:10px;--shadow:none}
+@media (prefers-color-scheme:light){:root[data-look="c"]:not([data-theme="dark"]){--bg:#f3f5ee;--card:#fff;--fill:#e9ece2;--line:#d9ddd0;--raise:#fff}}
+[data-look="c"] .list,[data-look="c"] .facts,[data-look="c"] .form,[data-look="c"] .tests,[data-look="c"] .focus,[data-look="c"] .copy,[data-look="c"] .todo{box-shadow:inset 0 0 0 1px var(--line)}
+[data-look="c"] .facts{gap:0}
+[data-look="c"] .fact span{font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;font-weight:800}
+[data-look="c"] .fact b{font-size:36px;font-weight:900;letter-spacing:-.02em}
+[data-look="c"] .fact:last-child b{color:var(--hit)}
+[data-look="c"] .ava{border-radius:10px}
+[data-look="c"] .lap{display:flex;align-items:baseline;gap:10px}
+[data-look="c"] .lap b{font-size:44px;font-weight:900;line-height:1;letter-spacing:-.02em;color:var(--hit)}
+[data-look="c"] .lap b small{font-size:22px;color:var(--muted);font-weight:800}
+[data-look="c"] .lap ol{display:flex;gap:3px;margin:0 0 0 6px;padding:0;align-self:center}
+[data-look="c"] .lap li{list-style:none;width:14px;height:22px;border-radius:3px;background:var(--fill)}
+[data-look="c"] .lap li.done{background:var(--tape-soft)}[data-look="c"] .lap li.now{background:var(--hit)}
+[data-look="c"] .test-h .val{font-size:24px}
+[data-look="c"] .start{border-radius:14px}
+[data-look="c"] .start .big b{font-size:52px}
 
 /* iPad: Liste links, Inhalt rechts; Ablauf zweispaltig */
 @media (min-width:900px){

@@ -244,7 +244,18 @@ function vRadForm(f, r) {
     </form>`;
 }
 
-const stepsBar = n => `<div class="steps" aria-label="Schritt ${n} von 8"><ol>${Array.from({ length: 8 }, (_, i) => `<li class="${i + 1 < n ? 'done' : i + 1 === n ? 'now' : ''}"></li>`).join('')}</ol><span>Schritt ${n} von 8</span></div>`;
+const NAMEN = ['Ziel', 'Untersuchung', 'Aufbau', 'Aufnahme', 'Ergebnis', 'Front', 'Vorschlag', 'Abschluss'];
+const stepsBar = n => {
+  const look = document.documentElement.dataset.look;
+  if (look === 'a') {
+    const r = 26, c = 2 * Math.PI * r, seg = c / 8;
+    const arcs = Array.from({ length: 8 }, (_, i) => `<circle cx="32" cy="32" r="${r}" fill="none" stroke="${i + 1 < n ? 'var(--tape)' : i + 1 === n ? 'var(--hit)' : 'var(--line)'}" stroke-width="5" stroke-dasharray="${(seg - 4).toFixed(1)} ${(c - seg + 4).toFixed(1)}" stroke-dashoffset="${(-i * seg).toFixed(1)}" transform="rotate(-90 32 32)" stroke-linecap="round"/>`).join('');
+    return `<div class="ring" aria-label="Schritt ${n} von 8"><svg viewBox="0 0 64 64">${arcs}<text x="32" y="38" text-anchor="middle" font-weight="900" font-size="18" fill="currentColor" font-family="Outfit">${n}</text></svg><div><b>${NAMEN[n - 1]}</b><span>Schritt ${n} von 8 · dann ${NAMEN[n] || 'fertig'}</span></div></div>`;
+  }
+  if (look === 'c') return `<div class="lap" aria-label="Schritt ${n} von 8"><b>${n}<small>/8</small></b><ol>${Array.from({ length: 8 }, (_, i) => `<li class="${i + 1 < n ? 'done' : i + 1 === n ? 'now' : ''}"></li>`).join('')}</ol></div>`;
+  return stepsBarStd(n);
+};
+const stepsBarStd = n => `<div class="steps" aria-label="Schritt ${n} von 8"><ol>${Array.from({ length: 8 }, (_, i) => `<li class="${i + 1 < n ? 'done' : i + 1 === n ? 'now' : ''}"></li>`).join('')}</ol><span>Schritt ${n} von 8</span></div>`;
 
 function fokusListe(fit) {
   const sel = FOKUS.filter(x => fit.beschw.includes(x.k));
@@ -281,7 +292,7 @@ function testRow(tk, fit, open) {
       + `<button class="link" data-vf-skip>Überspringen</button>`;
   } else if (tk.k === 'ake') {
     const S = fit.t.akeS || {}, M = fit.t.akeM || {}, se = akeSide(fit), cur = S[se] ?? tk.def;
-    ctl = `<div class="sides">${['l', 'r'].map(k => `<button class="side" aria-pressed="${se === k}" data-akeside="${k}"><span>${k === 'l' ? 'Links' : 'Rechts'}</span><b>${S[k] != null ? deInt(S[k]) + '°' : '–'}</b><small>${S[k] != null ? esc(M[k] || 'eingetragen') : 'offen'}</small></button>`).join('')}</div>
+    ctl = `<div class="sides">${['l', 'r'].map(k => `<button class="lr" aria-pressed="${se === k}" data-akeside="${k}"><span>${k === 'l' ? 'Links' : 'Rechts'}</span><b>${S[k] != null ? deInt(S[k]) + '°' : '–'}</b><small>${S[k] != null ? esc(M[k] || 'eingetragen') : 'offen'}</small></button>`).join('')}</div>
       <div class="mess-btns"><button class="btn" data-mess="sensor">${I.sensor}Sensor</button><button class="btn ghost" data-mess="kamera">${I.cam}Kamera</button></div>
       <button class="link" data-hand>${I.edit}Von Hand eintragen</button>
       <div class="hand" data-handbox hidden><div class="stepper"><button data-step="-1" aria-label="weniger">−</button>
