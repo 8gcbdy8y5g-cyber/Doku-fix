@@ -375,6 +375,15 @@ input::placeholder{color:var(--muted);opacity:.8;font-weight:500}
 [data-look="c"] .start{border-radius:14px}
 [data-look="c"] .start .big b{font-size:52px}
 
+/* Signalfarbe für Motive: hell Olivgrün, dunkel Lindgrün */
+:root{--sig:#4f6d10}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--sig:#ddf6a2}}
+:root[data-theme="dark"]{--sig:#ddf6a2}
+[data-look="a"] h1::after{background:radial-gradient(circle,var(--sig) 2.6px,transparent 3.2px) 0 50%/12px 6px repeat-x}
+[data-look="a"] .row[aria-current="page"] .ava{outline-color:var(--sig)}
+[data-look="b"] .ava{box-shadow:inset 0 0 0 1.5px rgba(26,26,26,.18)}
+[data-look="c"] .fact:last-child b,[data-look="c"] .lap b{color:var(--sig)}
+
 /* iPad: Liste links, Inhalt rechts; Ablauf zweispaltig */
 @media (min-width:900px){
   .app.has-side .side{display:flex;flex-direction:column;gap:14px;width:var(--side);flex:0 0 var(--side);border-right:1px solid var(--line);
