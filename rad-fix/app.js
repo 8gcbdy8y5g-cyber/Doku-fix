@@ -138,7 +138,7 @@ function render() {
     const [f, fit] = fitById(p[1]);
     if (!fit) { go('#/'); return; }
     side = false;
-    body = p[2] === '2' ? vUnters(f, fit) : vZiel(f, fit);
+    body = p[2] === '2' ? vUnters(f, fit) : p[2] === '3' || p[2] === '4' ? vAufbau(f, fit) : p[2] === '5' ? vErgebnis(f, fit) : vZiel(f, fit);
   } else { go('#/'); return; }
 
   const hasSide = side && D.fahrer.length > 0;
@@ -196,7 +196,8 @@ function vFahrer(f, root) {
         <div class="sec-h"><h2>Verlauf</h2></div>
         ${fits.length ? `<div class="list">${fits.map(x => {
           const r = rad(f, x.radId), s = startwerte(x, r), offen = pflichtOffen(x);
-          const st = x.fertig ? `Untersuchung fertig${s.sattel ? ' · Sattel ' + de(s.sattel) + ' cm' : ''}` : (x.schritt === 2 ? (offen ? `Untersuchung, noch ${offen} offen` : 'Untersuchung, noch nicht abgeschlossen') : 'Ziel und Beschwerden offen');
+          const lm = (x.mess || []).slice(-1)[0];
+          const st = lm ? `Messung seitlich · Knie unten ${deInt(lm.werte.knieUnten.m)}°` : x.fertig ? `Untersuchung fertig${s.sattel ? ' · Sattel ' + de(s.sattel) + ' cm' : ''}` : (x.schritt === 2 ? (offen ? `Untersuchung, noch ${offen} offen` : 'Untersuchung, noch nicht abgeschlossen') : 'Ziel und Beschwerden offen');
           return `<a class="row" href="#/fit/${x.id}/${x.schritt || 1}">
             <span class="t"><b>${datum(x.datum)}</b><span>${esc(radName(r))} · ${esc(st)}</span></span>
             ${x.fertig ? '<span class="tag ok">fertig</span>' : '<span class="tag warn">offen</span>'}${I.chev}</a>`; }).join('')}</div>`
@@ -346,13 +347,111 @@ function vUnters(f, fit) {
       <h1>Eingangs&shy;untersuchung</h1>
       <p class="lead">${offen ? 'Tippe einen Test an, trag den Wert ein, und es geht beim nächsten weiter.' : 'Alle Pflichttests erledigt. Die Startwerte gleicht Rad-Fix später mit der Messung beim Treten ab.'}</p>
       <div id="stand">${left}</div>
-      <div class="actions"><button class="btn" id="fertig" ${offen ? 'disabled' : ''}>${fit.fertig ? 'Fertig' : 'Untersuchung abschließen'}</button></div>
+      <div class="actions"><button class="btn" id="fertig" ${offen ? 'disabled' : ''}>Weiter zum Aufbau</button></div>
     </div>
     <div class="right">
       <div class="tests">${TESTS.map(t => testRow(t, fit, offenTest === t.k)).join('')}</div>
       ${offen ? '' : `<div class="copy"><div class="head"><h2>Text für die Doku</h2><button id="kopie">Kopieren</button></div><p id="doku">${esc(dokuText(f, fit))}</p></div>
-      <p class="note">Aufbau seitlich, Aufnahme beim Treten und die Vorschläge kommen mit der nächsten Ausbaustufe.</p>`}
+      `}
     </div></div>`;
+}
+
+/* ---------- Schritt 3 bis 5 ---------- */
+const zielWatt = f => f.ftp ? `${deInt(Math.round(f.ftp * .6 / 5) * 5)}–${deInt(Math.round(f.ftp * .7 / 5) * 5)} W` : 'lockere Last';
+const AUFBAU_SVG = `<svg viewBox="0 0 520 300" aria-hidden="true" class="aufbau-svg">
+  <line x1="20" y1="262" x2="500" y2="262" stroke="#d1d1d6" stroke-width="2"/>
+  <rect x="150" y="244" width="200" height="18" rx="6" fill="#c9cdbf"/>
+  <circle cx="175" cy="210" r="48" fill="none" stroke="#9aa08e" stroke-width="7"/><circle cx="330" cy="210" r="48" fill="none" stroke="#9aa08e" stroke-width="7"/>
+  <path d="M175 210 L235 210 L210 120 M235 210 L300 125 L210 120 M300 125 L330 210 M300 125 L305 100" stroke="#9aa08e" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M196 116h30M296 100h22" stroke="#6b705f" stroke-width="7" stroke-linecap="round"/>
+  <circle cx="235" cy="210" r="14" fill="none" stroke="#6b705f" stroke-width="5"/>
+  <path d="M212 112 L262 52 L300 98" stroke="#4f6d10" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="266" cy="38" r="15" fill="#4f6d10"/>
+  <path d="M212 112 L248 160 L238 222" stroke="#4f6d10" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <g transform="translate(460 200)"><rect x="-5" y="0" width="10" height="62" fill="#9aa08e"/><rect x="-22" y="-6" width="44" height="8" rx="3" fill="#9aa08e"/><rect x="-11" y="-40" width="22" height="34" rx="5" fill="#1a1a1a"/><circle cx="-6" cy="-23" r="3.5" fill="#ddf6a2"/></g>
+  <path d="M440 278 L250 278" stroke="#4f6d10" stroke-width="2" stroke-dasharray="5 5"/><text x="345" y="294" text-anchor="middle" font-size="14" font-weight="700" fill="#4f6d10" font-family="Outfit">2,5–3 m</text>
+  <path d="M452 178 L270 205" stroke="#ddf6a2" stroke-width="3" stroke-dasharray="2 7" stroke-linecap="round"/>
+</svg>`;
+function vAufbau(f, fit) {
+  const alt = (fit.mess || []).length;
+  return `<div class="flow">
+    <div class="left">
+      <div class="bar"><button class="back" data-go="#/fit/${fit.id}/2">${I.back}Untersuchung</button></div>
+      ${stepsBar(3)}
+      <h1>Aufbau seitlich</h1>
+      <p class="lead">Rad auf die Rolle, Gerät seitlich daneben. Den Rest prüft Rad-Fix mit der Kamera und startet die Aufnahme von selbst.</p>
+      <div class="ziel-last"><div><span>Leistung</span><b>${esc(zielWatt(f).replace(' W', ''))} <small>W</small></b></div><div><span>Trittfrequenz</span><b>85–90 <small>/min</small></b></div></div>
+      <div class="actions"><button class="btn" id="kamstart">${I.cam}Kamera starten</button></div>
+    </div>
+    <div class="right">
+      <div class="aufbau-bild">${AUFBAU_SVG}</div>
+      <ul class="focus">
+        <li><span class="n">1</span><b>Gerät auf Höhe des Tretlagers</b><p>Auf einen Hocker oder ein Stativ, quer, Kamera zeigt genau seitlich aufs Rad. 2,5 bis 3 m Abstand.</p></li>
+        <li><span class="n">2</span><b>Kopf bis Fuß und beide Laufräder im Bild</b><p>Helles Licht von vorn, enge Hose, Schuhe wie beim Fahren. Hände an den Bremsgriffen.</p></li>
+        <li><span class="n">3</span><b>Erst warm fahren</b><p>2 bis 3 Minuten locker, dann bei der Zielleistung. Ton und Signal zeigen Start und Ende.</p></li>
+      </ul>
+      ${alt ? `<p class="note">${alt === 1 ? 'Eine Aufnahme' : alt + ' Aufnahmen'} gespeichert. <button class="link" data-go="#/fit/${fit.id}/5">Ergebnis ansehen</button></p>` : ''}
+    </div></div>`;
+}
+function bindAufbau(f, fit) {
+  $('#kamstart').onclick = () => {
+    if (!window.RFAuf) { toast('Aufnahme nicht geladen'); return; }
+    RFAuf.open({ fahrer: f, fit, quelle: window.__rfQuelle, onDone: res => {
+      (fit.mess = fit.mess || []).push(res); fit.schritt = 5; save(); go(`#/fit/${fit.id}/5`);
+    } });
+  };
+}
+
+const ERG = [
+  { k: 'knieUnten', n: 'Knie unten', sub: 'Beugung, Pedal auf 6 Uhr', ziel: [30, 40], belegt: true },
+  { k: 'knieOben', n: 'Knie oben', sub: 'Beugung, Pedal auf 12 Uhr' },
+  { k: 'hueftOben', n: 'Hüfte oben', sub: 'Rumpf zu Oberschenkel' },
+  { k: 'sprungUnten', n: 'Sprunggelenk unten', sub: 'Unterschenkel zu Fuß', ziel: [109, 123] },
+  { k: 'rumpf', n: 'Rumpf', sub: 'zur Waagerechten', ziel: [30, 60] },
+  { k: 'schulter', n: 'Schulter', sub: 'Rumpf zu Oberarm', ziel: [105, 119] },
+  { k: 'ellbogen', n: 'Ellenbogen', sub: 'Beugung an den Griffen', ziel: [11, 27] },
+  { k: 'rpm', n: 'Trittfrequenz', sub: 'während der Aufnahme', ziel: [85, 90], unit: '/min' }
+];
+const ampel = (v, z) => !z ? null : v >= z[0] && v <= z[1] ? 'ok' : (v < z[0] ? z[0] - v : v - z[1]) <= 5 ? 'warn' : 'bad';
+function knieSatz(v) {
+  if (v < 30) return `Knie unten ${deInt(v)}°, stärker gebeugt als 30–40°. Der Sattel steht eher zu tief.`;
+  if (v > 40) return `Knie unten ${deInt(v)}°, gestreckter als 30–40°. Der Sattel steht eher zu hoch.`;
+  return `Knie unten ${deInt(v)}°, im Zielbereich 30–40°. Die Sattelhöhe passt.`;
+}
+const messText = m => {
+  const w = m.werte, sd = m.seite === 'l' ? 'links' : 'rechts';
+  return `Videoanalyse seitlich beim Treten, ${sd} (${m.n} Umdrehungen, ${deInt(w.rpm.m)}/min): Kniebeugung unten ${deInt(w.knieUnten.m)}° (Ziel 30–40°), oben ${deInt(w.knieOben.m)}°. Sprunggelenk unten ${deInt(w.sprungUnten.m)}°, Rumpf ${deInt(w.rumpf.m)}° zur Waagerechten, Schulter ${deInt(w.schulter.m)}°, Ellenbogen ${deInt(w.ellbogen.m)}° gebeugt.`;
+};
+function vErgebnis(f, fit) {
+  const m = (fit.mess || []).slice(-1)[0];
+  if (!m) return vAufbau(f, fit);
+  const w = m.werte, kn = w.knieUnten.m;
+  return `<div class="flow">
+    <div class="left">
+      <div class="bar"><button class="back" data-go="#/fit/${fit.id}/3">${I.back}Aufbau</button></div>
+      ${stepsBar(5)}
+      <h1>Ergebnis seitlich</h1>
+      <p class="lead">${esc(knieSatz(kn))}</p>
+      <div class="big-knie ${ampel(kn, [30, 40])}"><span>Knie unten</span><b>${deInt(kn)}°</b><small>± ${de(w.knieUnten.sd)}° über ${m.n} Umdrehungen · Ziel 30–40°</small></div>
+      <div class="actions"><button class="btn ghost" id="neu">Neu messen</button><button class="btn" data-go="#/f/${f.id}">Fertig</button></div>
+    </div>
+    <div class="right">
+      ${m.bild ? `<div class="still"><img src="${m.bild}" alt="Standbild mit eingezeichneten Winkeln, Pedal unten"></div>` : ''}
+      <div class="erg">${ERG.map(e => { const v = w[e.k]; if (!v) return ''; const a = ampel(v.m, e.ziel);
+        return `<div class="erg-row"><div class="t"><b>${e.n}</b><span>${e.sub}</span></div>
+          <div class="v ${a ? 'c-' + a : ''}">${deInt(v.m)}${e.unit ? '' : '°'}<small>± ${de(v.sd)}</small></div>
+          <div class="z">${e.ziel ? `${e.ziel[0]}–${e.ziel[1]}${e.unit ? '' : '°'}` : '–'}<small>${e.belegt ? 'belegt' : e.ziel ? 'Richtwert' : 'kein Richtwert'}</small></div></div>`; }).join('')}</div>
+      <p class="note">Nur das Knie unten ist durch Studien belegt (Bini 2011, Ferrer-Roca 2012). Die übrigen Richtwerte sind Mittelwerte trainierter Fahrer (Holliday &amp; Swart 2021). Entwurf, fachlich prüfen.</p>
+      <div class="copy"><div class="head"><h2>Text für die Doku</h2><button id="kopie">Kopieren</button></div><p>${esc(messText(m))}</p></div>
+      <p class="note">Frontansicht, Vorschläge in Millimetern und der Vorher-nachher-Vergleich kommen als Nächstes.</p>
+    </div></div>`;
+}
+function bindErgebnis(f, fit) {
+  const m = (fit.mess || []).slice(-1)[0];
+  const n = $('#neu'); if (n) n.onclick = () => go(`#/fit/${fit.id}/3`);
+  const k = $('#kopie');
+  if (k && m) k.onclick = async () => { try { await navigator.clipboard.writeText(messText(m)); k.textContent = 'Kopiert'; k.classList.add('ok'); setTimeout(() => { k.textContent = 'Kopieren'; k.classList.remove('ok'); }, 1600); } catch { toast('Kopieren nicht möglich'); } };
+  if (!m) bindAufbau(f, fit);
 }
 
 /* ---------- Ereignisse ---------- */
@@ -409,7 +508,7 @@ function bind() {
   const h = location.hash.split('/');
   if (h[1] === 'fit') {
     const [f, fit] = fitById(h[2]);
-    if (h[3] === '1') bindZiel(f, fit); else bindUnters(f, fit);
+    if (h[3] === '1') bindZiel(f, fit); else if (h[3] === '2') bindUnters(f, fit); else if (h[3] === '5') bindErgebnis(f, fit); else bindAufbau(f, fit);
   }
 }
 
@@ -488,7 +587,7 @@ function bindUnters(f, fit) {
     try { await navigator.clipboard.writeText(dokuText(f, fit)); k.textContent = 'Kopiert'; k.classList.add('ok'); setTimeout(() => { k.textContent = 'Kopieren'; k.classList.remove('ok'); }, 1600); }
     catch { toast('Kopieren nicht möglich'); }
   };
-  $('#fertig').onclick = () => { fit.fertig = true; save(); go(`#/f/${f.id}`); toast('Untersuchung gesichert'); };
+  $('#fertig').onclick = () => { fit.fertig = true; fit.schritt = Math.max(fit.schritt || 1, 3); save(); go(`#/fit/${fit.id}/3`); };
 }
 
 let tt;

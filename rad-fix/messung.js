@@ -40,7 +40,7 @@ function signal(gross, klein, art) {
   let e = $('#signal');
   if (!e) { e = document.createElement('div'); e.id = 'signal'; e.setAttribute('role', 'status'); e.innerHTML = '<b></b><span></span>'; document.body.appendChild(e); }
   e.querySelector('b').textContent = gross; e.querySelector('span').textContent = klein || '';
-  e.className = 'on ' + art; haptik(art === 'ende' ? 3 : 1); clearTimeout(signal.t); signal.t = setTimeout(() => { e.className = art; }, art === 'ende' ? 1500 : 1000);
+  e.className = 'on s-' + art; haptik(art === 'ende' ? 3 : 1); clearTimeout(signal.t); signal.t = setTimeout(() => { e.className = 's-' + art; }, art === 'ende' ? 1500 : 1000);
 }
 let wake = null;
 async function keepAwake(on) { try { if (on && !wake && navigator.wakeLock) wake = await navigator.wakeLock.request('screen'); if (!on && wake) { wake.release(); wake = null; } } catch (e) {} }
@@ -326,5 +326,5 @@ async function startKamera() {
   requestAnimationFrame(loop);
 }
 
-window.RFMess = { open, close };
+window.RFMess = { open, close, erkennung, detect, beep, signal, unlockAudio, keepAwake };
 })();
