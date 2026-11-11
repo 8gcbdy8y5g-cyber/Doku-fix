@@ -3184,6 +3184,28 @@ nav button:active{transform:scale(.96)}
 .dp-karte.dp-verknuepft[class*="art-"]{outline:0}
 .dp-karte[class*="art-"] .dp-kz{background:var(--art);color:var(--flaeche);border-color:var(--art)}
 </style>
+<style id="ds3-css">
+/* Gestaltung Schritt 3: Abrechnungs-Hinweis als Leiste */
+#hb-export.hb-ex-leiste{position:fixed;inset:auto 0 calc(env(safe-area-inset-bottom,0px) + 78px) 0;z-index:60;display:flex;justify-content:center;background:none;padding:0 12px;pointer-events:none}
+body:not(:has(nav>button:first-child[aria-current="page"])) #hb-export.hb-ex-leiste{display:none}
+#hb-export.hb-ex-leiste .hb-ex-karte{pointer-events:auto;width:100%;max-width:560px;display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:4px 8px;
+  padding:8px 8px 8px 16px;border-radius:18px;background:var(--flaeche);border:1px solid var(--linie);box-shadow:0 8px 24px -6px rgba(0,0,0,.22);
+  transition:transform .22s cubic-bezier(.23,1,.32,1),opacity .22s cubic-bezier(.23,1,.32,1)}
+@starting-style{#hb-export.hb-ex-leiste .hb-ex-karte{transform:translateY(10px);opacity:0}}
+#hb-export.hb-ex-leiste .hb-ex-text{display:flex;flex-direction:column;align-items:flex-start;gap:1px;min-width:0;min-height:44px;justify-content:center;border:0;background:none;padding:0;text-align:left;color:var(--schrift)}
+#hb-export.hb-ex-leiste .hb-ex-text b{font-size:.9375rem;font-weight:700;line-height:1.2;text-wrap:balance}
+#hb-export.hb-ex-leiste .hb-ex-text span{font-size:.8125rem;color:var(--schrift2);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+#hb-export.hb-ex-leiste .hb-knopf{min-height:44px;padding:0 16px;font-weight:700;transition:transform .14s cubic-bezier(.23,1,.32,1)}
+#hb-export.hb-ex-leiste .hb-knopf:active{transform:scale(.97)}
+#hb-export.hb-ex-leiste .hb-ex-sp{min-height:44px;padding:0 8px;border:0;background:none;color:var(--schrift2);font-weight:600;font-size:.875rem}
+#hb-export.hb-ex-leiste .hb-ex-hinw{grid-column:1/-1;margin:0;font-size:.8125rem;color:var(--warn)}
+#hb-export.hb-ex-leiste .hb-ex-hinw:empty{display:none}
+#hb-export.hb-ex-leiste .hb-ex-text i{font-style:normal}
+@media (max-width:480px){#hb-export.hb-ex-leiste .hb-ex-text i{display:none}}
+body:has(#hb-export.hb-ex-leiste):has(nav>button:first-child[aria-current="page"]) main{padding-bottom:110px}
+@media (prefers-reduced-motion:reduce){#hb-export.hb-ex-leiste .hb-ex-karte,#hb-export.hb-ex-leiste .hb-knopf{transition:none}}
+</style>
+
 
 </head>
 <body>
@@ -5928,10 +5950,9 @@ function exportPruefen() {
   if (!L.length || st[ym] || (st.spaeter && st.spaeter === heute())) return;
   if (document.getElementById("hb-ov") || document.getElementById("hb-export")) return;
   var t = summe(L), mon = MON[+ym.slice(5, 7) - 1], d = document.createElement("div");
-  d.id = "hb-export"; d.setAttribute("role", "dialog"); d.setAttribute("aria-label", "Fahrkostenabrechnung " + mon);
-  d.innerHTML = '<div class="hb-ex-karte"><small>Fahrtkosten/Hausbesuche</small><b>Abrechnung ' + mon + ' ist fertig</b><p>' + kmTxt(t.km) + ' km · ' + euroTxt(t.cent) + ' € · ' + L.length + (L.length === 1 ? ' Tag' : ' Tage') + (t.offen ? ' · ' + t.offen + ' ohne km' : '') + '</p>' +
-    '<div class="hb-zx-kn"><button type="button" class="hb-knopf" data-x="ja">JPEG sichern</button><button type="button" class="hb-knopf zwei" data-x="liste">Erst ansehen</button></div>' +
-    '<button type="button" class="hb-link" data-x="spaeter">Morgen erinnern</button><p class="hb-hinw hb-ex-hinw">Im Teilen-Menü „In Dateien sichern“ und deinen Fahrtkosten-Ordner wählen.</p></div>';
+  d.id = "hb-export"; d.className = "hb-ex-leiste"; d.setAttribute("role", "region"); d.setAttribute("aria-label", "Fahrkostenabrechnung " + mon);
+  d.innerHTML = '<div class="hb-ex-karte"><button type="button" class="hb-ex-text" data-x="liste"><b>Abrechnung ' + mon + ' ist fertig</b><span>' + kmTxt(t.km) + ' km · ' + euroTxt(t.cent) + ' €' + (t.offen ? ' · ' + t.offen + ' ohne km' : '') + '<i> · ansehen ›</i></span></button>' +
+    '<button type="button" class="hb-knopf" data-x="ja">Sichern</button><button type="button" class="hb-ex-sp" data-x="spaeter" aria-label="Morgen wieder erinnern">Morgen</button><p class="hb-hinw hb-ex-hinw"></p></div>';
   document.body.appendChild(d);
   d.addEventListener("click", async function (ev) {
     var b = ev.target.closest("[data-x]"); if (!b) return; var x = b.getAttribute("data-x"), s0 = lies(EX_KEY, {});
