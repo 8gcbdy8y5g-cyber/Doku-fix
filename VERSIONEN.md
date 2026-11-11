@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v136 | 12.11.2026 | Gestaltung | Terminkarten ruhiger: weiß, ohne Farbstreifen und Rahmen, Kürzel kräftig gefüllt; Pause mit gezeichneter Tasse |
 | v135 | 12.11.2026 | Gestaltung | Dienstplan: Kopf kompakt, auf dem Tablet Tagesübersicht links und Termine rechts; Tipp-Rückmeldung und Schließen-Animationen vereinheitlicht |
 | v134 | 10.11.2026 | Plan-Foto | Liest zuerst das Original, rückt nur bei schwachem Ergebnis selbst gerade; schräge Zeilen, Fahrzeit-Zeile und Kürzel robuster; „Falsch gelesen? Ecken setzen“ |
 | v133 | 09.11.2026 | 2607fd9 | Sicherung einspielen führt zusammen statt nur zu ergänzen: Bei Patienten, die beide Geräte kennen, kommen neue Verlaufseinheiten dazu; ist dieselbe Einheit auf beiden Geräten, schlägt eine fertige den Entwurf, sonst gilt der zuletzt geänderte Stand. Erstbefund und übrige Angaben vom zuletzt geänderten Gerät. Dienstplan-Tage werden ersetzt, wenn sie auf dem anderen Gerät später geändert wurden. Dafür merkt sich die App je Patient und Dienstplan-Tag die Uhrzeit der letzten Änderung (nur Zeitstempel, in der Sicherung mit drin). Gelöscht wird beim Einspielen nichts. Meldung nach dem Einspielen zeigt neu/aktualisiert/neue Einheiten. Fahrtkosten und Stunden wie bisher (nur Fehlendes). |
