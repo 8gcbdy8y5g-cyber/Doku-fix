@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v147 | 12.11.2026 | 12c9f35 | Stunden im Mehr-Bereich auf dem iPad quer: Karten stehen untereinander statt zerquetscht nebeneinander. |
 | v146 | 12.11.2026 | 3e327a2 | Behandlungsvorschlag ab der dritten Behandlung, in Schnell-Doku und ausführlichem Verlauf unter dem Befinden: steigern, anpassen oder zurücknehmen, mit konkreter Dosierung je Maßnahme der letzten Behandlung (Gewicht, Sätze, Wiederholungen, Ergometer, Mobilisationsgrad), Zielen und Knopf zum Übernehmen. Nicht für neurologische Patienten. |
 | v145 | 12.11.2026 | db6ba6a | Schnell-Doku am Handy: Pop-ups für Techniken, Mobilisation und Übungen verrutschen nicht mehr, Kreuz, Abbrechen und Fertig bleiben im Bild. |
 | v144 | 12.11.2026 | 90ffaca | Schnell-Doku: Maßnahmen über drei Pop-ups (Techniken, Mobilisation, Übungen) ändern und hinzufügen, mit Abbrechen; Feld für eigene Maßnahme als freier Text. Nicht erschienen: Termin steht als Ausfall im Verlauf, zählt nicht als Einheit. |
