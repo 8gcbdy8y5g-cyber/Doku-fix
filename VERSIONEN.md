@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v144 | 12.11.2026 | 90ffaca | Schnell-Doku: Maßnahmen über drei Pop-ups (Techniken, Mobilisation, Übungen) ändern und hinzufügen, mit Abbrechen; Feld für eigene Maßnahme als freier Text. Nicht erschienen: Termin steht als Ausfall im Verlauf, zählt nicht als Einheit. |
 | v143 | 12.11.2026 | Dienstplan | Termin als „nicht erschienen“ markieren, die Doku bleibt dann nicht offen; aufgeklappte Karte auf dem Tablet nicht mehr abgeschnitten |
 | v142 | 12.11.2026 | Dienstplan | Der erste Termin nach einer Fortbildung ist kein Hausbesuch und bekommt keine Fahrzeit davor; die Fortbildung füllt die ganze Lücke |
 | v141 | 12.11.2026 | Dienstplan | Fobi füllt die Zeit bis zum nächsten Termin (höchstens 60 min); der Termin direkt nach einem Praxistermin gilt nicht mehr als vermuteter Hausbesuch, keine Fahrzeit davor |
