@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v137 | 12.11.2026 | Gestaltung | Hinweis „Abrechnung ist fertig“ als schmale Leiste über der Navigation, nur im Dienstplan, ohne Abdunkeln |
 | v136 | 12.11.2026 | Gestaltung | Terminkarten ruhiger: weiß, ohne Farbstreifen und Rahmen, Kürzel kräftig gefüllt; Pause mit gezeichneter Tasse |
 | v135 | 12.11.2026 | Gestaltung | Dienstplan: Kopf kompakt, auf dem Tablet Tagesübersicht links und Termine rechts; Tipp-Rückmeldung und Schließen-Animationen vereinheitlicht |
 | v134 | 10.11.2026 | Plan-Foto | Liest zuerst das Original, rückt nur bei schwachem Ergebnis selbst gerade; schräge Zeilen, Fahrzeit-Zeile und Kürzel robuster; „Falsch gelesen? Ecken setzen“ |
