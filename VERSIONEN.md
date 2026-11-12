@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v142 | 12.11.2026 | Dienstplan | Der erste Termin nach einer Fortbildung ist kein Hausbesuch und bekommt keine Fahrzeit davor; die Fortbildung füllt die ganze Lücke |
 | v141 | 12.11.2026 | Dienstplan | Fobi füllt die Zeit bis zum nächsten Termin (höchstens 60 min); der Termin direkt nach einem Praxistermin gilt nicht mehr als vermuteter Hausbesuch, keine Fahrzeit davor |
 | v140 | 12.11.2026 | Dienstplan, Befund, Gestaltung | Terminhöhe entspricht der Dauer; Streckdefizit nach Neutral-Null (0-20-120); Schriftgrößen vereinheitlicht; „Mehr“ auf dem Tablet ohne Überlappung, Bereichswechsel repariert |
 | v139 | 12.11.2026 | Dienstplan | Fortbildung (Fobi) mit eigener Farbe; Fobi wird nie als Hausbesuch vermutet |
