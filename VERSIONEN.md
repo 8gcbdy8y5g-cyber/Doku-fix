@@ -6,6 +6,7 @@ Neue Versionen kommen oben dazu.
 
 | Version | Datum | Commit | Was sich geändert hat |
 |---|---|---|---|
+| v139 | 12.11.2026 | Dienstplan | Fortbildung (Fobi) mit eigener Farbe; Fobi wird nie als Hausbesuch vermutet |
 | v138 | 12.11.2026 | Gestaltung | Verlauf aufgeräumt: „Frühere Doku nachtragen“ als aufklappbarer Block, „Löschen“ an den rechten Rand |
 | v137 | 12.11.2026 | Gestaltung | Hinweis „Abrechnung ist fertig“ als schmale Leiste über der Navigation, nur im Dienstplan, ohne Abdunkeln |
 | v136 | 12.11.2026 | Gestaltung | Terminkarten ruhiger: weiß, ohne Farbstreifen und Rahmen, Kürzel kräftig gefüllt; Pause mit gezeichneter Tasse |
