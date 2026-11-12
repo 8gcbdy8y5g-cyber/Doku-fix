@@ -8878,6 +8878,12 @@ html:root[data-theme="dark"] .tb-faellig{background:#0f0f0f;border-color:#3a3a3a
 .tb-alt small{color:var(--schrift2);font-size:.8125rem}.tb-alt>span:first-child{white-space:nowrap;font-weight:600}
 .tb-kopf:focus-visible,.tb-los:focus-visible,.tb-alt:focus-visible{outline:2px solid var(--tape);outline-offset:2px}
 </style>
+<style id="st2-css">
+:where(*):has(>.st-raster){container:stbereich/inline-size}
+.st-raster{grid-template-columns:minmax(0,1fr)!important}
+@container stbereich (min-width:760px){.st-raster{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr)!important;align-items:start}}
+</style>
+
 <style id="bv-css">
 .bv{--bv:var(--tape);margin:12px 0 4px;padding:12px 14px 6px;border-radius:16px;background:var(--flaeche);border:1px solid var(--rahmen);border-left:4px solid var(--bv)}
 .bv[data-lage="schlechter"]{--bv:#B4532A}
